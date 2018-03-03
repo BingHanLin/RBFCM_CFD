@@ -1,8 +1,8 @@
 using namespace std;
 using namespace gmm;
-#include "GMMMQBasis2D.h"
-template<typename T>
-vector<T> Collocation2D(const int Operator2D, const dense_matrix<T> & nodes_cloud, GMMMQBasis2D & RbfBasis)
+
+template<typename T, typename RbfBasisType>
+vector<T> Collocation2D(const int Operator2D, const dense_matrix<T> & nodes_cloud, RbfBasisType& RbfBasis)
 {
     int DIMENSION = 2;
     // check the input vector

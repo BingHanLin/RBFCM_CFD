@@ -14,26 +14,28 @@ using namespace std;
 
 
 *************************************************************************/
-enum Operator_set
-     {
-        No_operation,
-        Laplace,
-        Partial_x,
-        Partial_y
-     };
-
 class GMMMQBasis2D
 {
     private:
-        Operator_set Operator2D; 
         double CC;
         void Initialize();
 
 
     public:
+
         GMMMQBasis2D() : CC(1.0) {Initialize();};
         GMMMQBasis2D(double CCC) : CC(CCC) {Initialize();};
-        ~GMMMQBasis2D() {}; 
+        ~GMMMQBasis2D() {};
+
+        enum Operator_set
+            {
+                No_operation,
+                Laplace,
+                Partial_x,
+                Partial_y
+            };
+
+        enum Operator_set Operator2D;
 
         double SetOperator(const int OOperator2D,const vector<double>& VX1, const vector<double>& VX2);
 };
@@ -47,6 +49,7 @@ void GMMMQBasis2D::Initialize()
 
 double GMMMQBasis2D::SetOperator(const int OOperator2D, const vector<double>& VX1, const vector<double>& VX2)
 {
+
     Operator2D = Operator_set(OOperator2D);
 
     double rx =  VX1[0] - VX2[0];
@@ -55,11 +58,11 @@ double GMMMQBasis2D::SetOperator(const int OOperator2D, const vector<double>& VX
     
     double temp;
 
-    if (Operator2D == No_operation)
+    if (Operator2D == Operator_set::No_operation)
     {
         temp = sqrt(rs+CC*CC);
     }
-    else if (Operator2D == Laplace)
+    else if (Operator2D == Operator_set::Laplace)
     {
         double temp1;
         temp1 = sqrt(rs+CC*CC)*(rs+CC*CC);

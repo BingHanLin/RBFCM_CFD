@@ -8,9 +8,9 @@
 #include<math.h>
 #include<vector>
 #include <gmm/gmm.h>
+
 #include "KDTreeTsaiAdaptor.h"
 #include "Collocation2D.h"
-#include "GMMMQBasis2D.h"
 
 using namespace std;
 using namespace gmm;
@@ -21,12 +21,13 @@ using namespace gmm;
 enum BCType_set
      {};
 
-template <typename MeshType, typename RbfBasisType>
+template <typename MeshType, typename RbfBasisType >
 class GMMLrbfcmPoisson
 {
     private:
         MeshType MESH;
         RbfBasisType RbfBasis;
+
         vector<vector<double>> AllNodes;
         int Nall, Nint, Nbou;
         vector<double> Phi, Bvalue;
@@ -37,16 +38,16 @@ class GMMLrbfcmPoisson
         void assembly();
 
     public:
-        GMMLrbfcmPoisson (MeshType& MMESH, RbfBasisType& RRbfBasis, const vector<double> BBvalue);
+        GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis,  const vector<double> BBvalue);
         ~GMMLrbfcmPoisson() {};
         void PrintData();
         void SolvePhi();
 
 };
 
-template <typename MeshType, typename RbfBasisType>
+template <typename MeshType, typename RbfBasisType >
 GMMLrbfcmPoisson<MeshType, RbfBasisType>::
-GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis, const vector<double> BBvalue)
+GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis,  const vector<double> BBvalue)
 :MESH(MMESH),RbfBasis(RRbfBasis),Bvalue(BBvalue)
 {
 
@@ -73,10 +74,11 @@ GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis, const vector<double> 
 }
 
 
-template <typename MeshType, typename RbfBasisType>
-void GMMLrbfcmPoisson<MeshType, RbfBasisType>::
+template <typename MeshType, typename RbfBasisType >
+void GMMLrbfcmPoisson<MeshType, RbfBasisType >::
 assembly()
 {
+
     int near_num = 5;
     dense_matrix<double> nodes_cloud(near_num,2);
     vector<size_t> neighbours(near_num); // using size_t instead of UINT for compatibility reason with nanoflann.hpp
@@ -103,8 +105,7 @@ assembly()
         }
     
         gmm::clear(LocalVector);
-
-        LocalVector = Collocation2D(Laplace, nodes_cloud, RbfBasis);
+        LocalVector = Collocation2D(RbfBasisType::Laplace, nodes_cloud, RbfBasis);
     
         for(int j=0; j<near_num; j++)
         {
@@ -133,9 +134,8 @@ assembly()
         }
         
         gmm::clear(LocalVector);
+        LocalVector = Collocation2D(RbfBasisType::No_operation, nodes_cloud, RbfBasis);
 
-        LocalVector = Collocation2D(No_operation, nodes_cloud, RbfBasis);
-    
         for(int j=0; j<near_num; j++)
         {
             A1(i,neighbours[j]) = LocalVector[j];
@@ -144,11 +144,12 @@ assembly()
 
     copy(A1, gmm::sub_matrix(SystemPhiMatrix, gmm::sub_interval(Nint, Nbou),
                                               gmm::sub_interval(0, Nall)));
+
 }
 
 
-template <typename MeshType, typename RbfBasisType>
-void GMMLrbfcmPoisson<MeshType, RbfBasisType>::
+template <typename MeshType, typename RbfBasisType >
+void GMMLrbfcmPoisson<MeshType, RbfBasisType >::
 SolvePhi()
 {
     vector<double> PhiNew(Nall), B1(Nall);
@@ -168,8 +169,8 @@ SolvePhi()
     PrintData();
 }
 
-template <typename MeshType, typename RbfBasisType>
-void GMMLrbfcmPoisson<MeshType, RbfBasisType>::
+template <typename MeshType, typename RbfBasisType >
+void GMMLrbfcmPoisson<MeshType, RbfBasisType >::
 PrintData()
 {
     char fileoutput[256]="output.txt";

@@ -17,7 +17,7 @@ int main()
   int n = 20;
   double Lx = 1;
   double Ly = 1;
-  
+
   vector< vector<double> > matrix;
   matrix.resize(2, std::vector<double>(3, 0.0));
   matrix[0][1] = 4;
@@ -26,6 +26,7 @@ int main()
   vector<double> VX(2),VNX(2);
   VX[0] = 0;
   VX[1] = 1;
+
   cout << matrix.size()<<endl;
   // Create Mesh
   GMMRECTANGLE MESH(m, n, Lx, Ly);
@@ -44,7 +45,7 @@ int main()
 
   // Create Model 
   GMMLrbfcmPoisson<GMMRECTANGLE, GMMMQBasis2D> MODEL(MESH, RBFBasis, Bvalue);
-  
+
   MODEL.SolvePhi();
 
   return 0;
