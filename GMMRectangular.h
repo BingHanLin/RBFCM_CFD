@@ -23,14 +23,14 @@ class GMMRECTANGLE
         double CX, CY;
 
     public:
-        int Nint, Nbou, Nall;
+        int Nint, Nbou, Nall, Dim;
         GMMRECTANGLE (int mm, int nn, double LLx, double LLy);
         ~GMMRECTANGLE() {};
 
         vector<double> GetInteriorNode(int i) const;
         vector<double> GetBoundaryNode(int i) const;
         vector<double> GetAllNode(int i) const;        
-
+        vector<double> GetOutNormal(int i) const;
 
 };
 
@@ -42,6 +42,7 @@ GMMRECTANGLE::GMMRECTANGLE(int mm, int nn, double LLx, double LLy)
     LY = LLy;
     CX = 0;
     CY = 0;
+    Dim = 2;  // dimension 
 
     Nint = M*N;
     Nbou = 2*M+2*N;
@@ -110,5 +111,37 @@ vector<double> GMMRECTANGLE::GetAllNode(int i) const
     else
         return GetBoundaryNode(i-M*N);
 }
+
+
+vector<double> GMMRECTANGLE::GetOutNormal(int i) const
+{
+    assert( i>=1 && i<=2*(N+M) );
+    vector<double> temp(2);
+
+    if(i<=M)
+    {
+        temp[0] = 0.0;
+        temp[1] = 1.0;
+    }
+    else if(i<=M+N)
+    {
+        temp[0] = 1.0;
+        temp[1] = 0.0;
+    }
+    else if(i<=M+N+M)
+    {
+        temp[0]= 0.0;
+        temp[1]= -1.0;
+    }
+    else
+    {
+        temp[0]= -1.0;
+        temp[1]= 0.0;
+    }
+
+    return temp;
+}
+
+
 
 #endif

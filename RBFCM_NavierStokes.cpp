@@ -1,9 +1,8 @@
 #include <iostream>
-#include<iostream>
 #include <gmm/gmm.h>
 
 #include "GMMRectangular.h"
-#include "GMMLrbfcmPoisson.h"
+#include "GMMLrbfcmNavierStokes_Cavity.h"
 #include "LRBF/GMMMQBasis2D.h"
 
 using namespace std;
@@ -16,11 +15,13 @@ int main()
   int n = 10;
   double Lx = 1;
   double Ly = 1;
+  double viscous = 1;
+  double dt = 0.01;
 
   // Create Mesh
   GMMRECTANGLE MESH(m, n, Lx, Ly);
   // Chose Basis
-  GMMMQBasis2D RBFBasis(1.0);
+  GMMMQBasis2D RBFBasis(6.0);
 
   // Set BC condition
   vector<double> Bvalue(2*m+2*n);
@@ -33,9 +34,13 @@ int main()
   }
 
   // Create Model 
-  GMMLrbfcmPoisson<GMMRECTANGLE, GMMMQBasis2D> MODEL(MESH, RBFBasis, Bvalue);
+  GMMLrbfcmNavierStokes<GMMRECTANGLE, GMMMQBasis2D> MODEL(MESH, RBFBasis, viscous, dt, Bvalue);
 
-  MODEL.SolvePhi();
+  // Initialize Field
+  MODEL.InitializeField();
 
+  MODEL.RunSimulation();
+
+  cout <<"complete"<<endl;
   return 0;
 };

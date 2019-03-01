@@ -9,8 +9,8 @@
 #include<vector>
 #include <gmm/gmm.h>
 
-#include "KDTreeTsaiAdaptor.h"
-#include "Collocation2D.h"
+#include "LRBF/KDTreeTsaiAdaptor.h"
+#include "LRBF/Collocation2D.h"
 
 using namespace std;
 using namespace gmm;
@@ -18,15 +18,24 @@ using namespace gmm;
 
 
 *************************************************************************/
-enum BCType_set
-     {};
-
-template <typename MeshType, typename RbfBasisType >
+template <typename MeshType, typename RBFBasisType >
 class GMMLrbfcmPoisson
 {
+
+    public:
+        // only one boundary type (Dirichlet) in this case, no  need to define.
+        enum class BoundaryType
+            {
+            };
+
+        GMMLrbfcmPoisson(MeshType& MMESH, RBFBasisType& RRBFBasis,  const vector<double> BBvalue);
+        ~GMMLrbfcmPoisson() {};
+        void PrintData();
+        void SolvePhi();
+
     private:
         MeshType MESH;
-        RbfBasisType RbfBasis;
+        RBFBasisType RBFBasis;
 
         vector<vector<double>> AllNodes;
         int Nall, Nint, Nbou;
@@ -36,19 +45,12 @@ class GMMLrbfcmPoisson
         gmm::row_matrix<rsvector<double>> SystemPhiMatrix; 
         
         void assembly();
-
-    public:
-        GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis,  const vector<double> BBvalue);
-        ~GMMLrbfcmPoisson() {};
-        void PrintData();
-        void SolvePhi();
-
 };
 
-template <typename MeshType, typename RbfBasisType >
-GMMLrbfcmPoisson<MeshType, RbfBasisType>::
-GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis,  const vector<double> BBvalue)
-:MESH(MMESH),RbfBasis(RRbfBasis),Bvalue(BBvalue)
+template <typename MeshType, typename RBFBasisType >
+GMMLrbfcmPoisson<MeshType, RBFBasisType>::
+GMMLrbfcmPoisson(MeshType& MMESH, RBFBasisType& RRBFBasis,  const vector<double> BBvalue)
+:MESH(MMESH),RBFBasis(RRBFBasis),Bvalue(BBvalue)
 {
 
     Nall=MESH.Nall;
@@ -74,8 +76,8 @@ GMMLrbfcmPoisson(MeshType& MMESH, RbfBasisType& RRbfBasis,  const vector<double>
 }
 
 
-template <typename MeshType, typename RbfBasisType >
-void GMMLrbfcmPoisson<MeshType, RbfBasisType >::
+template <typename MeshType, typename RBFBasisType >
+void GMMLrbfcmPoisson<MeshType, RBFBasisType >::
 assembly()
 {
 
@@ -87,7 +89,7 @@ assembly()
 
     gmm::resize(SystemPhiMatrix, Nall, Nall); gmm::clear(SystemPhiMatrix);
 
-    gmm::row_matrix<rsvector<double> > A1(Nint,Nall);
+    gmm::row_matrix<rsvector<double> > A1;
     gmm::resize(A1, Nint, Nall); gmm::clear(A1);
     //==================================
     // go through all interior nodes
@@ -105,8 +107,9 @@ assembly()
         }
     
         gmm::clear(LocalVector);
-        LocalVector = Collocation2D(RbfBasisType::Laplace, nodes_cloud, RbfBasis);
-    
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Laplace);
+        LocalVector = Collocation2D(nodes_cloud, RBFBasis);
+
         for(int j=0; j<near_num; j++)
         {
             A1(i,neighbours[j]) = LocalVector[j];
@@ -134,7 +137,8 @@ assembly()
         }
         
         gmm::clear(LocalVector);
-        LocalVector = Collocation2D(RbfBasisType::No_operation, nodes_cloud, RbfBasis);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::IdentityOperation);
+        LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for(int j=0; j<near_num; j++)
         {
@@ -148,8 +152,8 @@ assembly()
 }
 
 
-template <typename MeshType, typename RbfBasisType >
-void GMMLrbfcmPoisson<MeshType, RbfBasisType >::
+template <typename MeshType, typename RBFBasisType >
+void GMMLrbfcmPoisson<MeshType, RBFBasisType >::
 SolvePhi()
 {
     vector<double> PhiNew(Nall), B1(Nall);
@@ -169,8 +173,8 @@ SolvePhi()
     PrintData();
 }
 
-template <typename MeshType, typename RbfBasisType >
-void GMMLrbfcmPoisson<MeshType, RbfBasisType >::
+template <typename MeshType, typename RBFBasisType >
+void GMMLrbfcmPoisson<MeshType, RBFBasisType >::
 PrintData()
 {
     char fileoutput[256]="output.txt";
@@ -187,7 +191,7 @@ PrintData()
     }
 
     fout.close();
-
+    cout <<SystemPhiMatrix <<endl;
 }
 
 #endif
