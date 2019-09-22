@@ -1,0 +1,3 @@
+file(REMOVE_RECURSE
+  "libRBFCM_CFD.a"
+)

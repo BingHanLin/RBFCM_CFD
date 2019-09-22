@@ -1,0 +1,13 @@
+{
+    "NodeDistribution": {
+        "Type": "",
+        "NodeNumX": 10,
+        "NodeNumY": 10,
+        "LengthX": 10,
+        "LengthY": 10
+    },
+    "TimeStepSize": 0.01,
+    "TotalTime": 0.01,
+    "Viscosity": 1.0,
+    "Density": 1.0
+}
