@@ -1,13 +1,21 @@
 {
-    "NodeDistribution": {
-        "Type": "",
-        "NodeNumX": 10,
-        "NodeNumY": 10,
-        "LengthX": 10,
-        "LengthY": 10
+    "GeometryControl": {
+        "Type": "rectangular",
+        "Distribution": "orthogonal",
+        "NodeNum": [
+            10,
+            10
+        ],
+        "Size": [
+            1,
+            1
+        ]
     },
-    "TimeStepSize": 0.01,
-    "TotalTime": 0.01,
-    "Viscosity": 1.0,
-    "Density": 1.0
+    "PhysicsControl": {
+        "Density": 1.0
+    },
+    "SolverConstrol": {
+        "TimeStepSize": 0.01,
+        "TotalTime": 0.01
+    }
 }

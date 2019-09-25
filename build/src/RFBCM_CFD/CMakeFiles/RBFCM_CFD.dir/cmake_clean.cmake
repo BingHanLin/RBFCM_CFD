@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/RBFCM_CFD.dir/src/GMMMQBasis2D.cpp.obj"
+  "CMakeFiles/RBFCM_CFD.dir/geometry/src/rectangle.cpp.obj"
   "libRBFCM_CFD.a"
   "libRBFCM_CFD.pdb"
 )

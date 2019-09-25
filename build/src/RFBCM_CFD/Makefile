@@ -124,32 +124,32 @@ RBFCM_CFD/fast:
 	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/build
 .PHONY : RBFCM_CFD/fast
 
-src/GMMMQBasis2D.obj: src/GMMMQBasis2D.cpp.obj
+geometry/src/rectangle.obj: geometry/src/rectangle.cpp.obj
 
-.PHONY : src/GMMMQBasis2D.obj
+.PHONY : geometry/src/rectangle.obj
 
 # target to build an object file
-src/GMMMQBasis2D.cpp.obj:
-	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/src/GMMMQBasis2D.cpp.obj
-.PHONY : src/GMMMQBasis2D.cpp.obj
+geometry/src/rectangle.cpp.obj:
+	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/geometry/src/rectangle.cpp.obj
+.PHONY : geometry/src/rectangle.cpp.obj
 
-src/GMMMQBasis2D.i: src/GMMMQBasis2D.cpp.i
+geometry/src/rectangle.i: geometry/src/rectangle.cpp.i
 
-.PHONY : src/GMMMQBasis2D.i
+.PHONY : geometry/src/rectangle.i
 
 # target to preprocess a source file
-src/GMMMQBasis2D.cpp.i:
-	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/src/GMMMQBasis2D.cpp.i
-.PHONY : src/GMMMQBasis2D.cpp.i
+geometry/src/rectangle.cpp.i:
+	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/geometry/src/rectangle.cpp.i
+.PHONY : geometry/src/rectangle.cpp.i
 
-src/GMMMQBasis2D.s: src/GMMMQBasis2D.cpp.s
+geometry/src/rectangle.s: geometry/src/rectangle.cpp.s
 
-.PHONY : src/GMMMQBasis2D.s
+.PHONY : geometry/src/rectangle.s
 
 # target to generate assembly for a file
-src/GMMMQBasis2D.cpp.s:
-	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/src/GMMMQBasis2D.cpp.s
-.PHONY : src/GMMMQBasis2D.cpp.s
+geometry/src/rectangle.cpp.s:
+	cd /d D:\RBFCM_CFD\build && $(MAKE) -f src\RFBCM_CFD\CMakeFiles\RBFCM_CFD.dir\build.make src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/geometry/src/rectangle.cpp.s
+.PHONY : geometry/src/rectangle.cpp.s
 
 # Help Target
 help:
@@ -160,9 +160,9 @@ help:
 	@echo ... RBFCM_CFD
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... src/GMMMQBasis2D.obj
-	@echo ... src/GMMMQBasis2D.i
-	@echo ... src/GMMMQBasis2D.s
+	@echo ... geometry/src/rectangle.obj
+	@echo ... geometry/src/rectangle.i
+	@echo ... geometry/src/rectangle.s
 .PHONY : help
 
 

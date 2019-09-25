@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "D:/RBFCM_CFD/src/RFBCM_CFD/src/GMMMQBasis2D.cpp" "D:/RBFCM_CFD/build/src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/src/GMMMQBasis2D.cpp.obj"
+  "D:/RBFCM_CFD/src/RFBCM_CFD/geometry/src/rectangle.cpp" "D:/RBFCM_CFD/build/src/RFBCM_CFD/CMakeFiles/RBFCM_CFD.dir/geometry/src/rectangle.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -14,7 +14,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../src/thirdParty/json"
   "../src/thirdParty/gmm"
   "../src/thirdParty/nanoflann"
-  "../src/RFBCM_CFD/include"
+  "../src/RFBCM_CFD/geometry/include"
   )
 
 # Targets to which this target links.
