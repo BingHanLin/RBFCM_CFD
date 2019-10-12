@@ -1,4 +1,3 @@
-
 #ifndef RECTANGLE_HPP
 #define RECTANGLE_HPP
 
@@ -8,7 +7,7 @@
 
 *************************************************************************/
 
-class RECTANGLE {
+class Rectangle {
 private:
     int    numNodeX_, numNodeY_;
     double sizeX_, sizeY_;
@@ -17,9 +16,9 @@ private:
 public:
     int numInn_, numBou_, numAll_;
 
-    RECTANGLE( int numNodeX, int numNodeY, double sizeX, double sizeY );
+    Rectangle( int numNodeX, int numNodeY, double sizeX, double sizeY );
 
-    ~RECTANGLE(){};
+    ~Rectangle(){};
 
     std::vector< double > getInnerNode( int i ) const;
     std::vector< double > getBoundaryNode( int i ) const;

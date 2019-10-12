@@ -1,2 +1,0 @@
-D:\mingw-w64\mingw32\bin\ar.exe qc libRBFCM_CFD.a  CMakeFiles/RBFCM_CFD.dir/geometry/src/rectangle.cpp.obj
-D:\mingw-w64\mingw32\bin\ranlib.exe libRBFCM_CFD.a

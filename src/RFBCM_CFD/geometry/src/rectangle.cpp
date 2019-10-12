@@ -5,9 +5,9 @@
 // #include <math.h>
 // #include <stdio.h>
 
-RECTANGLE::RECTANGLE( int numNodeX, int numNodeY, double sizeX_, double sizeY )
+Rectangle::Rectangle( int numNodeX, int numNodeY, double sizeX_, double sizeY )
     : numNodeX_( numNodeX ), numNodeY_( numNodeY ), sizeX_( sizeX_ ), sizeY_( sizeY ),
-      centerX_( 0.0 ), centerY_( 0.0 ) {
+      centerX_( 0.0 ), centerY_( 0.0 ), numInn_( 0 ), numBou_( 0 ), numAll_( 0 ) {
 
     numInn_ = numNodeX * numNodeY_;
     numBou_ = 2 * numNodeX + 2 * numNodeY_;
@@ -20,7 +20,7 @@ RECTANGLE::RECTANGLE( int numNodeX, int numNodeY, double sizeX_, double sizeY )
               << "Number of all nodes: " << numAll_ << std::endl;
 }
 
-std::vector< double > RECTANGLE::getInnerNode( int i ) const {
+std::vector< double > Rectangle::getInnerNode( int i ) const {
     assert( i >= 1 && i <= numNodeX_ * numNodeY_ );
 
     std::vector< double > temp( 2 );
@@ -37,7 +37,7 @@ std::vector< double > RECTANGLE::getInnerNode( int i ) const {
     return temp;
 }
 
-std::vector< double > RECTANGLE::getBoundaryNode( int i ) const {
+std::vector< double > Rectangle::getBoundaryNode( int i ) const {
     assert( i >= 1 && i <= 2 * ( numNodeY_ + numNodeX_ ) );
 
     std::vector< double > temp( 2 );
@@ -71,7 +71,7 @@ std::vector< double > RECTANGLE::getBoundaryNode( int i ) const {
     return temp;
 }
 
-std::vector< double > RECTANGLE::getAllNode( int i ) const {
+std::vector< double > Rectangle::getAllNode( int i ) const {
     assert( i >= 1 && i <= numNodeX_ * numNodeY_ + 2 * ( numNodeY_ + numNodeX_ ) );
 
     std::vector< double > temp( 2 );
@@ -82,7 +82,7 @@ std::vector< double > RECTANGLE::getAllNode( int i ) const {
         return getBoundaryNode( i - numNodeX_ * numNodeY_ );
 }
 
-std::vector< double > RECTANGLE::getOutNormal( int i ) const {
+std::vector< double > Rectangle::getOutNormal( int i ) const {
     assert( i >= 1 && i <= 2 * ( numNodeY_ + numNodeX_ ) );
 
     std::vector< double > temp( 2 );

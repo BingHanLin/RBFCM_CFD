@@ -88,7 +88,12 @@
 		"iterativelinearsolvers": "cpp",
 		"memory_resource": "cpp",
 		"optional": "cpp",
-		"set": "cpp"
+		"set": "cpp",
+		"*.expression": "cpp",
+		"adolcforward": "cpp",
+		"alignedvector3": "cpp",
+		"fft": "cpp",
+		"mprealsupport": "cpp"
 	},
 	"editor.fontSize": 16
 }
