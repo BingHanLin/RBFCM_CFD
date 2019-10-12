@@ -16,18 +16,20 @@ class SimulationDomain
     RBFBasisType& myRBFBasis_;
     nlohmann::json& myParam_;
 
-    std::vector<std::vector<double> > allNodes_;
-    int numInn_, numBou_, numAll_;
-    double viscous_;
-    double delta_t;
+    double endTime_;
+    double tStep_;
     double crankNicolsonEpsilon_;
     int crankNicolsonMaxIter_;
+    double density_;
+    double viscous_;
+
+    void setUpSimulation();
 
    public:
     SimulationDomain(meshType& mesh, RBFBasisType& RBFBasis,
                      nlohmann::json& param);
     ~SimulationDomain(){};
 
-    void setSimulationType();
+    void showSummary();
 };
 #endif
