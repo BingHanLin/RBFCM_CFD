@@ -1,4 +1,3 @@
-
 #include "rectangle.hpp"
 #include <assert.h>
 #include <iostream>
@@ -24,12 +23,12 @@ Rectangle::Rectangle(int numNodeX, int numNodeY, double sizeX_, double sizeY)
 
     for (int i = 0; i < numAllNodes_; i++)
     {
-        nodes_.push_back(getAllNode(i + 1));
+        nodes_.push_back(computeAllNodes(i + 1));
     }
 
     for (int i = 0; i < numBouNodes_; i++)
     {
-        normals_.push_back(getOutNormal(i + 1));
+        normals_.push_back(computeNormals(i + 1));
     }
 
     std::cout << "Rectangular nodes are distributed." << std::endl;
@@ -39,7 +38,7 @@ Rectangle::Rectangle(int numNodeX, int numNodeY, double sizeX_, double sizeY)
               << "Number of all nodes: " << numAllNodes_ << std::endl;
 }
 
-std::vector<double> Rectangle::getInnerNode(int i) const
+std::vector<double> Rectangle::computeInnerNodes(int i) const
 {
     assert(i >= 1 && i <= numNodeX_ * numNodeY_);
 
@@ -57,7 +56,7 @@ std::vector<double> Rectangle::getInnerNode(int i) const
     return temp;
 }
 
-std::vector<double> Rectangle::getBoundaryNode(int i) const
+std::vector<double> Rectangle::computeBoundaryNodes(int i) const
 {
     assert(i >= 1 && i <= 2 * (numNodeY_ + numNodeX_));
 
@@ -96,19 +95,19 @@ std::vector<double> Rectangle::getBoundaryNode(int i) const
     return temp;
 }
 
-std::vector<double> Rectangle::getAllNode(int i) const
+std::vector<double> Rectangle::computeAllNodes(int i) const
 {
     assert(i >= 1 && i <= numNodeX_ * numNodeY_ + 2 * (numNodeY_ + numNodeX_));
 
     std::vector<double> temp(2);
 
     if (i <= numNodeX_ * numNodeY_)
-        return getInnerNode(i);
+        return computeInnerNodes(i);
     else
-        return getBoundaryNode(i - numNodeX_ * numNodeY_);
+        return computeBoundaryNodes(i - numNodeX_ * numNodeY_);
 }
 
-std::vector<double> Rectangle::getOutNormal(int i) const
+std::vector<double> Rectangle::computeNormals(int i) const
 {
     assert(i >= 1 && i <= 2 * (numNodeY_ + numNodeX_));
 
@@ -136,4 +135,14 @@ std::vector<double> Rectangle::getOutNormal(int i) const
     }
 
     return temp;
+}
+
+const std::vector<std::vector<double> >& Rectangle::getNodes() const
+{
+    return nodes_;
+}
+
+const std::vector<std::vector<double> >& Rectangle::getNormals() const
+{
+    return normals_;
 }

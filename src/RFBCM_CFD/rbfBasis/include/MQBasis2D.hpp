@@ -1,32 +1,41 @@
 #ifndef MQBASIS2D_HPP
 #define MQBASIS2D_HPP
 
+#include <Eigen/Dense>
 #include <vector>
-
-using namespace std;
 
 /*************************************************************************
 
 
 *************************************************************************/
-class MQBasis2D {
+class MQBasis2D
+{
+   public:
+    enum operatorType
+    {
+        IdentityOperation,
+        Laplace,
+        Partial_D1,
+        Partial_D2,
+        NEUMANN_OPERATOR
+    };
 
-public:
-    enum operatorType { IdentityOperation, Laplace, Partial_D1, Partial_D2, NEUMANN_OPERATOR };
+    MQBasis2D(double CCC = 1.0) : cc_(CCC){};
 
-    MQBasis2D( double CCC = 1.0 ) : cc_( CCC ){};
     ~MQBasis2D(){};
 
-    void setOperatorStatus( operatorType OOperatorStatus );
-    void setOperatorStatus( operatorType OOperatorStatus, const std::vector< double >& NNormVec );
+    Eigen::VectorXd collectOnNodes(
+        const std::vector<std::vector<double>>& nodesCloud,
+        const operatorType inputOperatorType);
 
-    double getBasisValue( const std::vector< double >& VX1, const std::vector< double >& VX2,
-                          int flag = 0 );
+   private:
     double cc_;
 
-private:
-    operatorType          operatorStatus_;
-    std::vector< double > NormVec_;
+    double getBasisValue(const std::vector<double>& nodeI,
+                         const std::vector<double>& nodeJ,
+                         const operatorType inputOperatorType);
+
+    // std::vector<double> NormVec_;
 };
 
 #endif

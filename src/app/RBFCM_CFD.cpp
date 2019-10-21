@@ -39,7 +39,6 @@ int main()
     SimulationDomain<myMeshType, myRBFBasisType> mySimulationDomain(
         myMesh, myRBFBasis, myParams);
 
-    std::cout << myRBFBasis.cc_ << std::endl;
     std::cout << "test ok" << std::endl;
     return 0;
 }
