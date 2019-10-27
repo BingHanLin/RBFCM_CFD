@@ -39,6 +39,9 @@ int main()
     SimulationDomain<myMeshType, myRBFBasisType> mySimulationDomain(
         myMesh, myRBFBasis, myParams);
 
+    mySimulationDomain.solveDomain();
+    mySimulationDomain.exportData();
+
     std::cout << "test ok" << std::endl;
     return 0;
 }

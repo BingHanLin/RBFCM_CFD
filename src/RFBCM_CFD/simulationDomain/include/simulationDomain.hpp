@@ -29,11 +29,13 @@ class SimulationDomain
 
     KDTreeTsaiAdaptor<std::vector<std::vector<double> >, double, 2> kdTree_;
 
-    Eigen::SparseMatrix<double> systemVarMatrix;
-    Eigen::SparseMatrix<double> systemPressureMatrix;
-    Eigen::SparseMatrix<double> systemVelxMatrix;
-    Eigen::SparseMatrix<double> systemVelyMatrix;
-    Eigen::SparseMatrix<double> systemVelzMatrix;
+    Eigen::SparseMatrix<double> systemVarMatrix_;
+    Eigen::SparseMatrix<double> systemPressureMatrix_;
+    Eigen::SparseMatrix<double> systemVelxMatrix_;
+    Eigen::SparseMatrix<double> systemVelyMatrix_;
+    Eigen::SparseMatrix<double> systemVelzMatrix_;
+
+    Eigen::VectorXd solution_;
 
     void setUpSimulation();
     void assembleMatrix();
@@ -42,6 +44,9 @@ class SimulationDomain
     SimulationDomain(meshType& mesh, RBFBasisType& RBFBasis,
                      nlohmann::json& param);
     ~SimulationDomain(){};
+
+    void exportData();
+    void solveDomain();
 
     void showSummary();
 };

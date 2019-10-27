@@ -2,6 +2,7 @@
 #include "MQBasis2D.hpp"
 #include "rectangle.hpp"
 #include <Eigen/Dense>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 
@@ -121,15 +122,16 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
     std::vector<std::vector<double>> nodesCloud(neighborNum_);
     std::vector<size_t> neighbours(neighborNum_);
     std::vector<double> outDistSqr(neighborNum_);
-    Eigen::VectorXd localVector;
 
-    // go through all interior nodes
-    systemVarMatrix.resize(myMesh_.numAllNodes_, myMesh_.numAllNodes_);
-    systemVarMatrix.reserve(
+    systemVarMatrix_.resize(myMesh_.numAllNodes_, myMesh_.numAllNodes_);
+    systemVarMatrix_.reserve(
         Eigen::VectorXi::Constant(myMesh_.numAllNodes_, neighborNum_));
 
+    // go through all interior nodes
     for (int i = 0; i < myMesh_.numInnNodes_; i++)
     {
+        Eigen::VectorXd localVector = Eigen::VectorXd::Zero(neighborNum_);
+
         // use kdtree find indexes of neighbor nodes
         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
 
@@ -139,17 +141,20 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
             nodesCloud[j] = myMesh_.getNodes()[neighbours[j]];
         }
 
-        localVector = myRBFBasis_.collectOnNodes(
+        localVector += myRBFBasis_.collectOnNodes(
             nodesCloud, RBFBasisType::operatorType::Laplace);
 
         for (int j = 0; j < neighborNum_; j++)
         {
-            systemVarMatrix.insert(i, neighbours[j]) = localVector(j);
+            systemVarMatrix_.insert(i, neighbours[j]) = localVector(j);
         }
     }
 
+    // go through all boundary nodes
     for (int i = myMesh_.numInnNodes_; i < myMesh_.numAllNodes_; i++)
     {
+        Eigen::VectorXd localVector = Eigen::VectorXd::Zero(neighborNum_);
+
         // use kdtree find indexes of neighbor nodes
         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
 
@@ -159,17 +164,80 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
             nodesCloud[j] = myMesh_.getNodes()[neighbours[j]];
         }
 
-        localVector = myRBFBasis_.collectOnNodes(
+        localVector += myRBFBasis_.collectOnNodes(
             nodesCloud, RBFBasisType::operatorType::IdentityOperation);
 
         for (int j = 0; j < neighborNum_; j++)
         {
-            systemVarMatrix.insert(i, neighbours[j]) = localVector(j);
+            systemVarMatrix_.insert(i, neighbours[j]) = localVector(j);
         }
     }
 
-    systemVarMatrix.makeCompressed();
-    std::cout << systemVarMatrix << std::endl;
+    systemVarMatrix_.makeCompressed();
+}
+
+template <typename meshType, typename RBFBasisType>
+void SimulationDomain<meshType, RBFBasisType>::solveDomain()
+{
+    Eigen::VectorXd rhs = Eigen::VectorXd::Zero(myMesh_.numAllNodes_);
+    Eigen::VectorXd x0(myMesh_.numAllNodes_);
+
+    solution_.resize(myMesh_.numAllNodes_);
+
+    for (int i = 0; i < myMesh_.numAllNodes_; i++)
+    {
+        if (i >= myMesh_.numInnNodes_ && i < myMesh_.numInnNodes_ + 30)
+        {
+            rhs(i) = 100;
+        }
+        x0(i) = 100.0;
+    }
+
+    // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
+
+    // solver.compute(systemVarMatrix_);
+
+    // if (solver.info() != Eigen::Success)
+    // {
+    //     std::cout << " decomposition failed" << std::endl;
+    //     // return;
+    // }
+    // // solution_ = solver.solveWithGuess(rhs, x0);
+    // solution_ = solver.solve(rhs);
+
+    // std::cout << "#iterations:     " << solver.iterations() << std::endl;
+    // std::cout << "estimated error: " << solver.error() << std::endl;
+
+    // solution_ = solver.solve(rhs);
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
+        solver;
+
+    // Compute the ordering permutation vector from the structural pattern of A 
+    solver.analyzePattern(systemVarMatrix_);
+    // Compute the numerical factorization
+    solver.factorize(systemVarMatrix_);
+    // Use the factors to solve the linear system
+    solution_ = solver.solve(rhs);
+}
+
+template <typename meshType, typename RBFBasisType>
+void SimulationDomain<meshType, RBFBasisType>::exportData()
+{
+    char fileoutput[256] = "output.txt";
+
+    std::ofstream myfout(fileoutput);
+
+    std::vector<double> VX(2);
+
+    for (int i = 0; i < myMesh_.numAllNodes_; i++)
+    {
+        VX = myMesh_.getNodes()[i];
+
+        myfout << VX[0] << " " << VX[1] << " " << solution_(i) << std::endl;
+    }
+
+    myfout.close();
 }
 
 // explicit instantiation, put this at end of file
