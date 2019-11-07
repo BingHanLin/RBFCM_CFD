@@ -89,7 +89,7 @@ Eigen::VectorXd MQBasis2D::collectOnNodes(
             nodeJ = nodesCloud[j];
 
             phi(j, i) /* transposed */ =
-                getBasisValue(nodeI, nodeJ, inputOperatorType);
+                getBasisValue(nodeI, nodeJ, operatorType::IdentityOperation);
         }
     }
 
@@ -99,11 +99,11 @@ Eigen::VectorXd MQBasis2D::collectOnNodes(
         nodeI = nodesCloud[0];
         nodeJ = nodesCloud[j];
 
-        phiL(j) = getBasisValue(nodeI, nodeJ, operatorType::IdentityOperation);
+        phiL(j) = getBasisValue(nodeI, nodeJ, inputOperatorType);
     }
 
     Eigen::VectorXd x(neighborNum);
-    x = phi.colPivHouseholderQr().solve(phiL);
+    x = phi.ldlt().solve(phiL);
 
     return x;
 }

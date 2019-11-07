@@ -18,7 +18,7 @@ SimulationDomain<meshType, RBFBasisType>::SimulationDomain(
       endTime_(0.0),
       crankNicolsonEpsilon_(0.001),
       crankNicolsonMaxIter_(10),
-      neighborNum_(5),
+      neighborNum_(9),
       kdTree_()
 {
     setUpSimulation();
@@ -123,6 +123,8 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
     std::vector<size_t> neighbours(neighborNum_);
     std::vector<double> outDistSqr(neighborNum_);
 
+    Eigen::VectorXd localVector = Eigen::VectorXd::Zero(neighborNum_);
+
     systemVarMatrix_.resize(myMesh_.numAllNodes_, myMesh_.numAllNodes_);
     systemVarMatrix_.reserve(
         Eigen::VectorXi::Constant(myMesh_.numAllNodes_, neighborNum_));
@@ -130,7 +132,7 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
     // go through all interior nodes
     for (int i = 0; i < myMesh_.numInnNodes_; i++)
     {
-        Eigen::VectorXd localVector = Eigen::VectorXd::Zero(neighborNum_);
+        localVector = Eigen::VectorXd::Zero(neighborNum_);
 
         // use kdtree find indexes of neighbor nodes
         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
@@ -153,7 +155,7 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
     // go through all boundary nodes
     for (int i = myMesh_.numInnNodes_; i < myMesh_.numAllNodes_; i++)
     {
-        Eigen::VectorXd localVector = Eigen::VectorXd::Zero(neighborNum_);
+        localVector = Eigen::VectorXd::Zero(neighborNum_);
 
         // use kdtree find indexes of neighbor nodes
         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
@@ -213,7 +215,7 @@ void SimulationDomain<meshType, RBFBasisType>::solveDomain()
     Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
         solver;
 
-    // Compute the ordering permutation vector from the structural pattern of A 
+    // Compute the ordering permutation vector from the structural pattern of A
     solver.analyzePattern(systemVarMatrix_);
     // Compute the numerical factorization
     solver.factorize(systemVarMatrix_);

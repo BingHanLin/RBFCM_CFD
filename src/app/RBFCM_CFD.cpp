@@ -31,7 +31,7 @@ int main()
     // Define RBF Type
     // ****************************************************************************
     typedef MQBasis2D myRBFBasisType;
-    MQBasis2D myRBFBasis;
+    MQBasis2D myRBFBasis(2.0);
 
     // ****************************************************************************
     // Define Solver
