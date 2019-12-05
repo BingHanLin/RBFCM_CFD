@@ -1,15 +1,7 @@
 {
     "GeometryControl": {
-        "Type": "rectangular",
-        "Distribution": "orthogonal",
-        "NodeNum": [
-            30,
-            30
-        ],
-        "Size": [
-            1,
-            1
-        ]
+        "Type": "mshFile",
+        "Path": "D://RBFCM_CFD//example case//test2.msh"
     },
     "PhysicsControl": {
         "Type": "NavierStokes",
@@ -17,6 +9,8 @@
         "Density": 1.0
     },
     "SolverConstrol": {
+        "NeiborNumber": 9,
+        "RBFCoefficient": 2.0,
         "TimeStepSize": 0.01,
         "TotalTime": 0.01,
         "CrankNicolsonEpsilon": 0.001

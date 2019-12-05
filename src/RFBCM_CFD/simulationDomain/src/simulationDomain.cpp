@@ -11,14 +11,14 @@ SimulationDomain<meshType, RBFBasisType>::SimulationDomain(
     meshType& mesh, RBFBasisType& RBFBasis, nlohmann::json& param)
     : myMesh_(mesh),
       myRBFBasis_(RBFBasis),
-      myParam_(param),
+      myParams_(param),
       viscous_(0.0),
       density_(0.0),
       tStep_(0.0),
       endTime_(0.0),
       crankNicolsonEpsilon_(0.001),
       crankNicolsonMaxIter_(10),
-      neighborNum_(9),
+      neighborNum_(myParams_["SolverConstrol"]["NeiborNumber"]),
       kdTree_()
 {
     setUpSimulation();
@@ -33,16 +33,16 @@ SimulationDomain<meshType, RBFBasisType>::SimulationDomain(
 template <typename meshType, typename RBFBasisType>
 void SimulationDomain<meshType, RBFBasisType>::setUpSimulation()
 {
-    endTime_ = myParam_["SolverConstrol"].at("TimeStepSize");
+    endTime_ = myParams_["SolverConstrol"].at("TimeStepSize");
 
     if (endTime_ != 0.0)
     {
-        tStep_ = myParam_["SolverConstrol"].at("TimeStepSize");
+        tStep_ = myParams_["SolverConstrol"].at("TimeStepSize");
     }
 
     try
     {
-        neighborNum_ = myParam_["SolverConstrol"].at("NeighborNumber");
+        neighborNum_ = myParams_["SolverConstrol"].at("NeighborNumber");
     }
     catch (nlohmann::json::out_of_range& e)
     {
@@ -50,15 +50,15 @@ void SimulationDomain<meshType, RBFBasisType>::setUpSimulation()
                   << "." << std::endl;
     }
 
-    if ("NavierStokes" == myParam_["PhysicsControl"].at("Type"))
+    if ("NavierStokes" == myParams_["PhysicsControl"].at("Type"))
     {
-        viscous_ = myParam_["PhysicsControl"].at("Viscosity");
-        density_ = myParam_["PhysicsControl"].at("Density");
+        viscous_ = myParams_["PhysicsControl"].at("Viscosity");
+        density_ = myParams_["PhysicsControl"].at("Density");
 
         try
         {
             crankNicolsonEpsilon_ =
-                myParam_["SolverConstrol"].at("CrankNicolsonEpsilon");
+                myParams_["SolverConstrol"].at("CrankNicolsonEpsilon");
         }
         catch (nlohmann::json::out_of_range& e)
         {
@@ -69,7 +69,7 @@ void SimulationDomain<meshType, RBFBasisType>::setUpSimulation()
         try
         {
             crankNicolsonMaxIter_ =
-                myParam_["SolverConstrol"].at("CrankNicolsonMaxIter");
+                myParams_["SolverConstrol"].at("CrankNicolsonMaxIter");
         }
         catch (nlohmann::json::out_of_range& e)
         {
@@ -77,7 +77,7 @@ void SimulationDomain<meshType, RBFBasisType>::setUpSimulation()
                       << crankNicolsonMaxIter_ << "." << std::endl;
         }
     }
-    else if ("Poisson" == myParam_["PhysicsControl"].at("Type"))
+    else if ("Poisson" == myParams_["PhysicsControl"].at("Type"))
     {
         viscous_ = 0.0;
         density_ = 1.0;
@@ -96,12 +96,12 @@ void SimulationDomain<meshType, RBFBasisType>::showSummary()
     std::cout << std::setw(4) << "number of nodes: " << myMesh_.numAllNodes_
               << std::endl;
 
-    if ("NavierStokes" == myParam_["PhysicsControl"].at("Type"))
+    if ("NavierStokes" == myParams_["PhysicsControl"].at("Type"))
     {
         std::cout << "density:" << std::setw(4) << density_ << std::endl;
         std::cout << "viscosity:" << std::setw(4) << viscous_ << std::endl;
     }
-    else if ("Poisson" == myParam_["PhysicsControl"].at("Type"))
+    else if ("Poisson" == myParams_["PhysicsControl"].at("Type"))
     {
     }
 
@@ -118,6 +118,8 @@ void SimulationDomain<meshType, RBFBasisType>::showSummary()
 template <typename meshType, typename RBFBasisType>
 void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
 {
+    rhs_ = Eigen::VectorXd::Zero(myMesh_.numAllNodes_);
+
     // using size_t for compatibility reasonwith nanoflann.hpp
     std::vector<std::vector<double>> nodesCloud(neighborNum_);
     std::vector<size_t> neighbours(neighborNum_);
@@ -175,7 +177,62 @@ void SimulationDomain<meshType, RBFBasisType>::assembleMatrix()
         }
     }
 
+    // go through all boundary nodes,
+    // change this to dirichlet boundary
+    // later
+    for (int i = myMesh_.numInnNodes_; i < myMesh_.numInnNodes_ + 30; i++)
+    {
+        rhs_(i) = 100;
+    }
+
+    for (int i = myMesh_.numInnNodes_; i < myMesh_.numAllNodes_; i++)
+    {
+        // use kdtree find indexes of neighbor nodes
+        kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
+
+        for (int j = 1; j < neighborNum_; j++)
+        {
+            rhs_(neighbours[j]) =
+                rhs_(neighbours[j]) -
+                systemVarMatrix_.coeff(i, neighbours[j]) * rhs_(i);
+            systemVarMatrix_.coeffRef(i, neighbours[j]) = 0.0;
+        }
+    }
+
     systemVarMatrix_.makeCompressed();
+
+    Eigen::SparseMatrix<double> systemVarMatrix_adj =
+        systemVarMatrix_.adjoint();
+
+    std::cout << "\tIS SELFADJOINT: "
+              << (systemVarMatrix_adj.isApprox(systemVarMatrix_) ? "YES\n"
+                                                                 : "NO\n");
+    Eigen::Matrix3d A;
+    A << 3, 2, 1, 2, 3, 1, 1, 1, 3;
+
+    std::cout << "\tIS  symmetric: "
+              << (systemVarMatrix_.isApprox(systemVarMatrix_.transpose())
+                      ? "YES\n"
+                      : "NO\n");
+
+    for (int i = 0; i < myMesh_.numAllNodes_; i++)
+    {
+        // use kdtree find indexes of neighbor nodes
+
+        for (int j = 0; j < myMesh_.numAllNodes_; j++)
+        {
+            if (systemVarMatrix_.coeffRef(i, j) !=
+                systemVarMatrix_.coeffRef(j, i))
+            {
+                std::cout << myMesh_.getNodes()[i][0] << ", "
+                          << myMesh_.getNodes()[i][1] << " -> "
+                          << systemVarMatrix_.coeffRef(i, j) << ", "
+                          << systemVarMatrix_.coeffRef(j, i) << std::endl;
+            }
+        }
+    }
+
+    // std::cout << systemVarMatrix_ << std::endl;
 }
 
 template <typename meshType, typename RBFBasisType>
@@ -220,7 +277,7 @@ void SimulationDomain<meshType, RBFBasisType>::solveDomain()
     // Compute the numerical factorization
     solver.factorize(systemVarMatrix_);
     // Use the factors to solve the linear system
-    solution_ = solver.solve(rhs);
+    solution_ = solver.solve(rhs_);
 }
 
 template <typename meshType, typename RBFBasisType>

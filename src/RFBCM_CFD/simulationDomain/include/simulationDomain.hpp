@@ -17,7 +17,7 @@ class SimulationDomain
    private:
     meshType& myMesh_;
     RBFBasisType& myRBFBasis_;
-    nlohmann::json& myParam_;
+    nlohmann::json& myParams_;
 
     int neighborNum_;
     double endTime_;
@@ -35,6 +35,7 @@ class SimulationDomain
     Eigen::SparseMatrix<double> systemVelyMatrix_;
     Eigen::SparseMatrix<double> systemVelzMatrix_;
 
+    Eigen::VectorXd rhs_;
     Eigen::VectorXd solution_;
 
     void setUpSimulation();

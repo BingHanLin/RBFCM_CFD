@@ -14,5 +14,7 @@ target_include_directories( ${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/geometry/include
     ${PROJECT_SOURCE_DIR}/rbfBasis/include
     ${PROJECT_SOURCE_DIR}/simulationDomain/include
-    ${PROJECT_SOURCE_DIR}/IO/include
+    ${PROJECT_SOURCE_DIR}/enums/include
+    ${PROJECT_SOURCE_DIR}/utility/include
+
 )

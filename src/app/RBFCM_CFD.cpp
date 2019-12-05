@@ -1,7 +1,6 @@
 #include "MQBasis2D.hpp"
 #include "json.h"
-#include "jsonEnumMap.hpp"
-#include "rectangle.hpp"
+#include "meshData.hpp"
 #include "simulationDomain.hpp"
 #include <fstream>
 #include <iostream>
@@ -16,31 +15,27 @@ int main()
     json_stream >> myParams;
 
     // ****************************************************************************
-    // Read mesh from inp file
+    // Build mesh data
     // ****************************************************************************
-    // nlohmann::json meshType = myParams[ "GeometryControl" ][ "Type" ];
-    // meshTypeEnum   test     = meshType.get< meshTypeEnum >();
-
-    typedef Rectangle myMeshType;
-    Rectangle myMesh(myParams["GeometryControl"]["NodeNum"][0],
-                     myParams["GeometryControl"]["NodeNum"][1],
-                     myParams["GeometryControl"]["Size"][0],
-                     myParams["GeometryControl"]["Size"][1]);
+    MeshData myMeshData(myParams.at("GeometryControl"));
 
     // ****************************************************************************
-    // Define RBF Type
+    // // Define RBF Type
+    // //
     // ****************************************************************************
-    typedef MQBasis2D myRBFBasisType;
-    MQBasis2D myRBFBasis(2.0);
+    // typedef MQBasis2D myRBFBasisType;
+    // MQBasis2D myRBFBasis(myParams["SolverConstrol"]["RBFCoefficient"]);
 
+    // //
     // ****************************************************************************
-    // Define Solver
+    // // Define Solver
+    // //
     // ****************************************************************************
-    SimulationDomain<myMeshType, myRBFBasisType> mySimulationDomain(
-        myMesh, myRBFBasis, myParams);
+    // SimulationDomain<myMeshType, myRBFBasisType> mySimulationDomain(
+    //     myMesh, myRBFBasis, myParams);
 
-    mySimulationDomain.solveDomain();
-    mySimulationDomain.exportData();
+    // mySimulationDomain.solveDomain();
+    // mySimulationDomain.exportData();
 
     std::cout << "test ok" << std::endl;
     return 0;
