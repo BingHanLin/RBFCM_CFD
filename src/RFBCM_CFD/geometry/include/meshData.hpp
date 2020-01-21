@@ -7,7 +7,6 @@
 #include "readFromMsh.hpp"
 #include <vector>
 
-
 /*************************************************************************
 
 
@@ -22,9 +21,9 @@ class MeshData
     nlohmann::json& geometryControlParams_;
     int numInnNodes_, numBouNodes_, numAllNodes_;
     std::map<std::string, std::vector<int>> groupToNodesMap_;
-    std::map<std::string, boundaryCondition> groupToBoundaryConditionMap_;
-    std::map<int, std::string> nodeToGoupMap_;
-    std::map<int, boundaryCondition> nodeToBoundaryConditionMap_;
+    // std::map<int, std::string> nodeToGoupMap_;
+    // std::map<std::string, boundaryCondition> groupToBoundaryConditionMap_;
+    // std::map<int, boundaryCondition> nodeToBoundaryConditionMap_;
 
     std::vector<vec3d<double>> nodes_;
     std::vector<vec3d<double>> normals_;
@@ -33,7 +32,6 @@ class MeshData
     std::string meshFilePath_;
 
     void buildMesh();
-    void readMeshFromFile();
 };
 
 #endif

@@ -8,17 +8,15 @@ MeshData::MeshData(nlohmann::json& geometryControlParams)
       numBouNodes_(0),
       numAllNodes_(0),
       groupToNodesMap_(),
-      groupToBoundaryConditionMap_(),
       nodeToGoupMap_(),
-      nodeToBoundaryConditionMap_(),
       nodes_(),
       normals_()
 {
     if (geometryControlParams_.at("Type") == meshTypeEnum::DEFAULT)
     {
         std::cout << "read nodes from msh file" << std::endl;
-        bool isReadSuccess =
-            readFromMsh(geometryControlParams_.at("Path"), nodes_);
+        bool isReadSuccess = readFromMsh(geometryControlParams_.at("Path"),
+                                         nodes_, groupToNodesMap_);
     }
     else if (geometryControlParams_.at("Type") == meshTypeEnum::RECTNAGLE)
     {

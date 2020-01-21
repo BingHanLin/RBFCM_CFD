@@ -114,5 +114,6 @@
 		"xlocbuf": "cpp",
 		"xlocmes": "cpp"
 	},
-	"editor.fontSize": 16
+	"editor.fontSize": 16,
+	"C_Cpp.errorSquiggles": "Disabled",
 }

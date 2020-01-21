@@ -1,12 +1,40 @@
 {
     "GeometryControl": {
         "Type": "mshFile",
-        "Path": "D://RBFCM_CFD//example case//test2.msh"
+        "Path": "D://myWork//RBFCM_CFD//example case//test2.msh"
     },
     "PhysicsControl": {
         "Type": "NavierStokes",
         "Viscosity": 1.0,
-        "Density": 1.0
+        "Density": 1.0,
+        "Bondadry": {
+            "Constant": [
+                {
+                    "name": "front",
+                    "value": 0
+                },
+                {
+                    "name": "bottom",
+                    "value": 0
+                },
+                {
+                    "name": "right",
+                    "value": 0
+                },
+                {
+                    "name": "top",
+                    "value": 100
+                },
+                {
+                    "name": "left",
+                    "value": 0
+                },
+                {
+                    "name": "back",
+                    "value": 0
+                }
+            ]
+        }
     },
     "SolverConstrol": {
         "NeiborNumber": 9,
