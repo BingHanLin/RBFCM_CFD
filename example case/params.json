@@ -1,7 +1,7 @@
 {
     "GeometryControl": {
         "Type": "mshFile",
-        "Path": "D://myWork//RBFCM_CFD//example case//test2.msh"
+        "Path": "D://myWork//RBFCM_CFD//example case//2dRec.msh"
     },
     "PhysicsControl": {
         "Type": "NavierStokes",

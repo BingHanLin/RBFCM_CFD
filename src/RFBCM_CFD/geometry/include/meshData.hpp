@@ -4,7 +4,6 @@
 #include "dataStructure.hpp"
 #include "enumMap.hpp"
 #include "json.h"
-#include "readFromMsh.hpp"
 #include <vector>
 
 /*************************************************************************

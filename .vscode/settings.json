@@ -112,7 +112,11 @@
 		"locale": "cpp",
 		"queue": "cpp",
 		"xlocbuf": "cpp",
-		"xlocmes": "cpp"
+		"xlocmes": "cpp",
+		"codecvt": "cpp",
+		"concepts": "cpp",
+		"filesystem": "cpp",
+		"resumable": "cpp"
 	},
 	"editor.fontSize": 16,
 	"C_Cpp.errorSquiggles": "Disabled",

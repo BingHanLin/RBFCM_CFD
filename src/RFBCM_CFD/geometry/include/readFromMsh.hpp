@@ -4,21 +4,26 @@
 // https://blog.csdn.net/hjq376247328/article/details/47040133
 // http://blog.sciencenet.cn/home.php?mod=space&uid=441611&do=blog&quickforward=1&id=758751
 #include "dataStructure.hpp"
+#include "enumMap.hpp"
+
 #include <Eigen/Dense>
 #include <fstream>
 #include <string>
 
 bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
+                 std::vector<vec3d<double>>& normals,
                  std::map<std::string, std::vector<int>>& groupToNodesMap);
 
 void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
-                std::map<int, int>& nodesMap);
+                std::map<int, int>& nodesIndexMap);
 
 void parseElements(std::ifstream& fileStream,
+                   std::vector<std::vector<int>>& elementNodes,
+                   std::vector<int>& elementTypes,
                    std::map<int, std::vector<int>>& groupIndexToNodesMap);
 
-void parsePhysicalNames(std::ifstream& fileStream,
-                        std::map<int, std::string>& physicalIndexToNameMap);
+void parseGroupNames(std::ifstream& fileStream,
+                     std::map<int, std::string>& groupIndexToNameMap);
 
 inline void passWhiteSpace(std::ifstream& fileStream)
 {
@@ -30,28 +35,60 @@ inline void passWhiteSpace(std::ifstream& fileStream)
     }
 };
 
-inline size_t getNumNodesPerElement(int elementType)
+inline size_t getNodesNumOnElement(int elementType)
 {
-    int numNodesPerElement = 0;
+    int nodesNumOnElement = 0;
     switch (elementType)
     {
+        case 1:
+            nodesNumOnElement = 2;  // line
+            break;
         case 2:
-            numNodesPerElement = 3;  // Triangle
+            nodesNumOnElement = 3;  // Triangle
             break;
         case 3:
-            numNodesPerElement = 4;  // Quad
+            nodesNumOnElement = 4;  // Quad
             break;
         case 4:
-            numNodesPerElement = 4;  // Tet
+            nodesNumOnElement = 4;  // Tetras
             break;
         case 5:
-            numNodesPerElement = 8;  // hexahedron
+            nodesNumOnElement = 8;  // hexahedron
             break;
         default:
-            numNodesPerElement = -1;
+            nodesNumOnElement = -1;
             break;
     }
-    return numNodesPerElement;
+    return nodesNumOnElement;
+};
+
+inline elementType getElementType(int elementTypeTag)
+{
+    elementType type;
+    switch (elementTypeTag)
+    {
+        case 1:
+            type = elementType::Line;
+            break;
+        case 2:
+            type = elementType::Triangle;
+
+            break;
+        case 3:
+            type = elementType::Quadrangle;
+
+            break;
+        case 4:
+            type = elementType::Tetrahedron;
+            break;
+        case 5:
+            type = elementType::Hexahedron;
+            break;
+        default:
+            type = elementType::None;
+            break;
+    }
+    return type;
 };
 
 #endif

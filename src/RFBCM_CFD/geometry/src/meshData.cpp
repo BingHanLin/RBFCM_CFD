@@ -1,5 +1,7 @@
 #include "meshData.hpp"
+#include "readFromMsh.hpp"
 #include "rectangle.hpp"
+
 #include <iostream>
 
 MeshData::MeshData(nlohmann::json& geometryControlParams)
@@ -8,7 +10,6 @@ MeshData::MeshData(nlohmann::json& geometryControlParams)
       numBouNodes_(0),
       numAllNodes_(0),
       groupToNodesMap_(),
-      nodeToGoupMap_(),
       nodes_(),
       normals_()
 {
@@ -16,7 +17,7 @@ MeshData::MeshData(nlohmann::json& geometryControlParams)
     {
         std::cout << "read nodes from msh file" << std::endl;
         bool isReadSuccess = readFromMsh(geometryControlParams_.at("Path"),
-                                         nodes_, groupToNodesMap_);
+                                         nodes_, normals_, groupToNodesMap_);
     }
     else if (geometryControlParams_.at("Type") == meshTypeEnum::RECTNAGLE)
     {

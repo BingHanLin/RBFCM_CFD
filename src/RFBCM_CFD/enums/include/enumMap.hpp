@@ -20,4 +20,14 @@ enum boundaryCondition
     NoNSLIP
 };
 
+enum elementType
+{
+    Line,
+    Triangle,
+    Quadrangle,
+    Tetrahedron,
+    Hexahedron,
+    None
+};
+
 #endif
