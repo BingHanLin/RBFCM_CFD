@@ -1,4 +1,4 @@
-#include "MQBasis2D.hpp"
+#include "MQBasis.hpp"
 #include "json.h"
 #include "meshData.hpp"
 #include "simulationDomain.hpp"
@@ -6,10 +6,8 @@
 #include <fstream>
 #include <iostream>
 
-
 int main()
 {
-    
     // ****************************************************************************
     // Read Json file
     // ****************************************************************************
@@ -23,16 +21,12 @@ int main()
     MeshData myMeshData(myParams.at("GeometryControl"));
 
     // ****************************************************************************
-    // // Define RBF Type
-    // //
+    // Define RBF Type
     // ****************************************************************************
-    // typedef MQBasis2D myRBFBasisType;
-    // MQBasis2D myRBFBasis(myParams["SolverConstrol"]["RBFCoefficient"]);
+    MQBasis myRBFBasis(myParams["SolverConstrol"]["RBFCoefficient"]);
 
-    // //
     // ****************************************************************************
-    // // Define Solver
-    // //
+    // Define Solver
     // ****************************************************************************
     // SimulationDomain<myMeshType, myRBFBasisType> mySimulationDomain(
     //     myMesh, myRBFBasis, myParams);

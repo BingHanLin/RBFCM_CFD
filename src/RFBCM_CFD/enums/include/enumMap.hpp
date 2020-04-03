@@ -14,20 +14,30 @@ NLOHMANN_JSON_SERIALIZE_ENUM(meshTypeEnum, {
                                                {DEFAULT, "mshFile"},
                                            })
 
+enum dimensionTypeEnum
+{
+    threeD,
+    twoD
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(dimensionTypeEnum, {
+                                                    {threeD, "threeD"},
+                                                    {twoD, "twoD"},
+                                                })
+
 enum boundaryCondition
 {
-    Inner,
-    NoNSLIP
+    NONESLIP
 };
 
 enum elementType
 {
-    Line,
-    Triangle,
-    Quadrangle,
-    Tetrahedron,
-    Hexahedron,
-    None
+    LINE,
+    TRIANGLE,
+    QUADRANGLE,
+    TETRAHEDRON,
+    HEXAHEDRON,
+    NONE
 };
 
 #endif

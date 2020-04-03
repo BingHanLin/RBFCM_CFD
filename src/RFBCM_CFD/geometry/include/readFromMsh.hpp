@@ -44,7 +44,7 @@ inline size_t getNodesNumOnElement(int elementType)
             nodesNumOnElement = 2;  // line
             break;
         case 2:
-            nodesNumOnElement = 3;  // Triangle
+            nodesNumOnElement = 3;  // TRIANGLE
             break;
         case 3:
             nodesNumOnElement = 4;  // Quad
@@ -68,24 +68,24 @@ inline elementType getElementType(int elementTypeTag)
     switch (elementTypeTag)
     {
         case 1:
-            type = elementType::Line;
+            type = elementType::LINE;
             break;
         case 2:
-            type = elementType::Triangle;
+            type = elementType::TRIANGLE;
 
             break;
         case 3:
-            type = elementType::Quadrangle;
+            type = elementType::QUADRANGLE;
 
             break;
         case 4:
-            type = elementType::Tetrahedron;
+            type = elementType::TETRAHEDRON;
             break;
         case 5:
-            type = elementType::Hexahedron;
+            type = elementType::HEXAHEDRON;
             break;
         default:
-            type = elementType::None;
+            type = elementType::NONE;
             break;
     }
     return type;

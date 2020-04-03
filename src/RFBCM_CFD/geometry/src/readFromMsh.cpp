@@ -133,7 +133,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     normals.resize(nodes.size());
     for (int i = 0; i < elementNodes.size(); i++)
     {
-        if (elementTypes[i] == elementType::Line)
+        if (elementTypes[i] == elementType::LINE)
         {
             int n0 = nodesIndexMap.at(elementNodes[i][0]);
             int n1 = nodesIndexMap.at(elementNodes[i][1]);
@@ -190,6 +190,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     std::for_each(normals.begin(), normals.end(),
                   [](vec3d<double>& normal) { normal.normalize(); });
 
+    std::cout << "node size: " << nodes.size() << std::endl;
     std::for_each(normals.begin(), normals.end(), [](vec3d<double>& normal) {
         std::cout << normal(0) << "; " << normal(1) << "; " << normal(2) << "; "
                   << std::endl;

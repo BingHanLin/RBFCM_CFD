@@ -5,14 +5,11 @@
     },
     "PhysicsControl": {
         "Type": "NavierStokes",
+        "Dimension": "twoD",
         "Viscosity": 1.0,
         "Density": 1.0,
         "Bondadry": {
             "Constant": [
-                {
-                    "name": "front",
-                    "value": 0
-                },
                 {
                     "name": "bottom",
                     "value": 0
@@ -27,10 +24,6 @@
                 },
                 {
                     "name": "left",
-                    "value": 0
-                },
-                {
-                    "name": "back",
                     "value": 0
                 }
             ]
