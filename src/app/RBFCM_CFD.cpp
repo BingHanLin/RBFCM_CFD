@@ -18,20 +18,19 @@ int main()
     // ****************************************************************************
     // Build mesh data
     // ****************************************************************************
-    MeshData myMeshData(myParams.at("GeometryControl"));
+    auto myMeshData = std::make_shared<MeshData>(myParams);
 
     // ****************************************************************************
     // Define RBF Type
     // ****************************************************************************
-    MQBasis myRBFBasis(myParams["SolverConstrol"]["RBFCoefficient"]);
+    auto myRBFBasis = std::make_shared<MQBasis>(
+        myParams.at("SolverConstrol").at("RBFCoefficient"));
 
     // ****************************************************************************
     // Define Solver
     // ****************************************************************************
-    // SimulationDomain<myMeshType, myRBFBasisType> mySimulationDomain(
-    //     myMesh, myRBFBasis, myParams);
-
-    // mySimulationDomain.solveDomain();
+    SimulationDomain mySimulationDomain(myMeshData, myRBFBasis, myParams);
+    mySimulationDomain.solveDomain();
     // mySimulationDomain.exportData();
 
     std::cout << "test ok" << std::endl;

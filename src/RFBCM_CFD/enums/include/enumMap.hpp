@@ -3,6 +3,17 @@
 
 #include "json.h"
 
+enum solverTypeEnum
+{
+    NAVIERSTOKES,
+    POISSON
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(solverTypeEnum, {
+                                                 {NAVIERSTOKES, "navierStokes"},
+                                                 {POISSON, "poisson"},
+                                             })
+
 enum meshTypeEnum
 {
     RECTNAGLE,
@@ -25,9 +36,9 @@ NLOHMANN_JSON_SERIALIZE_ENUM(dimensionTypeEnum, {
                                                     {twoD, "twoD"},
                                                 })
 
-enum boundaryCondition
+enum boundaryConditionType
 {
-    NONESLIP
+    constantValue
 };
 
 enum elementType

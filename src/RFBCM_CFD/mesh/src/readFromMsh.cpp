@@ -190,11 +190,12 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     std::for_each(normals.begin(), normals.end(),
                   [](vec3d<double>& normal) { normal.normalize(); });
 
-    std::cout << "node size: " << nodes.size() << std::endl;
-    std::for_each(normals.begin(), normals.end(), [](vec3d<double>& normal) {
-        std::cout << normal(0) << "; " << normal(1) << "; " << normal(2) << "; "
-                  << std::endl;
-    });
+    // std::cout << "node size: " << nodes.size() << std::endl;
+    // std::for_each(normals.begin(), normals.end(), [](vec3d<double>& normal) {
+    //     std::cout << normal(0) << "; " << normal(1) << "; " << normal(2) <<
+    //     "; "
+    //               << std::endl;
+    // });
 
     //  map node index to std::vector container index
     std::cout << "    map node index to std::vector container index"
@@ -299,8 +300,16 @@ void parseGroupNames(std::ifstream& fileStream,
     for (size_t i = 0; i < numOfGroups; i++)
     {
         int dimension, groupIndex;
+        std::string groupNameWithQuotes;
+        fileStream >> dimension >> groupIndex >> groupNameWithQuotes;
+
+        std::istringstream groupNameStream(groupNameWithQuotes);
+        std::string skip;
         std::string groupName;
-        fileStream >> dimension >> groupIndex >> groupName;
+        std::getline(std::getline(groupNameStream, skip, '"'), groupName, '"');
+
+        std::cout << groupName << std::endl;
+
         groupIndexToNamesMap.insert(
             std::pair<int, std::string>(groupIndex, groupName));
     }

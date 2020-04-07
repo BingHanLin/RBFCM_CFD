@@ -8,6 +8,6 @@ cd build
 
 cmake -G "MinGW Makefiles" ..
 
-make all
+REM make all
 mingw32-make
 cd ..

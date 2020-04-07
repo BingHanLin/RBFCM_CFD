@@ -1,8 +1,9 @@
 #ifndef SIMULATIONDOMAIN_HPP
 #define SIMULATIONDOMAIN_HPP
-
 #include "KDTreeTsaiAdaptor.hpp"
+#include "MQBasis.hpp"
 #include "json.h"
+#include "meshData.hpp"
 
 #include <Eigen/Sparse>
 #include <vector>
@@ -11,44 +12,43 @@
 
 
 *************************************************************************/
-template <typename meshType, typename RBFBasisType>
 class SimulationDomain
 {
+   public:
+    SimulationDomain(std::shared_ptr<MeshData> mesh,
+                     std::shared_ptr<MQBasis> RBFBasis, nlohmann::json& param);
+    ~SimulationDomain(){};
+
+    void showSummary();
+    void solveDomain();
+
+    // void exportData();
+
    private:
-    meshType& myMesh_;
-    RBFBasisType& myRBFBasis_;
+    std::shared_ptr<MeshData> myMesh_;
+    std::shared_ptr<MQBasis> myRBFBasis_;
     nlohmann::json& myParams_;
+    solverTypeEnum solverType_;
 
     int neighborNum_;
     double endTime_;
-    double tStep_;
-    double crankNicolsonEpsilon_;
-    int crankNicolsonMaxIter_;
+    double tStepSize_;
     double density_;
     double viscous_;
+    int crankNicolsonMaxIter_;
+    double crankNicolsonEpsilon_;
 
     KDTreeTsaiAdaptor<std::vector<std::vector<double> >, double, 2> kdTree_;
 
-    Eigen::SparseMatrix<double> systemVarMatrix_;
-    Eigen::SparseMatrix<double> systemPressureMatrix_;
-    Eigen::SparseMatrix<double> systemVelxMatrix_;
-    Eigen::SparseMatrix<double> systemVelyMatrix_;
-    Eigen::SparseMatrix<double> systemVelzMatrix_;
+    Eigen::SparseMatrix<double> varCoeffMatrix_;
+    Eigen::VectorXd varRhs_;
+    Eigen::VectorXd varSol_;
 
-    Eigen::VectorXd rhs_;
-    Eigen::VectorXd solution_;
+    Eigen::SparseMatrix<double> velCoeffMatrix_;
+    Eigen::SparseMatrix<double> pressureCoeffMatrix_;
 
     void setUpSimulation();
-    void assembleMatrix();
-
-   public:
-    SimulationDomain(meshType& mesh, RBFBasisType& RBFBasis,
-                     nlohmann::json& param);
-    ~SimulationDomain(){};
-
-    void exportData();
-    void solveDomain();
-
-    void showSummary();
+    void assembleCoeffMatrix();
+    // void assembleRhsMatrix()
 };
 #endif
