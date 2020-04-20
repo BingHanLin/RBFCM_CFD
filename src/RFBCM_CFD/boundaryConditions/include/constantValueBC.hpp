@@ -12,6 +12,12 @@ class ConstantValueBC : public BoundaryCondition
     // addNode(const int index);
 
     boundaryConditionType type() override;
+    void fillCoeffMatrix(const int nodeID, const std::vector<int>& nodesCloudID,
+                         const std::vector<vec3d<double>>& nodesCloud,
+                         std::shared_ptr<MQBasis> RBFBasis,
+                         Eigen::SparseMatrix<double>& spMatrix);
+
+    // void setRHSValue(double& oneRHS);
 
    private:
     // std::vector<int> nodeIndices_;

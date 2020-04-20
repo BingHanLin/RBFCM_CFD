@@ -51,4 +51,14 @@ enum elementType
     NONE
 };
 
+enum rbfOperatorType
+{
+    IdentityOperation,
+    Laplace,
+    Partial_D1,
+    Partial_D2,
+    Partial_D3,
+    NEUMANN
+};
+
 #endif

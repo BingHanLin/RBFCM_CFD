@@ -9,5 +9,5 @@ cd build
 cmake -G "MinGW Makefiles" ..
 
 REM make all
-mingw32-make
+mingw32-make -j4
 cd ..

@@ -5,24 +5,35 @@
 
 #include <iostream>
 
-MeshData::MeshData(nlohmann::json& controlParams)
-    : geometryControlParams_(controlParams.at("GeometryControl")),
-      physicsControlParams_(controlParams.at("PhysicsControl")),
-      numOfNodes_(0),
+MeshData::MeshData()
+    : controlData_(controlData::instance()),
+      numOfNodes_(),
       groupToNodesMap_(),
       nodes_(),
-      normals_()
+      normals_(),
+      nodesToGroup_()
 {
-    std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
+    meshTypeEnum meshType =
+        controlData_->paramsDataAt({"GeometryControl", "Type"});
 
-    if (geometryControlParams_.at("Type") == meshTypeEnum::DEFAULT)
+    if (meshType == meshTypeEnum::DEFAULT)
     {
         std::cout << "read nodes from msh file" << std::endl;
-        bool isReadSuccess =
-            readFromMsh(geometryControlParams_.at("Path"), nodes_, normals_,
-                        groupToNodesMapBeforeCompact);
+        std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
+
+        const std::string meshFileName =
+            controlData_->paramsDataAt({"GeometryControl", "FileName"})
+                .get<std::string>();
+
+        const std::string absPath =
+            controlData_->workingDir().concat("/" + meshFileName).string();
+
+        bool isReadSuccess = readFromMsh(absPath, nodes_, normals_,
+                                         groupToNodesMapBeforeCompact);
+
+        compactGroupToNodesMap(groupToNodesMapBeforeCompact);
     }
-    else if (geometryControlParams_.at("Type") == meshTypeEnum::RECTNAGLE)
+    else if (meshType == meshTypeEnum::RECTNAGLE)
     {
         std::cout << "create rectangle mesh and read from msh file"
                   << std::endl;
@@ -33,40 +44,84 @@ MeshData::MeshData(nlohmann::json& controlParams)
     }
 
     numOfNodes_ = nodes_.size();
-
-    // compactGroupToNodesMap();
+    kdTree_ = KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3>(nodes_);
     buildBoundaryConditions();
-    matchBoundaryConditions(groupToNodesMapBeforeCompact);
+}
+
+void MeshData::compactGroupToNodesMap(
+    std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact)
+{
+    nodesToGroup_.resize(nodes_.size());
+    groupToNodesMap_.clear();
+
+    const auto& constantValueBCData = controlData_->paramsDataAt(
+        {"PhysicsControl", "Boundary", "ConstantValue"});
+
+    for (auto& oneBCData : constantValueBCData)
+    {
+        const std::string groupName = oneBCData.at("GroupName");
+        groupToNodesMap_.insert({groupName, {}});
+
+        // TODO: parallel
+        for (int& nodeIndex : groupToNodesMapBeforeCompact.at(groupName))
+        {
+            nodesToGroup_[nodeIndex] = groupName;
+        }
+    }
+
+    for (int nodeID = 0; nodeID < nodes_.size(); nodeID++)
+    {
+        groupToNodesMap_[nodesToGroup_[nodeID]].push_back(nodeID);
+    }
 }
 
 void MeshData::buildBoundaryConditions()
 {
-    auto& constantValueBCData =
-        physicsControlParams_.at("Boundary").at("ConstantValue");
-    for (auto& oneConstantValueBCData : constantValueBCData)
-    {
-        const std::string groupName = oneConstantValueBCData.at("groupName");
-        auto constantValueBC = std::make_shared<ConstantValueBC>(
-            oneConstantValueBCData.at("value"));
+    nodesToBC_.resize(nodes_.size());
 
+    const auto& constantValueBCData = controlData_->paramsDataAt(
+        {"PhysicsControl", "Boundary", "ConstantValue"});
+
+    for (auto& oneBCData : constantValueBCData)
+    {
+        const std::string groupName = oneBCData.at("GroupName");
+
+        auto constantValueBC =
+            std::make_shared<ConstantValueBC>(oneBCData.at("Value"));
         groupToBCMap_.insert({groupName, constantValueBC});
+
+        for (int& nodeID : groupToNodesMap_.at(groupName))
+        {
+            nodesToBC_[nodeID] = constantValueBC;
+        }
     }
 }
 
-void MeshData::matchBoundaryConditions(
-    std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact)
+nodesCloud MeshData::neighborNodesCloudPair(const int nodeID,
+                                            const int neighborNum)
 {
-    nodesBC_.resize(nodes_.size());
-    auto& constantValueBCData =
-        physicsControlParams_.at("Boundary").at("ConstantValue");
-    for (auto& oneConstantValueBCData : constantValueBCData)
+    std::vector<size_t> neighboursID(neighborNum);
+    std::vector<double> outDistSqr(neighborNum);
+    kdTree_.query(nodeID, neighborNum, &neighboursID[0], &outDistSqr[0]);
+
+    nodesCloud cloud(neighborNum);
+    std::sort(neighboursID.begin(), neighboursID.end());
+    for (int i = 0; i < neighborNum; i++)
     {
-        const std::string groupNmae = oneConstantValueBCData.at("groupName");
-        for (int& nodeIndex : groupToNodesMapBeforeCompact.at(groupNmae))
-        {
-            nodesBC_[nodeIndex] = groupToBCMap_.at(groupNmae);
-        }
+        cloud.id[i] = neighboursID[i];
+        cloud.nodes[i] = nodes_[neighboursID[i]];
     }
+    return cloud;
+}
+
+std::vector<vec3d<double>>& MeshData::nodes()
+{
+    return nodes_;
+}
+
+std::shared_ptr<BoundaryCondition> MeshData::nodeBC(const int nodeID) const
+{
+    return nodesToBC_[nodeID];
 }
 
 int MeshData::numOfNodes() const

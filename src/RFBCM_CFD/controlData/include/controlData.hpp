@@ -1,15 +1,30 @@
 #ifndef CONTROLDATA_HPP
 #define CONTROLDATA_HPP
 
-#include <iostream>
+#include <filesystem>
+
+#include "json.h"
 
 class controlData
 {
    public:
-    controlData(const std::string workingDir);
+    static controlData* instance();
+    std::filesystem::path workingDir() const;
+    nlohmann::json paramsDataAt(const std::vector<std::string> searchEntries);
 
    private:
-    std::string workingDir_;
+    controlData(){};                    // private so that it can  not be called
+    controlData(controlData const&){};  // copy constructor is private
+    // controlData& operator=(
+    //     controlData const&){};  // assignment operator is private
+
+    void setWorkingDir();
+    void readParamsData();
+
+    std::filesystem::path workingDir_;
+    nlohmann::json paramsData_;
+
+    static controlData* instance_;
 };
 
 #endif

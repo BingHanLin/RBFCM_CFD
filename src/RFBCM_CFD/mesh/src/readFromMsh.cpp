@@ -308,8 +308,6 @@ void parseGroupNames(std::ifstream& fileStream,
         std::string groupName;
         std::getline(std::getline(groupNameStream, skip, '"'), groupName, '"');
 
-        std::cout << groupName << std::endl;
-
         groupIndexToNamesMap.insert(
             std::pair<int, std::string>(groupIndex, groupName));
     }

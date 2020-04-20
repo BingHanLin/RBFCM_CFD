@@ -2,7 +2,7 @@
     "GeometryControl": {
         "Dimension": "twoD",
         "Type": "mshFile",
-        "Path": "D://myWork//RBFCM_CFD//example case//2dRec.msh"
+        "FileName": "2dRec.msh"
     },
     "PhysicsControl": {
         "Viscosity": 1.0,
@@ -10,30 +10,30 @@
         "Boundary": {
             "ConstantValue": [
                 {
-                    "groupName": "bottom",
-                    "value": 0
+                    "GroupName": "bottom",
+                    "Value": 0
                 },
                 {
-                    "groupName": "right",
-                    "value": 0
+                    "GroupName": "right",
+                    "Value": 0
                 },
                 {
-                    "groupName": "top",
-                    "value": 100
+                    "GroupName": "top",
+                    "Value": 100
                 },
                 {
-                    "groupName": "left",
-                    "value": 0
+                    "GroupName": "left",
+                    "Value": 0
                 }
             ]
         }
     },
     "SolverConstrol": {
         "NeighborNumber": 9,
-        "RBFCoefficient": 2.0,
+        "RBFShapeParameter": 2.0,
         "TimeStepSize": 0.01,
         "EndTime": 0.01,
-        "solverType": "poisson",
+        "SolverType": "poisson",
         "NavierStokesOptions": {
             "CrankNicolsonEpsilon": 0.001,
             "CrankNicolsonMaxIter": 10

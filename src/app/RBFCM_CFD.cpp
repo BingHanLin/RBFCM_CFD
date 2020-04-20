@@ -1,36 +1,35 @@
 #include "MQBasis.hpp"
+#include "controlData.hpp"
 #include "json.h"
 #include "meshData.hpp"
 #include "simulationDomain.hpp"
-#include <filesystem>
+
 #include <fstream>
 #include <iostream>
 
 int main()
 {
     // ****************************************************************************
-    // Read Json file
+    // build control data
     // ****************************************************************************
-    std::ifstream json_stream("params.json");
-    nlohmann::json myParams;
-    json_stream >> myParams;
+    controlData::instance();
 
     // ****************************************************************************
     // Build mesh data
     // ****************************************************************************
-    auto myMeshData = std::make_shared<MeshData>(myParams);
+    auto myMeshData = std::make_shared<MeshData>();
 
     // ****************************************************************************
     // Define RBF Type
     // ****************************************************************************
-    auto myRBFBasis = std::make_shared<MQBasis>(
-        myParams.at("SolverConstrol").at("RBFCoefficient"));
+    auto myRBFBasis = std::make_shared<MQBasis>();
 
     // ****************************************************************************
     // Define Solver
     // ****************************************************************************
-    SimulationDomain mySimulationDomain(myMeshData, myRBFBasis, myParams);
-    mySimulationDomain.solveDomain();
+    SimulationDomain mySimulationDomain(myMeshData, myRBFBasis);
+    // mySimulationDomain.solveDomain();
+
     // mySimulationDomain.exportData();
 
     std::cout << "test ok" << std::endl;

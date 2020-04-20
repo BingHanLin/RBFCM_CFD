@@ -1,55 +1,50 @@
 #include "simulationDomain.hpp"
 #include "MQBasis.hpp"
+#include "enumMap.hpp"
 #include "rectangle.hpp"
-#include <Eigen/Dense>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 
 SimulationDomain::SimulationDomain(std::shared_ptr<MeshData> mesh,
-                                   std::shared_ptr<MQBasis> RBFBasis,
-                                   nlohmann::json& param)
-    : myMesh_(mesh),
+                                   std::shared_ptr<MQBasis> RBFBasis)
+    : controlData_(controlData::instance()),
+      myMesh_(mesh),
       myRBFBasis_(RBFBasis),
-      myParams_(param),
       viscous_(0.0),
       density_(0.0),
       tStepSize_(0.0),
       endTime_(0.0),
       crankNicolsonEpsilon_(0.001),
       crankNicolsonMaxIter_(10),
-      neighborNum_(0),
-      kdTree_()
+      neighborNum_(0)
 {
     setUpSimulation();
     showSummary();
-
-    // kdTree_ = KDTreeTsaiAdaptor<std::vector<std::vector<double>>, double, 2>(
-    //     myMesh_.getNodes());
-
+    assembleCoeffMatrix();
     // assembleMatrix();
 }
 
 void SimulationDomain::setUpSimulation()
 {
-    neighborNum_ = myParams_.at("SolverConstrol").at("NeighborNumber");
-    tStepSize_ = myParams_.at("SolverConstrol").at("TimeStepSize");
-    endTime_ = myParams_.at("SolverConstrol").at("EndTime");
+    auto solverControls = controlData_->paramsDataAt({"SolverConstrol"});
 
-    solverType_ = myParams_.at("SolverConstrol").at("solverType");
+    neighborNum_ = solverControls.at("NeighborNumber");
+    tStepSize_ = solverControls.at("TimeStepSize");
+    endTime_ = solverControls.at("EndTime");
+    solverType_ = solverControls.at("SolverType");
 
+    auto physicalControls = controlData_->paramsDataAt({"PhysicsControl"});
     if (solverType_ == solverTypeEnum::NAVIERSTOKES)
     {
-        viscous_ = myParams_.at("PhysicsControl").at("Viscosity");
-        density_ = myParams_.at("PhysicsControl").at("Density");
+        viscous_ = physicalControls.at("Viscosity");
+        density_ = physicalControls.at("Density");
 
-        crankNicolsonEpsilon_ = myParams_.at("SolverConstrol")
-                                    .at("NavierStokesOptions")
-                                    .at("CrankNicolsonEpsilon");
+        crankNicolsonEpsilon_ =
+            solverControls.at("NavierStokesOptions").at("CrankNicolsonEpsilon");
 
-        crankNicolsonMaxIter_ = myParams_.at("SolverConstrol")
-                                    .at("NavierStokesOptions")
-                                    .at("CrankNicolsonMaxIter");
+        crankNicolsonMaxIter_ =
+            solverControls.at("NavierStokesOptions").at("CrankNicolsonMaxIter");
     }
     else if (solverType_ == solverTypeEnum::POISSON)
     {
@@ -92,6 +87,32 @@ void SimulationDomain::assembleCoeffMatrix()
     }
     else if (solverType_ == solverTypeEnum::POISSON)
     {
+        varCoeffMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
+        varCoeffMatrix_.data().squeeze();
+        varCoeffMatrix_.reserve(
+            Eigen::VectorXi::Constant(myMesh_->numOfNodes(), neighborNum_));
+
+        for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+        {
+            auto nodesCloud =
+                myMesh_->neighborNodesCloudPair(nodeID, neighborNum_);
+
+            if (myMesh_->nodeBC(nodeID) != nullptr)
+            {
+                std::cout << nodeID << std::endl;
+            }
+            else
+            {
+                Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
+                    nodesCloud.nodes, rbfOperatorType::Laplace);
+
+                for (int i = 0; i < neighborNum_; i++)
+                {
+                    varCoeffMatrix_.insert(nodeID, nodesCloud.id[i]) =
+                        localVector[i];
+                }
+            }
+        }
     }
 }
 
@@ -169,7 +190,8 @@ void SimulationDomain::solveDomain()
 //     // go through all boundary nodes,
 //     // change this to dirichlet boundary
 //     // later
-//     for (int i = myMesh_.numInnNodes_; i < myMesh_.numInnNodes_ + 30; i++)
+//     for (int i = myMesh_.numInnNodes_; i < myMesh_.numInnNodes_ + 30;
+//     i++)
 //     {
 //         rhs_(i) = 100;
 //     }
@@ -194,8 +216,10 @@ void SimulationDomain::solveDomain()
 //         systemVarMatrix_.adjoint();
 
 //     std::cout << "\tIS SELFADJOINT: "
-//               << (systemVarMatrix_adj.isApprox(systemVarMatrix_) ? "YES\n"
-//                                                                  : "NO\n");
+//               << (systemVarMatrix_adj.isApprox(systemVarMatrix_) ?
+//               "YES\n"
+//                                                                  :
+//                                                                  "NO\n");
 //     Eigen::Matrix3d A;
 //     A << 3, 2, 1, 2, 3, 1, 1, 1, 3;
 
@@ -216,7 +240,8 @@ void SimulationDomain::solveDomain()
 //                 std::cout << myMesh_.getNodes()[i][0] << ", "
 //                           << myMesh_.getNodes()[i][1] << " -> "
 //                           << systemVarMatrix_.coeffRef(i, j) << ", "
-//                           << systemVarMatrix_.coeffRef(j, i) << std::endl;
+//                           << systemVarMatrix_.coeffRef(j, i) <<
+//                           std::endl;
 //             }
 //         }
 //     }
@@ -253,15 +278,18 @@ void SimulationDomain::solveDomain()
 //     // // solution_ = solver.solveWithGuess(rhs, x0);
 //     // solution_ = solver.solve(rhs);
 
-//     // std::cout << "#iterations:     " << solver.iterations() << std::endl;
+//     // std::cout << "#iterations:     " << solver.iterations() <<
+//     std::endl;
 //     // std::cout << "estimated error: " << solver.error() << std::endl;
 
 //     // solution_ = solver.solve(rhs);
 
-//     Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
+//     Eigen::SparseLU<Eigen::SparseMatrix<double>,
+//     Eigen::COLAMDOrdering<int>>
 //         solver;
 
-//     // Compute the ordering permutation vector from the structural pattern
+//     // Compute the ordering permutation vector from the structural
+//     pattern
 //     // of A
 //     solver.analyzePattern(systemVarMatrix_);
 //     // Compute the numerical factorization
@@ -282,7 +310,8 @@ void SimulationDomain::solveDomain()
 //     {
 //         VX = myMesh_.getNodes()[i];
 
-//         myfout << VX[0] << " " << VX[1] << " " << solution_(i) << std::endl;
+//         myfout << VX[0] << " " << VX[1] << " " << solution_(i) <<
+//         std::endl;
 //     }
 
 //     myfout.close();

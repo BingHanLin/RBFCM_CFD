@@ -1,11 +1,15 @@
 #ifndef SIMULATIONDOMAIN_HPP
 #define SIMULATIONDOMAIN_HPP
-#include "KDTreeTsaiAdaptor.hpp"
+#include "KDTreeEigenAdaptor.hpp"
 #include "MQBasis.hpp"
+#include "controlData.hpp"
 #include "json.h"
 #include "meshData.hpp"
 
+#include <Eigen/Dense>
 #include <Eigen/Sparse>
+
+
 #include <vector>
 
 /*************************************************************************
@@ -16,7 +20,7 @@ class SimulationDomain
 {
    public:
     SimulationDomain(std::shared_ptr<MeshData> mesh,
-                     std::shared_ptr<MQBasis> RBFBasis, nlohmann::json& param);
+                     std::shared_ptr<MQBasis> RBFBasis);
     ~SimulationDomain(){};
 
     void showSummary();
@@ -25,9 +29,9 @@ class SimulationDomain
     // void exportData();
 
    private:
+    controlData* controlData_;
     std::shared_ptr<MeshData> myMesh_;
     std::shared_ptr<MQBasis> myRBFBasis_;
-    nlohmann::json& myParams_;
     solverTypeEnum solverType_;
 
     int neighborNum_;
@@ -37,8 +41,6 @@ class SimulationDomain
     double viscous_;
     int crankNicolsonMaxIter_;
     double crankNicolsonEpsilon_;
-
-    KDTreeTsaiAdaptor<std::vector<std::vector<double> >, double, 2> kdTree_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;
