@@ -15,7 +15,7 @@
 MQBasis::MQBasis() : controlData_(controlData::instance())
 {
     shapeParameter_ =
-        controlData_->paramsDataAt({"SolverConstrol", "RBFShapeParameter"});
+        controlData_->paramsDataAt({"solverConstrol", "shapeParameter"});
 }
 
 double MQBasis::getBasisValue(const vec3d<double>& nodeI,
@@ -26,30 +26,30 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
     vec3d<double> rr = nodeI - nodeJ;
 
     double temp;
-    if (inputOperatorType == rbfOperatorType::IdentityOperation)
+    if (inputOperatorType == rbfOperatorType::CONSTANT)
     {
         temp = std::sqrt(rs + shapeParameter_ * shapeParameter_);
     }
-    else if (inputOperatorType == rbfOperatorType::Laplace)
+    else if (inputOperatorType == rbfOperatorType::LAPLACE)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_) *
                 (rs + shapeParameter_ * shapeParameter_);
-        temp = (rs + 2 * shapeParameter_ * shapeParameter_) / temp1;
+        temp = (2 * rs + 3 * shapeParameter_ * shapeParameter_) / temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::Partial_D1)
+    else if (inputOperatorType == rbfOperatorType::PARTIAL_D1)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = rr(0) / temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::Partial_D2)
+    else if (inputOperatorType == rbfOperatorType::PARTIAL_D2)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = rr(1) / temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::Partial_D3)
+    else if (inputOperatorType == rbfOperatorType::PARTIAL_D3)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
@@ -90,7 +90,7 @@ Eigen::VectorXd MQBasis::collectOnNodes(
             vec3d<double> nodeJ = nodesCloud[j];
 
             phi(j, i) /* transposed */ =
-                getBasisValue(nodeI, nodeJ, rbfOperatorType::IdentityOperation);
+                getBasisValue(nodeI, nodeJ, rbfOperatorType::CONSTANT);
         }
     }
 

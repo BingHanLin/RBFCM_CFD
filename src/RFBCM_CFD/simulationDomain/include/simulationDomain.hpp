@@ -9,7 +9,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-
 #include <vector>
 
 /*************************************************************************
@@ -25,6 +24,7 @@ class SimulationDomain
 
     void showSummary();
     void solveDomain();
+    void writeDataToVTK() const;
 
     // void exportData();
 
@@ -34,23 +34,36 @@ class SimulationDomain
     std::shared_ptr<MQBasis> myRBFBasis_;
     solverTypeEnum solverType_;
 
+    // physicsControl
+    double viscous_;
+    double density_;
+    double diffusionCoeff_;
+    std::array<double, 3> convectionVel_;
+
+    // solverConstrol
     int neighborNum_;
     double endTime_;
     double tStepSize_;
-    double density_;
-    double viscous_;
-    int crankNicolsonMaxIter_;
-    double crankNicolsonEpsilon_;
+    double theta_;
+
+    // int crankNicolsonMaxIter_;
+    // double crankNicolsonEpsilon_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;
     Eigen::VectorXd varSol_;
+    Eigen::VectorXd preVarSol_;
 
-    Eigen::SparseMatrix<double> velCoeffMatrix_;
-    Eigen::SparseMatrix<double> pressureCoeffMatrix_;
+    // Eigen::SparseMatrix<double> velCoeffMatrix_;
+    // Eigen::SparseMatrix<double> pressureCoeffMatrix_;
+    Eigen::SparseMatrix<double> laplaceMatrix_;
+    Eigen::SparseMatrix<double> dxMatrix_;
+    Eigen::SparseMatrix<double> dyMatrix_;
+    Eigen::SparseMatrix<double> dzMatrix_;
 
     void setUpSimulation();
+    void setupLinearSystem();
     void assembleCoeffMatrix();
-    // void assembleRhsMatrix()
+    void assembleRhs();
 };
 #endif

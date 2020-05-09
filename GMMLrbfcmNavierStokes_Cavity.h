@@ -45,7 +45,7 @@ class GMMLrbfcmNavierStokes
     vector<double> Veln1, Pn1;
     gmm::row_matrix<rsvector<double> > SystemPhiMatrix, SystemVelMatrix;
     gmm::row_matrix<rsvector<double> > IntDxMatrix, IntDyMatrix, BouDxMatrix,
-        BouDyMatrix, IntLaplaceMatrix, BouLaplaceMatrix;
+        BouDyMatrix, IntLAPLACEMatrix, BouLAPLACEMatrix;
 
     void assembly();
     vector<double> CrankNicolsonU(int Istep, const vector<double>& Pn,
@@ -129,15 +129,15 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
     gmm::clear(IntDxMatrix);
     gmm::resize(IntDyMatrix, Nint, Nall);
     gmm::clear(IntDyMatrix);
-    gmm::resize(IntLaplaceMatrix, Nint, Nall);
-    gmm::clear(IntLaplaceMatrix);
+    gmm::resize(IntLAPLACEMatrix, Nint, Nall);
+    gmm::clear(IntLAPLACEMatrix);
 
     gmm::resize(BouDxMatrix, Nbou, Nall);
     gmm::clear(BouDxMatrix);
     gmm::resize(BouDyMatrix, Nbou, Nall);
     gmm::clear(BouDyMatrix);
-    gmm::resize(BouLaplaceMatrix, Nbou, Nall);
-    gmm::clear(BouLaplaceMatrix);
+    gmm::resize(BouLAPLACEMatrix, Nbou, Nall);
+    gmm::clear(BouLAPLACEMatrix);
 
     //====================================================================
     // go through all interior nodes
@@ -156,16 +156,16 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         }
 
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Laplace);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::LAPLACE);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
         {
-            IntLaplaceMatrix(i, neighbours[j]) = LocalVector[j];
+            IntLAPLACEMatrix(i, neighbours[j]) = LocalVector[j];
         }
 
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Partial_D1);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D1);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
@@ -174,7 +174,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         }
 
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Partial_D2);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D2);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
@@ -183,11 +183,11 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         }
     }
 
-    copy(IntLaplaceMatrix,
+    copy(IntLAPLACEMatrix,
          gmm::sub_matrix(SystemPhiMatrix, gmm::sub_interval(0, Nint),
                          gmm::sub_interval(0, Nall)));
 
-    copy(IntLaplaceMatrix,
+    copy(IntLAPLACEMatrix,
          gmm::sub_matrix(SystemVelMatrix, gmm::sub_interval(0, Nint),
                          gmm::sub_interval(0, Nall)));
 
@@ -242,8 +242,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
 
         // Bounadry SystemVelMatrix
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(
-            RBFBasisType::OperatorType::IdentityOperation);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::CONSTANT);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
@@ -253,7 +252,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
 
         // BouDxMatrix
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Partial_D1);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D1);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
@@ -263,7 +262,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
 
         // BouDyMatrix
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Partial_D2);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D2);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
@@ -271,14 +270,14 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
             BouDyMatrix(i, neighbours[j]) = LocalVector[j];
         }
 
-        // BouLaplaceMatrix
+        // BouLAPLACEMatrix
         gmm::clear(LocalVector);
-        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::Laplace);
+        RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::LAPLACE);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
         for (int j = 0; j < near_num; j++)
         {
-            BouLaplaceMatrix(i, neighbours[j]) = LocalVector[j];
+            BouLAPLACEMatrix(i, neighbours[j]) = LocalVector[j];
         }
     }
 
@@ -383,13 +382,13 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
     gmm::mult_add(IntDyMatrix, gmm::scaled(Pn, 2.0 / viscous),
                   gmm::sub_vector(RHS, gmm::sub_interval(Nall, Nint)));
 
-    // // Laplace Un
+    // // LAPLACE Un
     gmm::mult_add(
-        IntLaplaceMatrix,
+        IntLAPLACEMatrix,
         gmm::scaled(gmm::sub_vector(Veln, gmm::sub_interval(0, Nall)), -1),
         gmm::sub_vector(RHS, gmm::sub_interval(0, Nint)));
     gmm::mult_add(
-        IntLaplaceMatrix,
+        IntLAPLACEMatrix,
         gmm::scaled(gmm::sub_vector(Veln, gmm::sub_interval(Nall, Nall)), -1),
         gmm::sub_vector(RHS, gmm::sub_interval(Nall, Nint)));
 
@@ -433,9 +432,9 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SolvePU(
     gmm::copy(Pn, Pn1);
     gmm::copy(Vels, Veln1);
 
-    vector<double> Phi(Nall), LaplacePhi(Nall), GradPhi(2 * Nall), RHS(Nall);
+    vector<double> Phi(Nall), LAPLACEPhi(Nall), GradPhi(2 * Nall), RHS(Nall);
     gmm::clear(Phi);
-    gmm::clear(LaplacePhi);
+    gmm::clear(LAPLACEPhi);
     gmm::clear(GradPhi);
     gmm::clear(RHS);
 
@@ -463,12 +462,12 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SolvePU(
 
     gmm::add(Phi, Pn1);
 
-    gmm::mult(IntLaplaceMatrix, gmm::scaled(Phi, -viscous * dt / 2.0),
-              gmm::sub_vector(LaplacePhi, gmm::sub_interval(0, Nint)));
-    gmm::mult(BouLaplaceMatrix, gmm::scaled(Phi, -viscous * dt / 2.0),
-              gmm::sub_vector(LaplacePhi, gmm::sub_interval(Nint, Nbou)));
+    gmm::mult(IntLAPLACEMatrix, gmm::scaled(Phi, -viscous * dt / 2.0),
+              gmm::sub_vector(LAPLACEPhi, gmm::sub_interval(0, Nint)));
+    gmm::mult(BouLAPLACEMatrix, gmm::scaled(Phi, -viscous * dt / 2.0),
+              gmm::sub_vector(LAPLACEPhi, gmm::sub_interval(Nint, Nbou)));
 
-    gmm::add(LaplacePhi, Pn1);
+    gmm::add(LAPLACEPhi, Pn1);
 
     double tempP = 0.0 - Pn1[Nint];
 

@@ -26,6 +26,11 @@ std::filesystem::path controlData::workingDir() const
     return workingDir_;
 }
 
+std::filesystem::path controlData::vtkDir() const
+{
+    return workingDir().concat("/vtk");
+}
+
 void controlData::readParamsData()
 {
     std::ifstream paramsStream(workingDir().concat("/params.json").string());

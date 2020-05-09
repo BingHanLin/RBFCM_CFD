@@ -14,7 +14,7 @@ MeshData::MeshData()
       nodesToGroup_()
 {
     meshTypeEnum meshType =
-        controlData_->paramsDataAt({"GeometryControl", "Type"});
+        controlData_->paramsDataAt({"geometryControl", "type"});
 
     if (meshType == meshTypeEnum::DEFAULT)
     {
@@ -22,7 +22,7 @@ MeshData::MeshData()
         std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
 
         const std::string meshFileName =
-            controlData_->paramsDataAt({"GeometryControl", "FileName"})
+            controlData_->paramsDataAt({"geometryControl", "fileName"})
                 .get<std::string>();
 
         const std::string absPath =
@@ -55,11 +55,11 @@ void MeshData::compactGroupToNodesMap(
     groupToNodesMap_.clear();
 
     const auto& constantValueBCData = controlData_->paramsDataAt(
-        {"PhysicsControl", "Boundary", "ConstantValue"});
+        {"physicsControl", "boundaryConditions", "constantValue"});
 
     for (auto& oneBCData : constantValueBCData)
     {
-        const std::string groupName = oneBCData.at("GroupName");
+        const std::string groupName = oneBCData.at("groupName");
         groupToNodesMap_.insert({groupName, {}});
 
         // TODO: parallel
@@ -80,14 +80,14 @@ void MeshData::buildBoundaryConditions()
     nodesToBC_.resize(nodes_.size());
 
     const auto& constantValueBCData = controlData_->paramsDataAt(
-        {"PhysicsControl", "Boundary", "ConstantValue"});
+        {"physicsControl", "boundaryConditions", "constantValue"});
 
     for (auto& oneBCData : constantValueBCData)
     {
-        const std::string groupName = oneBCData.at("GroupName");
+        const std::string groupName = oneBCData.at("groupName");
 
         auto constantValueBC =
-            std::make_shared<ConstantValueBC>(oneBCData.at("Value"));
+            std::make_shared<ConstantValueBC>(oneBCData.at("value"));
         groupToBCMap_.insert({groupName, constantValueBC});
 
         for (int& nodeID : groupToNodesMap_.at(groupName))
@@ -97,8 +97,7 @@ void MeshData::buildBoundaryConditions()
     }
 }
 
-nodesCloud MeshData::neighborNodesCloudPair(const int nodeID,
-                                            const int neighborNum)
+nodesCloud MeshData::neighborNodesCloud(const int nodeID, const int neighborNum)
 {
     std::vector<size_t> neighboursID(neighborNum);
     std::vector<double> outDistSqr(neighborNum);

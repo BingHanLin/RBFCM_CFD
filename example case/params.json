@@ -1,42 +1,53 @@
 {
-    "GeometryControl": {
-        "Dimension": "twoD",
-        "Type": "mshFile",
-        "FileName": "2dRec.msh"
+    "geometryControl": {
+        "dimension": "twoD",
+        "type": "mshFile",
+        "fileName": "2dRec.msh"
     },
-    "PhysicsControl": {
-        "Viscosity": 1.0,
-        "Density": 1.0,
-        "Boundary": {
-            "ConstantValue": [
+    "physicsControl": {
+        "viscosity": 1.0,
+        "density": 1.0,
+        "transferEqOptions": {
+            "diffusionCoeff": 1,
+            "convectionVel": [
+                1,
+                1,
+                1
+            ]
+        },
+        "boundaryConditions": {
+            "constantValue": [
                 {
-                    "GroupName": "bottom",
-                    "Value": 0
+                    "groupName": "bottom",
+                    "value": 0
                 },
                 {
-                    "GroupName": "right",
-                    "Value": 0
+                    "groupName": "right",
+                    "value": 0
                 },
                 {
-                    "GroupName": "top",
-                    "Value": 100
+                    "groupName": "top",
+                    "value": 100
                 },
                 {
-                    "GroupName": "left",
-                    "Value": 0
+                    "groupName": "left",
+                    "value": 0
                 }
             ]
         }
     },
-    "SolverConstrol": {
-        "NeighborNumber": 9,
-        "RBFShapeParameter": 2.0,
-        "TimeStepSize": 0.01,
-        "EndTime": 0.01,
-        "SolverType": "poisson",
-        "NavierStokesOptions": {
-            "CrankNicolsonEpsilon": 0.001,
-            "CrankNicolsonMaxIter": 10
+    "solverConstrol": {
+        "neighborNumber": 9,
+        "shapeParameter": 2.0,
+        "timeStepSize": 0.01,
+        "endTime": 0.01,
+        "solverType": "transferEq",
+        "navierStokesOptions": {
+            "crankNicolsonEpsilon": 0.001,
+            "crankNicolsonMaxIter": 10
+        },
+        "transferEqOptions": {
+            "theta": 0.5
         }
     }
 }

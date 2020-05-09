@@ -1,7 +1,11 @@
 #include "simulationDomain.hpp"
 #include "MQBasis.hpp"
 #include "enumMap.hpp"
+#include "pugixml.hpp"
 #include "rectangle.hpp"
+#include "vtkFileIO.hpp"
+
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -15,40 +19,73 @@ SimulationDomain::SimulationDomain(std::shared_ptr<MeshData> mesh,
       density_(0.0),
       tStepSize_(0.0),
       endTime_(0.0),
-      crankNicolsonEpsilon_(0.001),
-      crankNicolsonMaxIter_(10),
+      theta_(0.0),
+      convectionVel_(),
+      diffusionCoeff_(0.0),
       neighborNum_(0)
 {
     setUpSimulation();
     showSummary();
+    setupLinearSystem();
     assembleCoeffMatrix();
-    // assembleMatrix();
+    assembleRhs();
+    solveDomain();
+    writeDataToVTK();
+}
+
+void SimulationDomain::setupLinearSystem()
+{
+    std::cout << "#setupLinearSystem" << std::endl;
+
+    varCoeffMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
+    varRhs_.resize(myMesh_->numOfNodes());
+    preVarSol_.resize(myMesh_->numOfNodes());
+
+    laplaceMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
+    dxMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
+    dyMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
+    dzMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
+
+    for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    {
+        auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
+
+        Eigen::VectorXd laplaceVector =
+            myRBFBasis_->collectOnNodes(cloud.nodes, rbfOperatorType::LAPLACE);
+        Eigen::VectorXd dxVector = myRBFBasis_->collectOnNodes(
+            cloud.nodes, rbfOperatorType::PARTIAL_D1);
+        Eigen::VectorXd dyVector = myRBFBasis_->collectOnNodes(
+            cloud.nodes, rbfOperatorType::PARTIAL_D2);
+        Eigen::VectorXd dzVector = myRBFBasis_->collectOnNodes(
+            cloud.nodes, rbfOperatorType::PARTIAL_D3);
+
+        for (int i = 0; i < neighborNum_; i++)
+        {
+            laplaceMatrix_.insert(nodeID, cloud.id[i]) = laplaceVector[i];
+            dxMatrix_.insert(nodeID, cloud.id[i]) = dxVector[i];
+            dyMatrix_.insert(nodeID, cloud.id[i]) = dyVector[i];
+            dzMatrix_.insert(nodeID, cloud.id[i]) = dzVector[i];
+        }
+    }
 }
 
 void SimulationDomain::setUpSimulation()
 {
-    auto solverControls = controlData_->paramsDataAt({"SolverConstrol"});
+    std::cout << "#setUpSimulation" << std::endl;
 
-    neighborNum_ = solverControls.at("NeighborNumber");
-    tStepSize_ = solverControls.at("TimeStepSize");
-    endTime_ = solverControls.at("EndTime");
-    solverType_ = solverControls.at("SolverType");
+    const auto solverControls = controlData_->paramsDataAt({"solverConstrol"});
+    neighborNum_ = solverControls.at("neighborNumber");
+    tStepSize_ = solverControls.at("timeStepSize");
+    endTime_ = solverControls.at("endTime");
+    solverType_ = solverControls.at("solverType");
+    theta_ = solverControls.at("transferEqOptions").at("theta");
 
-    auto physicalControls = controlData_->paramsDataAt({"PhysicsControl"});
-    if (solverType_ == solverTypeEnum::NAVIERSTOKES)
-    {
-        viscous_ = physicalControls.at("Viscosity");
-        density_ = physicalControls.at("Density");
-
-        crankNicolsonEpsilon_ =
-            solverControls.at("NavierStokesOptions").at("CrankNicolsonEpsilon");
-
-        crankNicolsonMaxIter_ =
-            solverControls.at("NavierStokesOptions").at("CrankNicolsonMaxIter");
-    }
-    else if (solverType_ == solverTypeEnum::POISSON)
-    {
-    }
+    const auto physicalControls =
+        controlData_->paramsDataAt({"physicsControl"});
+    diffusionCoeff_ =
+        physicalControls.at("transferEqOptions").at("diffusionCoeff");
+    convectionVel_ =
+        physicalControls.at("transferEqOptions").at("convectionVel");
 }
 
 void SimulationDomain::showSummary()
@@ -65,257 +102,130 @@ void SimulationDomain::showSummary()
     std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
     std::cout << "Neighbor number: " << std::setw(8) << neighborNum_
               << std::endl;
-
-    if (solverType_ == solverTypeEnum::NAVIERSTOKES)
-    {
-        std::cout << "Density:" << std::setw(8) << density_ << std::endl;
-        std::cout << "Viscosity:" << std::setw(8) << viscous_ << std::endl;
-        std::cout << "CrankNicolson epsilon: " << std::setw(8)
-                  << crankNicolsonEpsilon_ << std::endl;
-        std::cout << "CrankNicolson max iter: " << std::setw(8)
-                  << crankNicolsonMaxIter_ << std::endl;
-    }
-    else if (solverType_ == solverTypeEnum::POISSON)
-    {
-    }
 }
 
 void SimulationDomain::assembleCoeffMatrix()
 {
-    if (solverType_ == solverTypeEnum::NAVIERSTOKES)
-    {
-    }
-    else if (solverType_ == solverTypeEnum::POISSON)
-    {
-        varCoeffMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
-        varCoeffMatrix_.data().squeeze();
-        varCoeffMatrix_.reserve(
-            Eigen::VectorXi::Constant(myMesh_->numOfNodes(), neighborNum_));
+    std::cout << "#assembleCoeffMatrix" << std::endl;
 
-        for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    varCoeffMatrix_.data().squeeze();
+    varCoeffMatrix_.reserve(
+        Eigen::VectorXi::Constant(myMesh_->numOfNodes(), neighborNum_));
+
+    for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    {
+        auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
+
+        if (myMesh_->nodeBC(nodeID) == nullptr)
         {
-            auto nodesCloud =
-                myMesh_->neighborNodesCloudPair(nodeID, neighborNum_);
+            Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
+                cloud.nodes, rbfOperatorType::CONSTANT);
 
-            if (myMesh_->nodeBC(nodeID) != nullptr)
-            {
-                std::cout << nodeID << std::endl;
-            }
-            else
-            {
-                Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
-                    nodesCloud.nodes, rbfOperatorType::Laplace);
+            localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
+                            myRBFBasis_->collectOnNodes(
+                                cloud.nodes, rbfOperatorType::LAPLACE));
 
-                for (int i = 0; i < neighborNum_; i++)
-                {
-                    varCoeffMatrix_.insert(nodeID, nodesCloud.id[i]) =
-                        localVector[i];
-                }
+            for (int i = 0; i < neighborNum_; i++)
+            {
+                varCoeffMatrix_.insert(nodeID, cloud.id[i]) = localVector[i];
             }
         }
+        else
+        {
+            myMesh_->nodeBC(nodeID)->fillCoeffMatrix(nodeID, cloud, myRBFBasis_,
+                                                     varCoeffMatrix_);
+        }
     }
+
+    std::cout << "#assembleCoeffMatrix end" << std::endl;
+}
+
+void SimulationDomain::assembleRhs()
+{
+    std::cout << "#assembleRhs" << std::endl;
+
+    Eigen::VectorXd rhsInnerVector =
+        ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_ -
+         tStepSize_ * convectionVel_[0] * dxMatrix_ -
+         tStepSize_ * convectionVel_[1] * dyMatrix_ -
+         tStepSize_ * convectionVel_[2] * dzMatrix_) *
+        preVarSol_;
+
+    for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    {
+        auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
+
+        if (myMesh_->nodeBC(nodeID) == nullptr)
+        {
+            varRhs_(nodeID) = rhsInnerVector(nodeID);
+        }
+        else
+        {
+            myMesh_->nodeBC(nodeID)->fillRhsVector(nodeID, cloud, myRBFBasis_,
+                                                   varRhs_);
+        }
+    }
+
+    std::cout << "#assembleRhs end" << std::endl;
 }
 
 void SimulationDomain::solveDomain()
 {
-    if (solverType_ == solverTypeEnum::NAVIERSTOKES)
-    {
-    }
-    else if (solverType_ == solverTypeEnum::POISSON)
-    {
-    }
+    // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
+
+    // solver.compute(varCoeffMatrix_);
+
+    // if (solver.info() != Eigen::Success)
+    // {
+    //     std::cout << " decomposition failed" << std::endl;
+    //     return;
+    // }
+    // // solution_ = solver.solveWithGuess(rhs, x0);
+    // varSol_ = solver.solve(varRhs_);
+
+    // std::cout << "#iterations:     " << solver.iterations() << std::endl;
+    // std::cout << "estimated error: " << solver.error() << std::endl;
+
+    // varSol_ = solver.solve(rhs);
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
+        solver;
+
+    // Compute the ordering permutation vector from the structural
+    // pattern of A
+    solver.analyzePattern(varCoeffMatrix_);
+    // Compute the numerical factorization
+    solver.factorize(varCoeffMatrix_);
+    // Use the factors to solve the linear system
+    varSol_ = solver.solve(varRhs_);
+
+    std::cout << "#solveDomain" << std::endl;
 }
 
-// void SimulationDomain::assembleMatrix()
-// {
-//     rhs_ = Eigen::VectorXd::Zero(myMesh_.numAllNodes_);
+void SimulationDomain::writeDataToVTK() const
+{
+    pugi::xml_document doc;
+    pugi::xml_node VTKFile = doc.append_child("VTKFile");
+    VTKFile.append_attribute("type") = "UnstructuredGrid";
+    VTKFile.append_attribute("version") = "0.1";
+    VTKFile.append_attribute("byte_order") = "LittleEndian";
+    pugi::xml_node UnstructuredGrid = VTKFile.append_child("UnstructuredGrid");
 
-//     // using size_t for compatibility reasonwith nanoflann.hpp
-//     std::vector<std::vector<double>> nodesCloud(neighborNum_);
-//     std::vector<size_t> neighbours(neighborNum_);
-//     std::vector<double> outDistSqr(neighborNum_);
+    pugi::xml_node Piece = UnstructuredGrid.append_child("Piece");
+    Piece.append_attribute("NumberOfPoints") = myMesh_->numOfNodes();
+    Piece.append_attribute("NumberOfCells") = myMesh_->numOfNodes();
 
-//     Eigen::VectorXd localVector = Eigen::VectorXd::Zero(neighborNum_);
+    pugi::xml_node Points = Piece.append_child("Points");
+    appendArrayToVTKNode(myMesh_->nodes(), "Position", Points);
 
-//     systemVarMatrix_.resize(myMesh_.numAllNodes_, myMesh_.numAllNodes_);
-//     systemVarMatrix_.reserve(
-//         Eigen::VectorXi::Constant(myMesh_.numAllNodes_, neighborNum_));
+    pugi::xml_node PointData = Piece.append_child("PointData");
+    appendScalarsToVTKNode(varSol_, "Variable", PointData);
 
-//     // go through all interior nodes
-//     for (int i = 0; i < myMesh_.numInnNodes_; i++)
-//     {
-//         localVector = Eigen::VectorXd::Zero(neighborNum_);
+    pugi::xml_node Cells = Piece.append_child("Cells");
+    addCells(myMesh_->numOfNodes(), Cells);
 
-//         // use kdtree find indexes of neighbor nodes
-//         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
-
-//         // store nodes cloud in vector
-//         for (int j = 0; j < neighborNum_; j++)
-//         {
-//             nodesCloud[j] = myMesh_.getNodes()[neighbours[j]];
-//         }
-
-//         localVector += myRBFBasis_.collectOnNodes(
-//             nodesCloud, RBFBasisType::operatorType::Laplace);
-
-//         for (int j = 0; j < neighborNum_; j++)
-//         {
-//             systemVarMatrix_.insert(i, neighbours[j]) = localVector(j);
-//         }
-//     }
-
-//     // go through all boundary nodes
-//     for (int i = myMesh_.numInnNodes_; i < myMesh_.numAllNodes_; i++)
-//     {
-//         localVector = Eigen::VectorXd::Zero(neighborNum_);
-
-//         // use kdtree find indexes of neighbor nodes
-//         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
-
-//         // store nodes cloud in vector
-//         for (int j = 0; j < neighborNum_; j++)
-//         {
-//             nodesCloud[j] = myMesh_.getNodes()[neighbours[j]];
-//         }
-
-//         localVector += myRBFBasis_.collectOnNodes(
-//             nodesCloud, RBFBasisType::operatorType::IdentityOperation);
-
-//         for (int j = 0; j < neighborNum_; j++)
-//         {
-//             systemVarMatrix_.insert(i, neighbours[j]) = localVector(j);
-//         }
-//     }
-
-//     // go through all boundary nodes,
-//     // change this to dirichlet boundary
-//     // later
-//     for (int i = myMesh_.numInnNodes_; i < myMesh_.numInnNodes_ + 30;
-//     i++)
-//     {
-//         rhs_(i) = 100;
-//     }
-
-//     for (int i = myMesh_.numInnNodes_; i < myMesh_.numAllNodes_; i++)
-//     {
-//         // use kdtree find indexes of neighbor nodes
-//         kdTree_.query(i, neighborNum_, &neighbours[0], &outDistSqr[0]);
-
-//         for (int j = 1; j < neighborNum_; j++)
-//         {
-//             rhs_(neighbours[j]) =
-//                 rhs_(neighbours[j]) -
-//                 systemVarMatrix_.coeff(i, neighbours[j]) * rhs_(i);
-//             systemVarMatrix_.coeffRef(i, neighbours[j]) = 0.0;
-//         }
-//     }
-
-//     systemVarMatrix_.makeCompressed();
-
-//     Eigen::SparseMatrix<double> systemVarMatrix_adj =
-//         systemVarMatrix_.adjoint();
-
-//     std::cout << "\tIS SELFADJOINT: "
-//               << (systemVarMatrix_adj.isApprox(systemVarMatrix_) ?
-//               "YES\n"
-//                                                                  :
-//                                                                  "NO\n");
-//     Eigen::Matrix3d A;
-//     A << 3, 2, 1, 2, 3, 1, 1, 1, 3;
-
-//     std::cout << "\tIS  symmetric: "
-//               << (systemVarMatrix_.isApprox(systemVarMatrix_.transpose())
-//                       ? "YES\n"
-//                       : "NO\n");
-
-//     for (int i = 0; i < myMesh_.numAllNodes_; i++)
-//     {
-//         // use kdtree find indexes of neighbor nodes
-
-//         for (int j = 0; j < myMesh_.numAllNodes_; j++)
-//         {
-//             if (systemVarMatrix_.coeffRef(i, j) !=
-//                 systemVarMatrix_.coeffRef(j, i))
-//             {
-//                 std::cout << myMesh_.getNodes()[i][0] << ", "
-//                           << myMesh_.getNodes()[i][1] << " -> "
-//                           << systemVarMatrix_.coeffRef(i, j) << ", "
-//                           << systemVarMatrix_.coeffRef(j, i) <<
-//                           std::endl;
-//             }
-//         }
-//     }
-
-//     // std::cout << systemVarMatrix_ << std::endl;
-// }
-
-// void SimulationDomain::solveDomain()
-// {
-//     Eigen::VectorXd rhs = Eigen::VectorXd::Zero(myMesh_.numAllNodes_);
-//     Eigen::VectorXd x0(myMesh_.numAllNodes_);
-
-//     solution_.resize(myMesh_.numAllNodes_);
-
-//     for (int i = 0; i < myMesh_.numAllNodes_; i++)
-//     {
-//         if (i >= myMesh_.numInnNodes_ && i < myMesh_.numInnNodes_ + 30)
-//         {
-//             rhs(i) = 100;
-//         }
-//         x0(i) = 100.0;
-//     }
-
-//     // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>>
-//     // solver;
-
-//     // solver.compute(systemVarMatrix_);
-
-//     // if (solver.info() != Eigen::Success)
-//     // {
-//     //     std::cout << " decomposition failed" << std::endl;
-//     //     // return;
-//     // }
-//     // // solution_ = solver.solveWithGuess(rhs, x0);
-//     // solution_ = solver.solve(rhs);
-
-//     // std::cout << "#iterations:     " << solver.iterations() <<
-//     std::endl;
-//     // std::cout << "estimated error: " << solver.error() << std::endl;
-
-//     // solution_ = solver.solve(rhs);
-
-//     Eigen::SparseLU<Eigen::SparseMatrix<double>,
-//     Eigen::COLAMDOrdering<int>>
-//         solver;
-
-//     // Compute the ordering permutation vector from the structural
-//     pattern
-//     // of A
-//     solver.analyzePattern(systemVarMatrix_);
-//     // Compute the numerical factorization
-//     solver.factorize(systemVarMatrix_);
-//     // Use the factors to solve the linear system
-//     solution_ = solver.solve(rhs_);
-// }
-
-// void SimulationDomain::exportData()
-// {
-//     char fileoutput[256] = "output.txt";
-
-//     std::ofstream myfout(fileoutput);
-
-//     std::vector<double> VX(2);
-
-//     for (int i = 0; i < myMesh_.numAllNodes_; i++)
-//     {
-//         VX = myMesh_.getNodes()[i];
-
-//         myfout << VX[0] << " " << VX[1] << " " << solution_(i) <<
-//         std::endl;
-//     }
-
-//     myfout.close();
-// }
-
-// // explicit instantiation, put this at end of file
-// template class SimulationDomain<Rectangle, MQBasis2D>;
+    std::filesystem::create_directories(controlData_->vtkDir());
+    const std::string fileName =
+        controlData_->vtkDir().string() + "/" + "test" + ".vtu";
+    doc.save_file(fileName.c_str());
+}

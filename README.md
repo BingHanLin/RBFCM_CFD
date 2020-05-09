@@ -26,8 +26,8 @@ A class generate a retangular domain with orthogonal node distribution. The node
 ***
 ## Examples
 
-1. **Laplace equation** \
-Laplace equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
+1. **LAPLACE equation** \
+LAPLACE equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
 
 2. **Navier Stokes equation** \
 The projection method is used to solve the Navier Stokes equation. A lid-driven square cavity flow case is presented here.

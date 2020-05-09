@@ -29,23 +29,23 @@ double MQBasis2D::getBasisValue(const std::vector<double>& nodeI,
     }
 
     double temp;
-    if (inputOperatorType == operatorType::IdentityOperation)
+    if (inputOperatorType == operatorType::CONSTANT)
     {
         temp = std::sqrt(rs + cc_ * cc_);
     }
-    else if (inputOperatorType == operatorType::Laplace)
+    else if (inputOperatorType == operatorType::LAPLACE)
     {
         double temp1;
         temp1 = std::sqrt(rs + cc_ * cc_) * (rs + cc_ * cc_);
         temp = (rs + 2 * cc_ * cc_) / temp1;
     }
-    else if (inputOperatorType == operatorType::Partial_D1)
+    else if (inputOperatorType == operatorType::PARTIAL_D1)
     {
         double temp1;
         temp1 = std::sqrt(rs + cc_ * cc_);
         temp = rr[0] / temp1;
     }
-    else if (inputOperatorType == operatorType::Partial_D2)
+    else if (inputOperatorType == operatorType::PARTIAL_D2)
     {
         double temp1;
         temp1 = std::sqrt(rs + cc_ * cc_);
@@ -89,7 +89,7 @@ Eigen::VectorXd MQBasis2D::collectOnNodes(
             nodeJ = nodesCloud[j];
 
             phi(j, i) /* transposed */ =
-                getBasisValue(nodeI, nodeJ, operatorType::IdentityOperation);
+                getBasisValue(nodeI, nodeJ, operatorType::CONSTANT);
         }
     }
 

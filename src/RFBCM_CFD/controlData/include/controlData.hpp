@@ -10,6 +10,7 @@ class controlData
    public:
     static controlData* instance();
     std::filesystem::path workingDir() const;
+    std::filesystem::path vtkDir() const;
     nlohmann::json paramsDataAt(const std::vector<std::string> searchEntries);
 
    private:

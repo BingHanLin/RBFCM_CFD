@@ -13,10 +13,10 @@ class MQBasis2D
    public:
     enum operatorType
     {
-        IdentityOperation,
-        Laplace,
-        Partial_D1,
-        Partial_D2,
+        CONSTANT,
+        LAPLACE,
+        PARTIAL_D1,
+        PARTIAL_D2,
         NEUMANN_OPERATOR
     };
 

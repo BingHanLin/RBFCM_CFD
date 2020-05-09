@@ -14,17 +14,6 @@
 
 *************************************************************************/
 
-struct nodesCloud
-{
-    nodesCloud(const int size)
-    {
-        id.resize(size);
-        nodes.resize(size);
-    }
-    std::vector<int> id;
-    std::vector<vec3d<double>> nodes;
-};
-
 class MeshData
 {
    public:
@@ -39,7 +28,7 @@ class MeshData
     int numOfNodes() const;
     std::shared_ptr<BoundaryCondition> nodeBC(const int nodeID) const;
 
-    nodesCloud neighborNodesCloudPair(const int nodeID, const int neighborNum);
+    nodesCloud neighborNodesCloud(const int nodeID, const int neighborNum);
 
     // std::shared_ptr<BoundaryCondition> nodesBC(const int nodeID) const;
 

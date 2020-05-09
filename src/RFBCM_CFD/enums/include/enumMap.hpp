@@ -6,12 +6,12 @@
 enum solverTypeEnum
 {
     NAVIERSTOKES,
-    POISSON
+    TRANSFEREQ
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(solverTypeEnum, {
                                                  {NAVIERSTOKES, "navierStokes"},
-                                                 {POISSON, "poisson"},
+                                                 {TRANSFEREQ, "transferEq"},
                                              })
 
 enum meshTypeEnum
@@ -53,11 +53,11 @@ enum elementType
 
 enum rbfOperatorType
 {
-    IdentityOperation,
-    Laplace,
-    Partial_D1,
-    Partial_D2,
-    Partial_D3,
+    CONSTANT,
+    LAPLACE,
+    PARTIAL_D1,
+    PARTIAL_D2,
+    PARTIAL_D3,
     NEUMANN
 };
 
