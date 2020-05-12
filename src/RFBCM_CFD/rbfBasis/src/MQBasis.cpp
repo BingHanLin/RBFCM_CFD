@@ -35,7 +35,7 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_) *
                 (rs + shapeParameter_ * shapeParameter_);
-        temp = (2 * rs + 3 * shapeParameter_ * shapeParameter_) / temp1;
+        temp = (rs + 2 * shapeParameter_ * shapeParameter_) / temp1;
     }
     else if (inputOperatorType == rbfOperatorType::PARTIAL_D1)
     {

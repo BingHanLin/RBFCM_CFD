@@ -102,6 +102,12 @@ void SimulationDomain::showSummary()
     std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
     std::cout << "Neighbor number: " << std::setw(8) << neighborNum_
               << std::endl;
+
+    std::cout << std::endl;
+
+    std::cout << "Diffusity: " << std::setw(8) << diffusionCoeff_ << std::endl;
+    std::cout << "Convectivity: " << std::setw(8) << convectionVel_[0] << ", "
+              << convectionVel_[1] << ", " << convectionVel_[2] << std::endl;
 }
 
 void SimulationDomain::assembleCoeffMatrix()
@@ -118,13 +124,16 @@ void SimulationDomain::assembleCoeffMatrix()
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
-            Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
-                cloud.nodes, rbfOperatorType::CONSTANT);
+            // Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
+            //     cloud.nodes, rbfOperatorType::CONSTANT);
 
-            localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
-                            myRBFBasis_->collectOnNodes(
-                                cloud.nodes, rbfOperatorType::LAPLACE));
+            // localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
+            //                 myRBFBasis_->collectOnNodes(
+            //                     cloud.nodes, rbfOperatorType::LAPLACE));
 
+            Eigen::VectorXd localVector =
+                (diffusionCoeff_ * myRBFBasis_->collectOnNodes(
+                                       cloud.nodes, rbfOperatorType::LAPLACE));
             for (int i = 0; i < neighborNum_; i++)
             {
                 varCoeffMatrix_.insert(nodeID, cloud.id[i]) = localVector[i];
@@ -136,28 +145,31 @@ void SimulationDomain::assembleCoeffMatrix()
                                                      varCoeffMatrix_);
         }
     }
-
-    std::cout << "#assembleCoeffMatrix end" << std::endl;
 }
 
 void SimulationDomain::assembleRhs()
 {
     std::cout << "#assembleRhs" << std::endl;
 
-    Eigen::VectorXd rhsInnerVector =
-        ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_ -
-         tStepSize_ * convectionVel_[0] * dxMatrix_ -
-         tStepSize_ * convectionVel_[1] * dyMatrix_ -
-         tStepSize_ * convectionVel_[2] * dzMatrix_) *
-        preVarSol_;
+    // Eigen::VectorXd rhsInnerVector =
+    //     ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
+    //     preVarSol_;
 
+    // rhsInnerVector += -(tStepSize_ * convectionVel_[0] * dxMatrix_ +
+    //                     tStepSize_ * convectionVel_[1] * dyMatrix_ +
+    //                     tStepSize_ * convectionVel_[2] * dzMatrix_) *
+    //                   preVarSol_;
+
+    // rhsInnerVector += preVarSol_;
+
+    // Eigen::VectorXd rhsInnerVector(myMesh_->numOfNodes());
     for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
         auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
-            varRhs_(nodeID) = rhsInnerVector(nodeID);
+            // varRhs_(nodeID) = rhsInnerVector(nodeID);
         }
         else
         {
@@ -165,12 +177,12 @@ void SimulationDomain::assembleRhs()
                                                    varRhs_);
         }
     }
-
-    std::cout << "#assembleRhs end" << std::endl;
 }
 
 void SimulationDomain::solveDomain()
 {
+    std::cout << "#solveDomain" << std::endl;
+
     // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
 
     // solver.compute(varCoeffMatrix_);

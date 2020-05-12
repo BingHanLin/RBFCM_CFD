@@ -10,9 +10,9 @@
         "transferEqOptions": {
             "diffusionCoeff": 1,
             "convectionVel": [
-                1,
-                1,
-                1
+                0,
+                0,
+                0
             ]
         },
         "boundaryConditions": {
@@ -37,7 +37,7 @@
         }
     },
     "solverConstrol": {
-        "neighborNumber": 9,
+        "neighborNumber": 5,
         "shapeParameter": 2.0,
         "timeStepSize": 0.01,
         "endTime": 0.01,
