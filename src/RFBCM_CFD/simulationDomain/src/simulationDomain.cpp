@@ -19,6 +19,8 @@ SimulationDomain::SimulationDomain(std::shared_ptr<MeshData> mesh,
       density_(0.0),
       tStepSize_(0.0),
       endTime_(0.0),
+      currentTime_(0.0),
+      writeInterval_(0.0),
       theta_(0.0),
       convectionVel_(),
       diffusionCoeff_(0.0),
@@ -27,10 +29,6 @@ SimulationDomain::SimulationDomain(std::shared_ptr<MeshData> mesh,
     setUpSimulation();
     showSummary();
     setupLinearSystem();
-    assembleCoeffMatrix();
-    assembleRhs();
-    solveDomain();
-    writeDataToVTK();
 }
 
 void SimulationDomain::setupLinearSystem()
@@ -77,6 +75,8 @@ void SimulationDomain::setUpSimulation()
     neighborNum_ = solverControls.at("neighborNumber");
     tStepSize_ = solverControls.at("timeStepSize");
     endTime_ = solverControls.at("endTime");
+    writeInterval_ = solverControls.at("writeInterval");
+
     solverType_ = solverControls.at("solverType");
     theta_ = solverControls.at("transferEqOptions").at("theta");
 
@@ -100,6 +100,8 @@ void SimulationDomain::showSummary()
               << std::endl;
     std::cout << "Time step size: " << std::setw(8) << tStepSize_ << std::endl;
     std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
+    std::cout << "Write Interval: " << std::setw(8) << writeInterval_
+              << std::endl;
     std::cout << "Neighbor number: " << std::setw(8) << neighborNum_
               << std::endl;
 
@@ -124,16 +126,13 @@ void SimulationDomain::assembleCoeffMatrix()
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
-            // Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
-            //     cloud.nodes, rbfOperatorType::CONSTANT);
+            Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
+                cloud.nodes, rbfOperatorType::CONSTANT);
 
-            // localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
-            //                 myRBFBasis_->collectOnNodes(
-            //                     cloud.nodes, rbfOperatorType::LAPLACE));
+            localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
+                            myRBFBasis_->collectOnNodes(
+                                cloud.nodes, rbfOperatorType::LAPLACE));
 
-            Eigen::VectorXd localVector =
-                (diffusionCoeff_ * myRBFBasis_->collectOnNodes(
-                                       cloud.nodes, rbfOperatorType::LAPLACE));
             for (int i = 0; i < neighborNum_; i++)
             {
                 varCoeffMatrix_.insert(nodeID, cloud.id[i]) = localVector[i];
@@ -151,25 +150,24 @@ void SimulationDomain::assembleRhs()
 {
     std::cout << "#assembleRhs" << std::endl;
 
-    // Eigen::VectorXd rhsInnerVector =
-    //     ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
-    //     preVarSol_;
+    Eigen::VectorXd rhsInnerVector =
+        ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
+        preVarSol_;
 
-    // rhsInnerVector += -(tStepSize_ * convectionVel_[0] * dxMatrix_ +
-    //                     tStepSize_ * convectionVel_[1] * dyMatrix_ +
-    //                     tStepSize_ * convectionVel_[2] * dzMatrix_) *
-    //                   preVarSol_;
+    rhsInnerVector += -(tStepSize_ * convectionVel_[0] * dxMatrix_ +
+                        tStepSize_ * convectionVel_[1] * dyMatrix_ +
+                        tStepSize_ * convectionVel_[2] * dzMatrix_) *
+                      preVarSol_;
 
-    // rhsInnerVector += preVarSol_;
+    rhsInnerVector += preVarSol_;
 
-    // Eigen::VectorXd rhsInnerVector(myMesh_->numOfNodes());
     for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
         auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
-            // varRhs_(nodeID) = rhsInnerVector(nodeID);
+            varRhs_(nodeID) = rhsInnerVector(nodeID);
         }
         else
         {
@@ -179,9 +177,9 @@ void SimulationDomain::assembleRhs()
     }
 }
 
-void SimulationDomain::solveDomain()
+void SimulationDomain::solveMatrix()
 {
-    std::cout << "#solveDomain" << std::endl;
+    std::cout << "#solveMatrix" << std::endl;
 
     // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
 
@@ -211,7 +209,21 @@ void SimulationDomain::solveDomain()
     // Use the factors to solve the linear system
     varSol_ = solver.solve(varRhs_);
 
-    std::cout << "#solveDomain" << std::endl;
+    preVarSol_ = varSol_;
+}
+
+void SimulationDomain::solveDomain()
+{
+    assembleCoeffMatrix();
+
+    while (currentTime_ < endTime_)
+    {
+        assembleRhs();
+        solveMatrix();
+        if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+
+        currentTime_ += tStepSize_;
+    }
 }
 
 void SimulationDomain::writeDataToVTK() const
@@ -237,7 +249,12 @@ void SimulationDomain::writeDataToVTK() const
     addCells(myMesh_->numOfNodes(), Cells);
 
     std::filesystem::create_directories(controlData_->vtkDir());
-    const std::string fileName =
-        controlData_->vtkDir().string() + "/" + "test" + ".vtu";
-    doc.save_file(fileName.c_str());
+
+    const std::string childFileNmae = controlData_->vtkDir().string() + "/" +
+                                      std::to_string(currentTime_) + ".vtu";
+    doc.save_file(childFileNmae.c_str());
+
+    const std::string gourpFileName =
+        controlData_->vtkDir().string() + "/result.pvd";
+    writeVTKGroupFile(gourpFileName, childFileNmae, currentTime_);
 }

@@ -31,6 +31,7 @@ int main()
     // mySimulationDomain.solveDomain();
 
     // mySimulationDomain.exportData();
+    mySimulationDomain.solveDomain();
 
     std::cout << "test ok" << std::endl;
     return 0;

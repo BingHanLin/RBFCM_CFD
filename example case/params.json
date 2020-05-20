@@ -40,7 +40,8 @@
         "neighborNumber": 5,
         "shapeParameter": 2.0,
         "timeStepSize": 0.01,
-        "endTime": 0.01,
+        "endTime": 0.10,
+        "writeInterval": 0.02,
         "solverType": "transferEq",
         "navierStokesOptions": {
             "crankNicolsonEpsilon": 0.001,

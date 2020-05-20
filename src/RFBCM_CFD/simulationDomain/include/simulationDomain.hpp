@@ -24,7 +24,6 @@ class SimulationDomain
 
     void showSummary();
     void solveDomain();
-    void writeDataToVTK() const;
 
     // void exportData();
 
@@ -44,7 +43,10 @@ class SimulationDomain
     int neighborNum_;
     double endTime_;
     double tStepSize_;
+    double writeInterval_;
     double theta_;
+
+    double currentTime_;
 
     // int crankNicolsonMaxIter_;
     // double crankNicolsonEpsilon_;
@@ -65,5 +67,7 @@ class SimulationDomain
     void setupLinearSystem();
     void assembleCoeffMatrix();
     void assembleRhs();
+    void solveMatrix();
+    void writeDataToVTK() const;
 };
 #endif

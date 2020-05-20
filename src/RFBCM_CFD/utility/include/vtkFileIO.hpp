@@ -4,8 +4,8 @@
 #include "pugixml.hpp"
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-
-template <typename T, int N>
+#include <fstream>
+gi template <typename T, int N>
 void appendArrayToVTKNode(const std::vector<Eigen::Matrix<T, N, 1>> &values,
                           const std::string name, pugi::xml_node &node)
 {
@@ -98,5 +98,32 @@ void addCells(const int cellNum, pugi::xml_node &Node)
     typesArray.append_attribute("Name") = "types";
     typesArray.append_attribute("type") = "Int32";
     typesArray.append_attribute("format") = "ascii";
+}
+
+void writeVTKGroupFile(const std::string gourpFileName,
+                       const std::string childFileNmae, const double timeStep)
+{
+    std::ifstream vtkGroupFile(gourpFileName);
+    pugi::xml_document doc;
+    if (!vtkGroupFile)
+    {
+        pugi::xml_node VTKFile = doc.append_child("VTKFile");
+        VTKFile.append_attribute("type") = "Collection";
+        VTKFile.append_attribute("version") = "0.1";
+        VTKFile.append_attribute("byte_order") = "LittleEndian";
+        pugi::xml_node Collection = VTKFile.append_child("Collection");
+    }
+    else
+    {
+        pugi::xml_parse_result result = doc.load_file(gourpFileName.c_str());
+    }
+
+    pugi::xml_node DataSet =
+        doc.child("VTKFile").child("Collection").append_child("DataSet");
+    DataSet.append_attribute("timestep") = std::to_string(timeStep).c_str();
+    DataSet.append_attribute("part") = 0;
+    DataSet.append_attribute("file") = childFileNmae.c_str();
+
+    doc.save_file(gourpFileName.c_str());
 }
 #endif
