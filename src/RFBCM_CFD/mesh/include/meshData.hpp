@@ -46,8 +46,8 @@ class MeshData
     KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3> kdTree_;
 
     void buildBoundaryConditions();
-    void compactGroupToNodesMap(
-        std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact);
+    void compactGroupToNodesMap(const std::map<std::string, std::vector<int>>&
+                                    groupToNodesMapBeforeCompact);
 };
 
 #endif

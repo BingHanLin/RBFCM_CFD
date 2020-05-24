@@ -6,7 +6,7 @@ mkdir build
 
 cd build
 
-cmake -G "MinGW Makefiles" ..
+cmake -DCATCH2TEST=ON -G "MinGW Makefiles" ..
 
 REM make all
 mingw32-make -j4

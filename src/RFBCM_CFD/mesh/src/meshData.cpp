@@ -16,10 +16,11 @@ MeshData::MeshData()
     meshTypeEnum meshType =
         controlData_->paramsDataAt({"geometryControl", "type"});
 
+    std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
+
     if (meshType == meshTypeEnum::DEFAULT)
     {
         std::cout << "read nodes from msh file" << std::endl;
-        std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
 
         const std::string meshFileName =
             controlData_->paramsDataAt({"geometryControl", "fileName"})
@@ -30,8 +31,6 @@ MeshData::MeshData()
 
         bool isReadSuccess = readFromMsh(absPath, nodes_, normals_,
                                          groupToNodesMapBeforeCompact);
-
-        compactGroupToNodesMap(groupToNodesMapBeforeCompact);
     }
     else if (meshType == meshTypeEnum::RECTNAGLE)
     {
@@ -45,11 +44,12 @@ MeshData::MeshData()
 
     numOfNodes_ = nodes_.size();
     kdTree_ = KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3>(nodes_);
+    compactGroupToNodesMap(groupToNodesMapBeforeCompact);
     buildBoundaryConditions();
 }
 
 void MeshData::compactGroupToNodesMap(
-    std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact)
+    const std::map<std::string, std::vector<int>>& groupToNodesMapBeforeCompact)
 {
     nodesToGroup_.resize(nodes_.size());
     groupToNodesMap_.clear();
