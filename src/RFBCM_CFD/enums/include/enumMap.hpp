@@ -14,6 +14,13 @@ NLOHMANN_JSON_SERIALIZE_ENUM(solverTypeEnum, {
                                                  {TRANSFEREQ, "transferEq"},
                                              })
 
+enum initTypeEnum
+{
+    UNIFORM
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(initTypeEnum, {{UNIFORM, "uniform"}})
+
 enum meshTypeEnum
 {
     RECTNAGLE,

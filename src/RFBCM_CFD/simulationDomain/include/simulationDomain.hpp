@@ -63,11 +63,13 @@ class SimulationDomain
     Eigen::SparseMatrix<double> dyMatrix_;
     Eigen::SparseMatrix<double> dzMatrix_;
 
-    void setUpSimulation();
+    void setupSimulation();
+    void setupInitialCondition();
     void setupLinearSystem();
     void assembleCoeffMatrix();
     void assembleRhs();
     void solveMatrix();
     void writeDataToVTK() const;
+    void clearVTKDirectory() const;
 };
 #endif

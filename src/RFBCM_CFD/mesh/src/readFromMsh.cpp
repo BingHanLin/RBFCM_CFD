@@ -141,7 +141,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
             vec3d<double> v0 = nodes[n0];
             vec3d<double> v1 = nodes[n1];
 
-            vec3d<double> normal(-(v1(1) - v0(1)), v1(0) - v0(0), 0);
+            vec3d<double> normal(-(v1[1] - v0[1]), v1[0] - v0[0], 0);
             normal.normalize();
 
             normals[n0] += normal;
@@ -231,7 +231,7 @@ void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
         int nodeIndex;
         fileStream >> nodeIndex;
         nodesIndexMap.insert(std::pair<int, int>(nodeIndex, i));
-        fileStream >> nodes[i](0) >> nodes[i](1) >> nodes[i](2);
+        fileStream >> nodes[i][0] >> nodes[i][1] >> nodes[i][2];
     }
 };
 

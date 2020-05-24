@@ -18,6 +18,9 @@ MQBasis::MQBasis() : controlData_(controlData::instance())
         controlData_->paramsDataAt({"solverConstrol", "shapeParameter"});
 }
 
+MQBasis::MQBasis(const double shapeParameter)
+    : shapeParameter_(shapeParameter){};
+
 double MQBasis::getBasisValue(const vec3d<double>& nodeI,
                               const vec3d<double>& nodeJ,
                               const rbfOperatorType inputOperatorType)
@@ -41,19 +44,19 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
-        temp = rr(0) / temp1;
+        temp = rr[0] / temp1;
     }
     else if (inputOperatorType == rbfOperatorType::PARTIAL_D2)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
-        temp = rr(1) / temp1;
+        temp = rr[1] / temp1;
     }
     else if (inputOperatorType == rbfOperatorType::PARTIAL_D3)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
-        temp = rr(2) / temp1;
+        temp = rr[2] / temp1;
     }
     // else if (inputOperatorType == rbfOperatorType::NEUMANN_OPERATOR)
     // {
@@ -86,21 +89,16 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     {
         for (int j = 0; j < neighborNum; j++)
         {
-            vec3d<double> nodeI = nodesCloud[i];
-            vec3d<double> nodeJ = nodesCloud[j];
-
-            phi(j, i) /* transposed */ =
-                getBasisValue(nodeI, nodeJ, rbfOperatorType::CONSTANT);
+            phi(j, i) /* transposed */ = getBasisValue(
+                nodesCloud[i], nodesCloud[j], rbfOperatorType::CONSTANT);
         }
     }
 
     Eigen::VectorXd phiL(neighborNum);
     for (int j = 0; j < neighborNum; j++)
     {
-        vec3d<double> nodeI = nodesCloud[0];
-        vec3d<double> nodeJ = nodesCloud[j];
-
-        phiL(j) = getBasisValue(nodeI, nodeJ, inputOperatorType);
+        phiL(j) =
+            getBasisValue(nodesCloud[0], nodesCloud[j], inputOperatorType);
     }
 
     Eigen::VectorXd x(neighborNum);

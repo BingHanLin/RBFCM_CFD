@@ -8,7 +8,7 @@
         "viscosity": 1.0,
         "density": 1.0,
         "transferEqOptions": {
-            "diffusionCoeff": 1,
+            "diffusionCoeff": 1.0,
             "convectionVel": [
                 0,
                 0,
@@ -34,14 +34,20 @@
                     "value": 0
                 }
             ]
+        },
+        "initialConditions": {
+            "type": "uniform",
+            "uniform": {
+                "value": 100.0
+            }
         }
     },
     "solverConstrol": {
         "neighborNumber": 5,
-        "shapeParameter": 2.0,
+        "shapeParameter": 1,
         "timeStepSize": 0.01,
         "endTime": 0.10,
-        "writeInterval": 0.02,
+        "writeInterval": 0.01,
         "solverType": "transferEq",
         "navierStokesOptions": {
             "crankNicolsonEpsilon": 0.001,

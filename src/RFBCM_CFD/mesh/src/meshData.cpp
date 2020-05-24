@@ -104,12 +104,18 @@ nodesCloud MeshData::neighborNodesCloud(const int nodeID, const int neighborNum)
     kdTree_.query(nodeID, neighborNum, &neighboursID[0], &outDistSqr[0]);
 
     nodesCloud cloud(neighborNum);
-    std::sort(neighboursID.begin(), neighboursID.end());
     for (int i = 0; i < neighborNum; i++)
     {
         cloud.id[i] = neighboursID[i];
         cloud.nodes[i] = nodes_[neighboursID[i]];
     }
+
+    // std::sort(neighboursID.begin(), neighboursID.end());
+    // for (int i = 0; i < neighborNum; i++)
+    // {
+    //     cloud.id[i] = neighboursID[i];
+    //     cloud.nodes[i] = nodes_[neighboursID[i]];
+    // }
     return cloud;
 }
 

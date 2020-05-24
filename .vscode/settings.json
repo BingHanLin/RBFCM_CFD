@@ -116,7 +116,10 @@
 		"codecvt": "cpp",
 		"concepts": "cpp",
 		"filesystem": "cpp",
-		"resumable": "cpp"
+		"resumable": "cpp",
+		"regex": "cpp",
+		"stack": "cpp",
+		"variant": "cpp"
 	},
 	"editor.fontSize": 16,
 	"C_Cpp.errorSquiggles": "Disabled",

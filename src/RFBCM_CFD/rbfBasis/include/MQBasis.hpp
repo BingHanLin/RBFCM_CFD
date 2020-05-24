@@ -16,6 +16,7 @@ class MQBasis
 {
    public:
     MQBasis();
+    MQBasis(const double shapeParameter);
 
     ~MQBasis(){};
 

@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <fstream>
-gi template <typename T, int N>
+template <typename T, int N>
 void appendArrayToVTKNode(const std::vector<Eigen::Matrix<T, N, 1>> &values,
                           const std::string name, pugi::xml_node &node)
 {

@@ -10,4 +10,9 @@ cmake -G "MinGW Makefiles" ..
 
 REM make all
 mingw32-make -j4
+
+REM run unit test
+cd ..
+cd bin
+MYAPP_Test.exe
 cd ..

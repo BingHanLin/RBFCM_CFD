@@ -7,8 +7,6 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/rbfBasis/src DIR_RBFBASIS_SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/simulationDomain/src DIR_SIMULATIONDOMAIN_SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/controlData/src DIR_CONTROLDATA_SRCS)
 
-
-
 add_library( ${PROJECT_NAME}
     ${DIR_MESH_SRCS} 
     ${DIR_BOUNDARYCONDITIONS_SRCS} 

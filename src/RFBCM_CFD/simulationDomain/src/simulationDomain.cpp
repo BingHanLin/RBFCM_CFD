@@ -1,6 +1,7 @@
 #include "simulationDomain.hpp"
 #include "MQBasis.hpp"
 #include "enumMap.hpp"
+#include "freeFunctions.hpp"
 #include "pugixml.hpp"
 #include "rectangle.hpp"
 #include "vtkFileIO.hpp"
@@ -26,9 +27,11 @@ SimulationDomain::SimulationDomain(std::shared_ptr<MeshData> mesh,
       diffusionCoeff_(0.0),
       neighborNum_(0)
 {
-    setUpSimulation();
+    setupSimulation();
     showSummary();
+    clearVTKDirectory();
     setupLinearSystem();
+    setupInitialCondition();
 }
 
 void SimulationDomain::setupLinearSystem()
@@ -57,19 +60,22 @@ void SimulationDomain::setupLinearSystem()
         Eigen::VectorXd dzVector = myRBFBasis_->collectOnNodes(
             cloud.nodes, rbfOperatorType::PARTIAL_D3);
 
+        auto indexs = sortIndexes(cloud.id);
+
         for (int i = 0; i < neighborNum_; i++)
         {
-            laplaceMatrix_.insert(nodeID, cloud.id[i]) = laplaceVector[i];
-            dxMatrix_.insert(nodeID, cloud.id[i]) = dxVector[i];
-            dyMatrix_.insert(nodeID, cloud.id[i]) = dyVector[i];
-            dzMatrix_.insert(nodeID, cloud.id[i]) = dzVector[i];
+            laplaceMatrix_.insert(nodeID, cloud.id[indexs[i]]) =
+                laplaceVector[indexs[i]];
+            dxMatrix_.insert(nodeID, cloud.id[indexs[i]]) = dxVector[indexs[i]];
+            dyMatrix_.insert(nodeID, cloud.id[indexs[i]]) = dyVector[indexs[i]];
+            dzMatrix_.insert(nodeID, cloud.id[indexs[i]]) = dzVector[indexs[i]];
         }
     }
 }
 
-void SimulationDomain::setUpSimulation()
+void SimulationDomain::setupSimulation()
 {
-    std::cout << "#setUpSimulation" << std::endl;
+    std::cout << "#setupSimulation" << std::endl;
 
     const auto solverControls = controlData_->paramsDataAt({"solverConstrol"});
     neighborNum_ = solverControls.at("neighborNumber");
@@ -86,6 +92,19 @@ void SimulationDomain::setUpSimulation()
         physicalControls.at("transferEqOptions").at("diffusionCoeff");
     convectionVel_ =
         physicalControls.at("transferEqOptions").at("convectionVel");
+}
+
+void SimulationDomain::setupInitialCondition()
+{
+    const auto initCondition =
+        controlData_->paramsDataAt({"physicsControl", "initialConditions"});
+
+    if (initCondition.at("type") == initTypeEnum::UNIFORM)
+    {
+        const double val = initCondition.at("uniform").at("value");
+        varSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
+        preVarSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
+    }
 }
 
 void SimulationDomain::showSummary()
@@ -126,17 +145,57 @@ void SimulationDomain::assembleCoeffMatrix()
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
-            Eigen::VectorXd localVector = myRBFBasis_->collectOnNodes(
-                cloud.nodes, rbfOperatorType::CONSTANT);
+            Eigen::VectorXd localVector;
+            //  =
+            //     Eigen::VectorXd::Zero(myMesh_->numOfNodes());
+            if (tStepSize_ == 0.0)
+            {
+                localVector = diffusionCoeff_ *
+                              myRBFBasis_->collectOnNodes(
+                                  cloud.nodes, rbfOperatorType::LAPLACE);
 
-            localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
-                            myRBFBasis_->collectOnNodes(
-                                cloud.nodes, rbfOperatorType::LAPLACE));
+                // localVector += convectionVel_[0] *
+                //                myRBFBasis_->collectOnNodes(
+                //                    cloud.nodes, rbfOperatorType::PARTIAL_D1);
+
+                // localVector += convectionVel_[1] *
+                //                myRBFBasis_->collectOnNodes(
+                //                    cloud.nodes, rbfOperatorType::PARTIAL_D2);
+
+                // localVector += convectionVel_[2] *
+                //                myRBFBasis_->collectOnNodes(
+                //                    cloud.nodes, rbfOperatorType::PARTIAL_D3);
+            }
+            else
+            {
+                localVector = myRBFBasis_->collectOnNodes(
+                    cloud.nodes, rbfOperatorType::CONSTANT);
+
+                localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
+                                myRBFBasis_->collectOnNodes(
+                                    cloud.nodes, rbfOperatorType::LAPLACE));
+
+                // localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
+                //                 myRBFBasis_->collectOnNodes(
+                //                     cloud.nodes,
+                //                     rbfOperatorType::PARTIAL_D1));
+
+                // localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
+                //                 myRBFBasis_->collectOnNodes(
+                //                     cloud.nodes,
+                //                     rbfOperatorType::PARTIAL_D2));
+
+                // localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
+                //                 myRBFBasis_->collectOnNodes(
+                //                     cloud.nodes,
+                //                     rbfOperatorType::PARTIAL_D3));
+            }
+
+            auto indexs = sortIndexes(cloud.id);
 
             for (int i = 0; i < neighborNum_; i++)
-            {
-                varCoeffMatrix_.insert(nodeID, cloud.id[i]) = localVector[i];
-            }
+                varCoeffMatrix_.insert(nodeID, cloud.id[indexs[i]]) =
+                    localVector[indexs[i]];
         }
         else
         {
@@ -151,15 +210,22 @@ void SimulationDomain::assembleRhs()
     std::cout << "#assembleRhs" << std::endl;
 
     Eigen::VectorXd rhsInnerVector =
-        ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
-        preVarSol_;
+        Eigen::VectorXd::Zero(myMesh_->numOfNodes());
 
-    rhsInnerVector += -(tStepSize_ * convectionVel_[0] * dxMatrix_ +
-                        tStepSize_ * convectionVel_[1] * dyMatrix_ +
-                        tStepSize_ * convectionVel_[2] * dzMatrix_) *
-                      preVarSol_;
+    if (tStepSize_ != 0.0)
+    {
+        rhsInnerVector = preVarSol_;
 
-    rhsInnerVector += preVarSol_;
+        rhsInnerVector +=
+            ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
+            preVarSol_;
+
+        // rhsInnerVector +=
+        //     ((1 - theta_) * tStepSize_ * convectionVel_[0] * dxMatrix_ +
+        //      (1 - theta_) * tStepSize_ * convectionVel_[1] * dyMatrix_ +
+        //      (1 - theta_) * tStepSize_ * convectionVel_[2] * dzMatrix_) *
+        //     preVarSol_;
+    }
 
     for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
@@ -181,8 +247,8 @@ void SimulationDomain::solveMatrix()
 {
     std::cout << "#solveMatrix" << std::endl;
 
+    // =========================================
     // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
-
     // solver.compute(varCoeffMatrix_);
 
     // if (solver.info() != Eigen::Success)
@@ -196,8 +262,9 @@ void SimulationDomain::solveMatrix()
     // std::cout << "#iterations:     " << solver.iterations() << std::endl;
     // std::cout << "estimated error: " << solver.error() << std::endl;
 
-    // varSol_ = solver.solve(rhs);
+    // varSol_ = solver.solve(varRhs_);
 
+    // =========================================
     Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
         solver;
 
@@ -208,6 +275,19 @@ void SimulationDomain::solveMatrix()
     solver.factorize(varCoeffMatrix_);
     // Use the factors to solve the linear system
     varSol_ = solver.solve(varRhs_);
+    // =========================================
+
+    // fill A and b
+    // Eigen::ConjugateGradient<Eigen::SparseMatrix<double>,
+    //                          Eigen::Lower | Eigen::Upper>
+    //     cg;
+    // cg.compute(varCoeffMatrix_);
+    // varSol_ = cg.solve(varRhs_);
+    // std::cout << "#iterations:     " << cg.iterations() << std::endl;
+    // std::cout << "estimated error: " << cg.error() << std::endl;
+    // // update b, and solve again
+    // varSol_ = cg.solve(varRhs_);
+    // =========================================
 
     preVarSol_ = varSol_;
 }
@@ -215,15 +295,31 @@ void SimulationDomain::solveMatrix()
 void SimulationDomain::solveDomain()
 {
     assembleCoeffMatrix();
+    writeDataToVTK();
 
-    while (currentTime_ < endTime_)
+    if (tStepSize_ == 0)
     {
         assembleRhs();
         solveMatrix();
-        if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
-
-        currentTime_ += tStepSize_;
+        writeDataToVTK();
     }
+    else
+    {
+        while (currentTime_ < endTime_)
+        {
+            assembleRhs();
+            solveMatrix();
+            currentTime_ += tStepSize_;
+            if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+        }
+    }
+}
+
+void SimulationDomain::clearVTKDirectory() const
+{
+    for (const auto& entry :
+         std::filesystem::directory_iterator(controlData_->vtkDir()))
+        std::filesystem::remove_all(entry.path());
 }
 
 void SimulationDomain::writeDataToVTK() const
