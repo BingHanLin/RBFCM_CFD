@@ -32,7 +32,9 @@ class SimulationDomain
     std::shared_ptr<controlData> controlData_;
     std::shared_ptr<MeshData> myMesh_;
     std::shared_ptr<MQBasis> myRBFBasis_;
-    solverTypeEnum solverType_;
+    solverType solverType_;
+    systemSateType systemSateType_;
+    int dim_;
 
     // physicsControl
     double viscous_;

@@ -35,6 +35,52 @@ SimulationDomain::SimulationDomain(std::shared_ptr<controlData> inControlData,
     setupInitialCondition();
 }
 
+void SimulationDomain::setupSimulation()
+{
+    std::cout << "#setupSimulation" << std::endl;
+
+    const auto solverControls = controlData_->paramsDataAt({"solverControl"});
+    neighborNum_ = solverControls.at("neighborNumber");
+    tStepSize_ = solverControls.at("timeStepSize");
+    endTime_ = solverControls.at("endTime");
+    writeInterval_ = solverControls.at("writeInterval");
+    systemSateType_ = solverControls.at("systemSateType");
+    dim_ = solverControls.at("dimension");
+    solverType_ = solverControls.at("solverType");
+    theta_ = solverControls.at("transferEqOptions").at("theta");
+
+    const auto physicalControls =
+        controlData_->paramsDataAt({"physicsControl"});
+    diffusionCoeff_ =
+        physicalControls.at("transferEqOptions").at("diffusionCoeff");
+    convectionVel_ =
+        physicalControls.at("transferEqOptions").at("convectionVel");
+}
+
+void SimulationDomain::showSummary()
+{
+    std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
+    std::cout << std::setfill(' ') << std::setw(50) << "Summary of simulation"
+              << std::endl;
+    std::cout << std::setfill('=') << std::setw(80) << "=" << std::setfill(' ')
+              << std::endl;
+
+    std::cout << "Number of nodes: " << std::setw(8) << myMesh_->numOfNodes()
+              << std::endl;
+    std::cout << "Time step size: " << std::setw(8) << tStepSize_ << std::endl;
+    std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
+    std::cout << "Write Interval: " << std::setw(8) << writeInterval_
+              << std::endl;
+    std::cout << "Neighbor number: " << std::setw(8) << neighborNum_
+              << std::endl;
+
+    std::cout << std::endl;
+
+    std::cout << "Diffusity: " << std::setw(8) << diffusionCoeff_ << std::endl;
+    std::cout << "Convectivity: " << std::setw(8) << convectionVel_[0] << ", "
+              << convectionVel_[1] << ", " << convectionVel_[2] << std::endl;
+}
+
 void SimulationDomain::setupLinearSystem()
 {
     std::cout << "#setupLinearSystem" << std::endl;
@@ -74,62 +120,17 @@ void SimulationDomain::setupLinearSystem()
     }
 }
 
-void SimulationDomain::setupSimulation()
-{
-    std::cout << "#setupSimulation" << std::endl;
-
-    const auto solverControls = controlData_->paramsDataAt({"solverControl"});
-    neighborNum_ = solverControls.at("neighborNumber");
-    tStepSize_ = solverControls.at("timeStepSize");
-    endTime_ = solverControls.at("endTime");
-    writeInterval_ = solverControls.at("writeInterval");
-
-    solverType_ = solverControls.at("solverType");
-    theta_ = solverControls.at("transferEqOptions").at("theta");
-
-    const auto physicalControls =
-        controlData_->paramsDataAt({"physicsControl"});
-    diffusionCoeff_ =
-        physicalControls.at("transferEqOptions").at("diffusionCoeff");
-    convectionVel_ =
-        physicalControls.at("transferEqOptions").at("convectionVel");
-}
-
 void SimulationDomain::setupInitialCondition()
 {
     const auto initCondition =
         controlData_->paramsDataAt({"physicsControl", "initialConditions"});
 
-    if (initCondition.at("type") == initTypeEnum::UNIFORM)
+    if (initCondition.at("type") == initConditionType::UNIFORM)
     {
         const double val = initCondition.at("uniform").at("value");
         varSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
         preVarSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
     }
-}
-
-void SimulationDomain::showSummary()
-{
-    std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
-    std::cout << std::setfill(' ') << std::setw(50) << "Summary of simulation"
-              << std::endl;
-    std::cout << std::setfill('=') << std::setw(80) << "=" << std::setfill(' ')
-              << std::endl;
-
-    std::cout << "Number of nodes: " << std::setw(8) << myMesh_->numOfNodes()
-              << std::endl;
-    std::cout << "Time step size: " << std::setw(8) << tStepSize_ << std::endl;
-    std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
-    std::cout << "Write Interval: " << std::setw(8) << writeInterval_
-              << std::endl;
-    std::cout << "Neighbor number: " << std::setw(8) << neighborNum_
-              << std::endl;
-
-    std::cout << std::endl;
-
-    std::cout << "Diffusity: " << std::setw(8) << diffusionCoeff_ << std::endl;
-    std::cout << "Convectivity: " << std::setw(8) << convectionVel_[0] << ", "
-              << convectionVel_[1] << ", " << convectionVel_[2] << std::endl;
 }
 
 void SimulationDomain::assembleCoeffMatrix()
@@ -147,9 +148,7 @@ void SimulationDomain::assembleCoeffMatrix()
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
             Eigen::VectorXd localVector;
-            //  =
-            //     Eigen::VectorXd::Zero(myMesh_->numOfNodes());
-            if (tStepSize_ == 0.0)
+            if (systemSateType_ == systemSateType::STEADY)
             {
                 localVector = diffusionCoeff_ *
                               myRBFBasis_->collectOnNodes(
@@ -210,7 +209,7 @@ void SimulationDomain::assembleRhs()
     Eigen::VectorXd rhsInnerVector =
         Eigen::VectorXd::Zero(myMesh_->numOfNodes());
 
-    if (tStepSize_ != 0.0)
+    if (systemSateType_ == systemSateType::TRANSIENT)
     {
         rhsInnerVector = preVarSol_;
 
@@ -295,7 +294,7 @@ void SimulationDomain::solveDomain()
     assembleCoeffMatrix();
     writeDataToVTK();
 
-    if (tStepSize_ == 0)
+    if (systemSateType_ == systemSateType::STEADY)
     {
         assembleRhs();
         solveMatrix();

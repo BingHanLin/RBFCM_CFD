@@ -15,12 +15,11 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
 {
     std::cout << "MeshData" << std::endl;
 
-    meshTypeEnum meshType =
-        controlData_->paramsDataAt({"geometryControl", "type"});
+    meshType meshType = controlData_->paramsDataAt({"geometryControl", "type"});
 
     std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
 
-    if (meshType == meshTypeEnum::DEFAULT)
+    if (meshType == meshType::DEFAULT)
     {
         std::cout << "read nodes from msh file" << std::endl;
 
@@ -34,7 +33,7 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
         bool isReadSuccess = readFromMsh(absPath, nodes_, normals_,
                                          groupToNodesMapBeforeCompact);
     }
-    else if (meshType == meshTypeEnum::RECTNAGLE)
+    else if (meshType == meshType::RECTNAGLE)
     {
         std::cout << "create rectangle mesh and read from msh file"
                   << std::endl;

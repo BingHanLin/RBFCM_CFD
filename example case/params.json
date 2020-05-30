@@ -48,6 +48,7 @@
         "endTime": 0.10,
         "writeInterval": 0.01,
         "dimension": 2,
+        "systemSateType": "steady",
         "solverType": "transferEq",
         "navierStokesOptions": {
             "crankNicolsonEpsilon": 0.001,

@@ -3,34 +3,45 @@
 
 #include "json.h"
 
-enum solverTypeEnum
+enum solverType
 {
     NAVIERSTOKES,
     TRANSFEREQ
 };
 
-NLOHMANN_JSON_SERIALIZE_ENUM(solverTypeEnum, {
-                                                 {NAVIERSTOKES, "navierStokes"},
-                                                 {TRANSFEREQ, "transferEq"},
+NLOHMANN_JSON_SERIALIZE_ENUM(solverType, {
+                                             {NAVIERSTOKES, "navierStokes"},
+                                             {TRANSFEREQ, "transferEq"},
+                                         })
+
+enum systemSateType
+{
+    TRANSIENT,
+    STEADY
+};
+
+NLOHMANN_JSON_SERIALIZE_ENUM(systemSateType, {
+                                                 {TRANSIENT, "transient"},
+                                                 {STEADY, "steady"},
                                              })
 
-enum initTypeEnum
+enum initConditionType
 {
     UNIFORM
 };
 
-NLOHMANN_JSON_SERIALIZE_ENUM(initTypeEnum, {{UNIFORM, "uniform"}})
+NLOHMANN_JSON_SERIALIZE_ENUM(initConditionType, {{UNIFORM, "uniform"}})
 
-enum meshTypeEnum
+enum meshType
 {
     RECTNAGLE,
     DEFAULT
 };
 
-NLOHMANN_JSON_SERIALIZE_ENUM(meshTypeEnum, {
-                                               {RECTNAGLE, "rectangle"},
-                                               {DEFAULT, "mshFile"},
-                                           })
+NLOHMANN_JSON_SERIALIZE_ENUM(meshType, {
+                                           {RECTNAGLE, "rectangle"},
+                                           {DEFAULT, "mshFile"},
+                                       })
 
 enum boundaryConditionType
 {
