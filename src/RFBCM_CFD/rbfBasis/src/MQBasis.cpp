@@ -16,15 +16,17 @@ MQBasis::MQBasis(std::shared_ptr<controlData> inControlData)
     : controlData_(inControlData)
 {
     shapeParameter_ =
-        controlData_->paramsDataAt({"solverConstrol", "shapeParameter"});
+        controlData_->paramsDataAt({"solverControl", "shapeParameter"});
+
+    dim_ = controlData_->paramsDataAt({"solverControl", "dimension"});
 }
 
-MQBasis::MQBasis(const double shapeParameter)
-    : shapeParameter_(shapeParameter){};
+MQBasis::MQBasis(const double shapeParameter, const int dim)
+    : shapeParameter_(shapeParameter), dim_(dim){};
 
 double MQBasis::getBasisValue(const vec3d<double>& nodeI,
                               const vec3d<double>& nodeJ,
-                              const rbfOperatorType inputOperatorType)
+                              const rbfOperatorType inputOperatorType) const
 {
     double rs = (nodeI - nodeJ).squaredNorm();
     vec3d<double> rr = nodeI - nodeJ;
@@ -39,7 +41,14 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_) *
                 (rs + shapeParameter_ * shapeParameter_);
-        temp = (rs + 2 * shapeParameter_ * shapeParameter_) / temp1;
+        temp = ((dim_ - 1) * rs + dim_ * shapeParameter_ * shapeParameter_) /
+               temp1;
+    }
+    else if (inputOperatorType == rbfOperatorType::DIVERGENCE)
+    {
+        double temp1;
+        temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
+        temp = (rr[0] + rr[1] + rr[2]) / temp1;
     }
     else if (inputOperatorType == rbfOperatorType::PARTIAL_D1)
     {
@@ -81,7 +90,7 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
 
 Eigen::VectorXd MQBasis::collectOnNodes(
     const std::vector<vec3d<double>>& nodesCloud,
-    const rbfOperatorType inputOperatorType)
+    const rbfOperatorType inputOperatorType) const
 {
     const int neighborNum = nodesCloud.size();
     Eigen::MatrixXd phi(neighborNum, neighborNum);

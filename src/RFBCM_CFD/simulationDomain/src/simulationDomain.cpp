@@ -78,7 +78,7 @@ void SimulationDomain::setupSimulation()
 {
     std::cout << "#setupSimulation" << std::endl;
 
-    const auto solverControls = controlData_->paramsDataAt({"solverConstrol"});
+    const auto solverControls = controlData_->paramsDataAt({"solverControl"});
     neighborNum_ = solverControls.at("neighborNumber");
     tStepSize_ = solverControls.at("timeStepSize");
     endTime_ = solverControls.at("endTime");

@@ -32,17 +32,6 @@ NLOHMANN_JSON_SERIALIZE_ENUM(meshTypeEnum, {
                                                {DEFAULT, "mshFile"},
                                            })
 
-enum dimensionTypeEnum
-{
-    threeD,
-    twoD
-};
-
-NLOHMANN_JSON_SERIALIZE_ENUM(dimensionTypeEnum, {
-                                                    {threeD, "threeD"},
-                                                    {twoD, "twoD"},
-                                                })
-
 enum boundaryConditionType
 {
     constantValue
@@ -62,6 +51,7 @@ enum rbfOperatorType
 {
     CONSTANT,
     LAPLACE,
+    DIVERGENCE,
     PARTIAL_D1,
     PARTIAL_D2,
     PARTIAL_D3,
