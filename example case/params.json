@@ -1,8 +1,7 @@
 {
     "geometryControl": {
-        "dimension": "twoD",
         "type": "mshFile",
-        "fileName": "2dRec.msh"
+        "fileName": "2dRec20.msh"
     },
     "physicsControl": {
         "viscosity": 1.0,
@@ -48,6 +47,7 @@
         "timeStepSize": 0.01,
         "endTime": 0.10,
         "writeInterval": 0.01,
+        "dimension": "2",
         "solverType": "transferEq",
         "navierStokesOptions": {
             "crankNicolsonEpsilon": 0.001,

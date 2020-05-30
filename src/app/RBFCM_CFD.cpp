@@ -53,7 +53,6 @@ int main(int argc, char** argv)
     // ****************************************************************************
     SimulationDomain mySimulationDomain(myControlData, myMeshData, myRBFBasis);
     mySimulationDomain.solveDomain();
-    // mySimulationDomain.exportData();
 
     std::cout << "test ok" << std::endl;
     return 0;
