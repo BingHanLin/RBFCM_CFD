@@ -15,7 +15,7 @@
 class MQBasis
 {
    public:
-    MQBasis();
+    MQBasis(std::shared_ptr<controlData> inControlData);
     MQBasis(const double shapeParameter);
 
     ~MQBasis(){};
@@ -24,7 +24,7 @@ class MQBasis
                                    const rbfOperatorType inputOperatorType);
 
    private:
-    controlData* controlData_;
+    std::shared_ptr<controlData> controlData_;
     double shapeParameter_;
 
     double getBasisValue(const vec3d<double>& nodeI, const vec3d<double>& nodeJ,

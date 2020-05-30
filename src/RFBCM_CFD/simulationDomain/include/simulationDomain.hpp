@@ -18,7 +18,8 @@
 class SimulationDomain
 {
    public:
-    SimulationDomain(std::shared_ptr<MeshData> mesh,
+    SimulationDomain(std::shared_ptr<controlData> inControlData,
+                     std::shared_ptr<MeshData> mesh,
                      std::shared_ptr<MQBasis> RBFBasis);
     ~SimulationDomain(){};
 
@@ -28,7 +29,7 @@ class SimulationDomain
     // void exportData();
 
    private:
-    controlData* controlData_;
+    std::shared_ptr<controlData> controlData_;
     std::shared_ptr<MeshData> myMesh_;
     std::shared_ptr<MQBasis> myRBFBasis_;
     solverTypeEnum solverType_;

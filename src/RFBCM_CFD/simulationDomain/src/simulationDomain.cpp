@@ -11,9 +11,10 @@
 #include <iomanip>
 #include <iostream>
 
-SimulationDomain::SimulationDomain(std::shared_ptr<MeshData> mesh,
+SimulationDomain::SimulationDomain(std::shared_ptr<controlData> inControlData,
+                                   std::shared_ptr<MeshData> mesh,
                                    std::shared_ptr<MQBasis> RBFBasis)
-    : controlData_(controlData::instance()),
+    : controlData_(inControlData),
       myMesh_(mesh),
       myRBFBasis_(RBFBasis),
       viscous_(0.0),
@@ -154,17 +155,17 @@ void SimulationDomain::assembleCoeffMatrix()
                               myRBFBasis_->collectOnNodes(
                                   cloud.nodes, rbfOperatorType::LAPLACE);
 
-                // localVector += convectionVel_[0] *
-                //                myRBFBasis_->collectOnNodes(
-                //                    cloud.nodes, rbfOperatorType::PARTIAL_D1);
+                localVector += convectionVel_[0] *
+                               myRBFBasis_->collectOnNodes(
+                                   cloud.nodes, rbfOperatorType::PARTIAL_D1);
 
-                // localVector += convectionVel_[1] *
-                //                myRBFBasis_->collectOnNodes(
-                //                    cloud.nodes, rbfOperatorType::PARTIAL_D2);
+                localVector += convectionVel_[1] *
+                               myRBFBasis_->collectOnNodes(
+                                   cloud.nodes, rbfOperatorType::PARTIAL_D2);
 
-                // localVector += convectionVel_[2] *
-                //                myRBFBasis_->collectOnNodes(
-                //                    cloud.nodes, rbfOperatorType::PARTIAL_D3);
+                localVector += convectionVel_[2] *
+                               myRBFBasis_->collectOnNodes(
+                                   cloud.nodes, rbfOperatorType::PARTIAL_D3);
             }
             else
             {
@@ -175,20 +176,17 @@ void SimulationDomain::assembleCoeffMatrix()
                                 myRBFBasis_->collectOnNodes(
                                     cloud.nodes, rbfOperatorType::LAPLACE));
 
-                // localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
-                //                 myRBFBasis_->collectOnNodes(
-                //                     cloud.nodes,
-                //                     rbfOperatorType::PARTIAL_D1));
+                localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
+                                myRBFBasis_->collectOnNodes(
+                                    cloud.nodes, rbfOperatorType::PARTIAL_D1));
 
-                // localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
-                //                 myRBFBasis_->collectOnNodes(
-                //                     cloud.nodes,
-                //                     rbfOperatorType::PARTIAL_D2));
+                localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
+                                myRBFBasis_->collectOnNodes(
+                                    cloud.nodes, rbfOperatorType::PARTIAL_D2));
 
-                // localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
-                //                 myRBFBasis_->collectOnNodes(
-                //                     cloud.nodes,
-                //                     rbfOperatorType::PARTIAL_D3));
+                localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
+                                myRBFBasis_->collectOnNodes(
+                                    cloud.nodes, rbfOperatorType::PARTIAL_D3));
             }
 
             auto indexs = sortIndexes(cloud.id);
@@ -220,11 +218,11 @@ void SimulationDomain::assembleRhs()
             ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
             preVarSol_;
 
-        // rhsInnerVector +=
-        //     ((1 - theta_) * tStepSize_ * convectionVel_[0] * dxMatrix_ +
-        //      (1 - theta_) * tStepSize_ * convectionVel_[1] * dyMatrix_ +
-        //      (1 - theta_) * tStepSize_ * convectionVel_[2] * dzMatrix_) *
-        //     preVarSol_;
+        rhsInnerVector +=
+            ((1 - theta_) * tStepSize_ * convectionVel_[0] * dxMatrix_ +
+             (1 - theta_) * tStepSize_ * convectionVel_[1] * dyMatrix_ +
+             (1 - theta_) * tStepSize_ * convectionVel_[2] * dzMatrix_) *
+            preVarSol_;
     }
 
     for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)

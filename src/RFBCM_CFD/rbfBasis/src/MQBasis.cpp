@@ -12,7 +12,8 @@
 // copy( NNormVec, NormVec );
 // };
 
-MQBasis::MQBasis() : controlData_(controlData::instance())
+MQBasis::MQBasis(std::shared_ptr<controlData> inControlData)
+    : controlData_(inControlData)
 {
     shapeParameter_ =
         controlData_->paramsDataAt({"solverConstrol", "shapeParameter"});

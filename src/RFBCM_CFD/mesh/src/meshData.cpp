@@ -5,14 +5,16 @@
 
 #include <iostream>
 
-MeshData::MeshData()
-    : controlData_(controlData::instance()),
+MeshData::MeshData(std::shared_ptr<controlData> inControlData)
+    : controlData_(inControlData),
       numOfNodes_(),
       groupToNodesMap_(),
       nodes_(),
       normals_(),
       nodesToGroup_()
 {
+    std::cout << "MeshData" << std::endl;
+
     meshTypeEnum meshType =
         controlData_->paramsDataAt({"geometryControl", "type"});
 
@@ -57,13 +59,13 @@ void MeshData::compactGroupToNodesMap(
     const auto& constantValueBCData = controlData_->paramsDataAt(
         {"physicsControl", "boundaryConditions", "constantValue"});
 
-    for (auto& oneBCData : constantValueBCData)
+    for (const auto& oneBCData : constantValueBCData)
     {
         const std::string groupName = oneBCData.at("groupName");
         groupToNodesMap_.insert({groupName, {}});
 
         // TODO: parallel
-        for (int& nodeIndex : groupToNodesMapBeforeCompact.at(groupName))
+        for (const int& nodeIndex : groupToNodesMapBeforeCompact.at(groupName))
         {
             nodesToGroup_[nodeIndex] = groupName;
         }

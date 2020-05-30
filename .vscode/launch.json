@@ -23,7 +23,7 @@
             ],
             "preLaunchTask": "C++ Build",
             "program": "${fileDirname}/${fileBasenameNoExtension}.exe",
-            "miDebuggerPath": "D:\\mingw-w64\\mingw32\\bin\\gdb.exe",
+            "miDebuggerPath": "D:\\msys32\\mingw64\\bin\\gdb.exe",
         }
     ]
 }

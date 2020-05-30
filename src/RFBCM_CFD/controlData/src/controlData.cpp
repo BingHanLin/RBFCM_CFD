@@ -2,22 +2,21 @@
 #include <fstream>
 #include <iostream>
 
-controlData* controlData::instance_ = nullptr;
-
-controlData* controlData::instance()
+controlData::controlData()
 {
-    if (!instance_)
-    {
-        instance_ = new controlData;
-        instance_->setWorkingDir();
-        instance_->readParamsData();
-    }
-    return instance_;
+    setWorkingDir(std::filesystem::current_path());
+    readParamsData();
 }
 
-void controlData::setWorkingDir()
+controlData::controlData(const std::filesystem::path workingDir_)
 {
-    workingDir_ = std::filesystem::current_path();
+    setWorkingDir(workingDir_);
+    readParamsData();
+}
+
+void controlData::setWorkingDir(const std::filesystem::path workingDir)
+{
+    workingDir_ = workingDir;
     std::cout << "set working directory: " << workingDir_.string() << '\n';
 }
 

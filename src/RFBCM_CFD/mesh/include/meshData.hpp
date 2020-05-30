@@ -17,7 +17,7 @@
 class MeshData
 {
    public:
-    MeshData();
+    MeshData(std::shared_ptr<controlData> inControlData);
     ~MeshData(){};
 
     // std::map<int, std::string> nodeToGoupMap_;
@@ -33,7 +33,7 @@ class MeshData
     // std::shared_ptr<BoundaryCondition> nodesBC(const int nodeID) const;
 
    private:
-    controlData* controlData_;
+    std::shared_ptr<controlData> controlData_;
     std::vector<vec3d<double>> nodes_;
     std::vector<vec3d<double>> normals_;
 

@@ -1,5 +1,5 @@
 {
-	"clang.executable": "‪C:/Program Files/LLVM\bin/clang++.exe",
+	"clang.executable": "‪C:/Program Files/LLVM/bin/clang++.exe",
 	"clang.completion.enable": true,
 	"clang.completion.triggerChars": [
 		".",
@@ -122,5 +122,6 @@
 		"variant": "cpp"
 	},
 	"editor.fontSize": 16,
-	"C_Cpp.errorSquiggles": "Disabled",
+	// "C_Cpp.errorSquiggles": "Disabled",
+	"editor.quickSuggestions": true,
 }
