@@ -15,4 +15,6 @@ REM run unit test
 cd ..
 cd bin
 MYAPP_Test.exe
+REM run unit example
+MYAPP.exe -c "D:\myWork\RBFCM_CFD\example case"
 cd ..

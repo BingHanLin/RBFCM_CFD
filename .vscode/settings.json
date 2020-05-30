@@ -119,7 +119,11 @@
 		"resumable": "cpp",
 		"regex": "cpp",
 		"stack": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"bit": "cpp",
+		"bitset": "cpp",
+		"unordered_set": "cpp",
+		"shared_mutex": "cpp"
 	},
 	"editor.fontSize": 16,
 	// "C_Cpp.errorSquiggles": "Disabled",
