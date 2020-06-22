@@ -15,23 +15,19 @@
                     "${fileDirname}/${fileBasenameNoExtension}.exe"
                 ]
             },
-
             "linux": {
                 "command": "echo",
                 "args": [
                     "not defined"
                 ]
             },
-
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-
             "presentation": {
                 "reveal": "always"
             },
-            
             "problemMatcher": {
                 "owner": "cpp",
                 "fileLocation": [
@@ -47,6 +43,24 @@
                     "message": 5
                 }
             }
+        },
+        {
+            "type": "shell",
+            "label": "C/C++: g++.exe build active file",
+            "command": "D:/msys32/mingw64/bin/g++.exe",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
         }
     ]
 }

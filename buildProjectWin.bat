@@ -9,7 +9,8 @@ cd build
 cmake -DCATCH2TEST=ON -G "MinGW Makefiles" ..
 
 REM make all
-mingw32-make -j4
+cmake --build . --parallel 8
+REM mingw32-make -j4
 
 REM run unit test
 cd ..
