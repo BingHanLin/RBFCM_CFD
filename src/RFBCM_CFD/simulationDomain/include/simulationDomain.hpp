@@ -34,7 +34,7 @@ class SimulationDomain
     std::shared_ptr<MQBasis> myRBFBasis_;
     solverType solverType_;
     systemSateType systemSateType_;
-    int dim_;
+    size_t dim_;
 
     // physicsControl
     double viscous_;
@@ -43,7 +43,7 @@ class SimulationDomain
     std::array<double, 3> convectionVel_;
 
     // solverConstrol
-    int neighborNum_;
+    size_t neighborNum_;
     double endTime_;
     double tStepSize_;
     double writeInterval_;
@@ -51,7 +51,7 @@ class SimulationDomain
 
     double currentTime_;
 
-    // int crankNicolsonMaxIter_;
+    // size_t crankNicolsonMaxIter_;
     // double crankNicolsonEpsilon_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;

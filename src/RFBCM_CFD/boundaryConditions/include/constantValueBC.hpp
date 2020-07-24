@@ -9,22 +9,22 @@ class ConstantValueBC : public BoundaryCondition
 {
    public:
     ConstantValueBC(const double constValue_);
-    // addNode(const int index);
+    // addNode(const size_t index);
 
     // boundaryConditionType type() override;
 
-    void fillCoeffMatrix(const int nodeID, const nodesCloud& cloud,
+    void fillCoeffMatrix(const size_t nodeID, const nodesCloud& cloud,
                          std::shared_ptr<MQBasis> RBFBasis,
                          Eigen::SparseMatrix<double>& spMatrix) const;
 
-    void fillRhsVector(const int nodeID, const nodesCloud& cloud,
+    void fillRhsVector(const size_t nodeID, const nodesCloud& cloud,
                        std::shared_ptr<MQBasis> RBFBasis,
                        Eigen::VectorXd& rhsVec) const;
 
     // void setRHSValue(double& oneRHS);
 
    private:
-    // std::vector<int> nodeIndices_;
+    // std::vector<size_t> nodeIndices_;
     double constValue_;
 };
 

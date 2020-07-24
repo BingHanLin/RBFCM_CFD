@@ -5,14 +5,14 @@ ConstantValueBC::ConstantValueBC(const double constValue)
     : BoundaryCondition(), constValue_(constValue){};
 
 void ConstantValueBC::fillCoeffMatrix(
-    const int nodeID, const nodesCloud& cloud,
+    const size_t nodeID, const nodesCloud& cloud,
     std::shared_ptr<MQBasis> RBFBasis,
     Eigen::SparseMatrix<double>& spMatrix) const
 {
     // Eigen::VectorXd localVector =
     //     RBFBasis->collectOnNodes(nodesCloud, rbfOperatorType::LAPLACE);
 
-    // for (int i = 0; i < nodesCloudID.size(); i++)
+    // for (size_t i = 0; i < nodesCloudID.size(); i++)
     // {
     //     spMatrix.insert(nodeID, nodesCloudID[i]) = localVector[i];
     // }
@@ -20,7 +20,8 @@ void ConstantValueBC::fillCoeffMatrix(
     spMatrix.insert(nodeID, nodeID) = 1.0;
 }
 
-void ConstantValueBC::fillRhsVector(const int nodeID, const nodesCloud& cloud,
+void ConstantValueBC::fillRhsVector(const size_t nodeID,
+                                    const nodesCloud& cloud,
                                     std::shared_ptr<MQBasis> RBFBasis,
                                     Eigen::VectorXd& rhsVec) const
 {
@@ -36,7 +37,7 @@ void ConstantValueBC::fillRhsVector(const int nodeID, const nodesCloud& cloud,
 
 // };
 
-// constantValueBC::addNode(const int index)
+// constantValueBC::addNode(const size_t index)
 // {
 //     nodeIndices_.push_back(index);
 // }

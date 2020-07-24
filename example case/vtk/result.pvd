@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <VTKFile type="Collection" version="0.1" byte_order="LittleEndian">
 	<Collection>
-		<DataSet timestep="0.000000" part="0" file="D:\myWork\RBFCM_CFD\example case/vtk/0.000000.vtu" />
-		<DataSet timestep="0.000000" part="0" file="D:\myWork\RBFCM_CFD\example case/vtk/0.000000.vtu" />
+		<DataSet timestep="0.000000" part="0" file="D:\binghan_github\RBFCM_CFD\example case/vtk/0.000000.vtu" />
+		<DataSet timestep="0.000000" part="0" file="D:\binghan_github\RBFCM_CFD\example case/vtk/0.000000.vtu" />
 	</Collection>
 </VTKFile>

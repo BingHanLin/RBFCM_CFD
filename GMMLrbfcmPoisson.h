@@ -38,7 +38,7 @@ class GMMLrbfcmPoisson
     RBFBasisType RBFBasis;
 
     vector<vector<double>> AllNodes;
-    int Nall, Nint, Nbou;
+    size_t Nall, Nint, Nbou;
     vector<double> Phi, Bvalue;
     KDTreeTsaiAdaptor<vector<vector<double>>, double, 2> kdtree;
 
@@ -59,7 +59,7 @@ GMMLrbfcmPoisson<MeshType, RBFBasisType>::GMMLrbfcmPoisson(
     AllNodes.resize(Nall);
     vector<double> VX(2);
 
-    for (int i = 0; i < Nall; i++)
+    for (size_t i = 0; i < Nall; i++)
     {
         VX = MESH.GetAllNode(i + 1);
         AllNodes[i].resize(2);
@@ -77,7 +77,7 @@ GMMLrbfcmPoisson<MeshType, RBFBasisType>::GMMLrbfcmPoisson(
 template <typename MeshType, typename RBFBasisType>
 void GMMLrbfcmPoisson<MeshType, RBFBasisType>::assembly()
 {
-    int near_num = 5;
+    size_t near_num = 5;
     dense_matrix<double> nodes_cloud(near_num, 2);
     vector<size_t> neighbours(
         near_num);  // using size_t instead of UINT for compatibility reason
@@ -92,15 +92,15 @@ void GMMLrbfcmPoisson<MeshType, RBFBasisType>::assembly()
     gmm::resize(A1, Nint, Nall);
     gmm::clear(A1);
     //==================================
-    // go through all interior nodes
+    // go through all size_terior nodes
     //==================================
-    for (int i = 0; i < Nint; i++)
+    for (size_t i = 0; i < Nint; i++)
     {
         // use kdtree find indexes of neighbor nodes
         kdtree.query(i, near_num, &neighbours[0], &out_dists_sqr[0]);
 
         // save nodes cloud in vector
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             nodes_cloud(j, 0) = AllNodes[neighbours[j]][0];
             nodes_cloud(j, 1) = AllNodes[neighbours[j]][1];
@@ -110,7 +110,7 @@ void GMMLrbfcmPoisson<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::LAPLACE);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             A1(i, neighbours[j]) = LocalVector[j];
         }
@@ -124,13 +124,13 @@ void GMMLrbfcmPoisson<MeshType, RBFBasisType>::assembly()
     //==================================
     // go through all boundary nodes
     //==================================
-    for (int i = 0; i < Nbou; i++)
+    for (size_t i = 0; i < Nbou; i++)
     {
         // use kdtree find indexes of neighbor nodes
         kdtree.query(i + Nint, near_num, &neighbours[0], &out_dists_sqr[0]);
 
         // save nodes cloud in vector
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             nodes_cloud(j, 0) = AllNodes[neighbours[j]][0];
             nodes_cloud(j, 1) = AllNodes[neighbours[j]][1];
@@ -140,7 +140,7 @@ void GMMLrbfcmPoisson<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::CONSTANT);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             A1(i, neighbours[j]) = LocalVector[j];
         }
@@ -158,7 +158,7 @@ void GMMLrbfcmPoisson<MeshType, RBFBasisType>::SolvePhi()
 
     Phi.resize(Nall);
 
-    for (int i = 0; i < Nall; i++)
+    for (size_t i = 0; i < Nall; i++)
     {
         if (i < Nint)
             B1[i] = 0;
@@ -179,7 +179,7 @@ void GMMLrbfcmPoisson<MeshType, RBFBasisType>::PrintData()
 
     vector<double> VX(2);
 
-    for (int i = 0; i < Nall; i++)
+    for (size_t i = 0; i < Nall; i++)
     {
         VX = MESH.GetAllNode(i + 1);
 

@@ -18,11 +18,11 @@ class BoundaryCondition
     // virtual boundaryConditionType type() = 0;
     //  virtual void setRHSValue(){};
     virtual void fillCoeffMatrix(
-        const int nodeID, const nodesCloud& cloud,
+        const size_t nodeID, const nodesCloud& cloud,
         std::shared_ptr<MQBasis> RBFBasis,
         Eigen::SparseMatrix<double>& spMatrix) const = 0;
 
-    virtual void fillRhsVector(const int nodeID, const nodesCloud& cloud,
+    virtual void fillRhsVector(const size_t nodeID, const nodesCloud& cloud,
                                std::shared_ptr<MQBasis> RBFBasis,
                                Eigen::VectorXd& rhsVec) const = 0;
 

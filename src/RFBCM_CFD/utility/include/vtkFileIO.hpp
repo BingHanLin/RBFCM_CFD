@@ -11,9 +11,9 @@ void appendArrayToVTKNode(const std::vector<Eigen::Matrix<T, N, 1>> &values,
 {
     pugi::xml_node dataArray = node.append_child("DataArray");
     std::stringstream positions;
-    for (int i = 0; i < values.size(); ++i)
+    for (size_t i = 0; i < values.size(); ++i)
     {
-        for (int j = 0; j < N; ++j)
+        for (size_t j = 0; j < N; ++j)
         {
             positions << values[i][j] << " ";
         }
@@ -26,7 +26,7 @@ void appendArrayToVTKNode(const std::vector<Eigen::Matrix<T, N, 1>> &values,
     {
         dataArray.append_attribute("type") = "Float64";
     }
-    else if (std::is_same<T, int>::value)
+    else if (std::is_same<T, size_t>::value)
     {
         dataArray.append_attribute("type") = "Int64";
     }
@@ -43,7 +43,7 @@ inline void appendScalarsToVTKNode(
 {
     pugi::xml_node dataArray = node.append_child("DataArray");
     std::stringstream valuesStream;
-    for (int i = 0; i < values.size(); ++i)
+    for (size_t i = 0; i < values.size(); ++i)
     {
         valuesStream << values[i] << " ";
     }
@@ -55,7 +55,7 @@ inline void appendScalarsToVTKNode(
     {
         dataArray.append_attribute("type") = "Float64";
     }
-    else if (std::is_same<T, int>::value)
+    else if (std::is_same<T, size_t>::value)
     {
         dataArray.append_attribute("type") = "Int64";
     }
@@ -63,12 +63,12 @@ inline void appendScalarsToVTKNode(
     dataArray.append_attribute("format") = "ascii";
 }
 
-void addCells(const int cellNum, pugi::xml_node &Node)
+void addCells(const size_t cellNum, pugi::xml_node &Node)
 {
     // set connectivity
     pugi::xml_node connectivityArray = Node.append_child("DataArray");
     std::stringstream valuesStream;
-    for (int i = 0; i < cellNum; ++i)
+    for (size_t i = 0; i < cellNum; ++i)
     {
         valuesStream << i << " ";
     }
@@ -89,7 +89,7 @@ void addCells(const int cellNum, pugi::xml_node &Node)
     // set types
     pugi::xml_node typesArray = Node.append_child("DataArray");
     std::stringstream valuesStreamTypes;
-    for (int i = 0; i < cellNum; ++i)
+    for (size_t i = 0; i < cellNum; ++i)
     {
         valuesStreamTypes << 1 << " ";
     }

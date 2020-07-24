@@ -9,7 +9,7 @@
 
 // modified from KDTreeVectorOfVectorsAdaptor.h
 
-template <class VectorOfVectorsType, typename num_t = double, int DIM = -1,
+template <class VectorOfVectorsType, typename num_t = double, size_t DIM = -1,
           class Distance = nanoflann::metric_L2, typename IndexType = size_t>
 class KDTreeEigenAdaptor
 {
@@ -35,7 +35,7 @@ class KDTreeEigenAdaptor
     {
         assert(m_data.size() != 0 && m_data[0].size() != 0);
         const size_t dims = m_data[0].size();
-        if (DIM > 0 && static_cast<int>(dims) != DIM)
+        if (DIM > 0 && static_cast<size_t>(dims) != DIM)
             throw std::runtime_error(
                 "Data set dimensionality does not match the 'DIM' template "
                 "argument");
@@ -48,12 +48,12 @@ class KDTreeEigenAdaptor
     /// Constructor: takes a const ref to the vector of vectors object with the
     /// data points
     KDTreeEigenAdaptor(const VectorOfVectorsType &mat,
-                       const int leaf_max_size = 10)
+                       const size_t leaf_max_size = 10)
         : m_data(mat), my_leaf_max_size(leaf_max_size)
     {
         assert(m_data.size() != 0 && m_data[0].size() != 0);
         const size_t dims = m_data[0].size();
-        if (DIM > 0 && static_cast<int>(dims) != DIM)
+        if (DIM > 0 && static_cast<size_t>(dims) != DIM)
             throw std::runtime_error(
                 "Data set dimensionality does not match the 'DIM' template "
                 "argument");
@@ -78,7 +78,7 @@ class KDTreeEigenAdaptor
             m_data = a.m_data;
             assert(m_data.size() != 0 && m_data[0].size() != 0);
             const size_t dims = m_data[0].size();
-            if (DIM > 0 && static_cast<int>(dims) != DIM)
+            if (DIM > 0 && static_cast<size_t>(dims) != DIM)
                 throw std::runtime_error(
                     "Data set dimensionality does not match the 'DIM' template "
                     "argument");
@@ -99,13 +99,13 @@ class KDTreeEigenAdaptor
      * query_point[0:dim-1]). Note that this is a short-cut method for
      * index->findNeighbors(). The user can also call index->... methods as
      * desired. \note nChecks_IGNORED is ignored but kept for compatibility with
-     * the original FLANN interface.
+     * the original FLANN size_terface.
      */
 
     inline void query(std::vector<num_t> vec_query_point,
                       const size_t num_closest, IndexType *out_indices,
                       num_t *out_distances_sq,
-                      const int nChecks_IGNORED = 10) const
+                      const size_t nChecks_IGNORED = 10) const
     {
         const num_t *query_point = &vec_query_point[0];
         nanoflann::KNNResultSet<num_t, IndexType> resultSet(num_closest);
@@ -115,7 +115,7 @@ class KDTreeEigenAdaptor
 
     inline void query(const num_t *query_point, const size_t num_closest,
                       IndexType *out_indices, num_t *out_distances_sq,
-                      const int nChecks_IGNORED = 10) const
+                      const size_t nChecks_IGNORED = 10) const
     {
         nanoflann::KNNResultSet<num_t, IndexType> resultSet(num_closest);
         resultSet.init(out_indices, out_distances_sq);
@@ -124,7 +124,7 @@ class KDTreeEigenAdaptor
 
     inline void query(const size_t query_index, const size_t num_closest,
                       IndexType *out_indices, num_t *out_distances_sq,
-                      const int nChecks_IGNORED = 10) const
+                      const size_t nChecks_IGNORED = 10) const
     {
         const size_t dim = m_data[0].size();
         std::vector<num_t> query_point(dim);
@@ -169,7 +169,7 @@ class KDTreeEigenAdaptor
     }
 
     // Returns the dim'th component of the idx'th point in the class:
-    inline num_t kdtree_get_pt(const size_t idx, int dim) const
+    inline num_t kdtree_get_pt(const size_t idx, size_t dim) const
     {
         return m_data[idx](dim);
     }

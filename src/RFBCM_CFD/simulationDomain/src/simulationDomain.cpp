@@ -94,7 +94,7 @@ void SimulationDomain::setupLinearSystem()
     dyMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
     dzMatrix_.resize(myMesh_->numOfNodes(), myMesh_->numOfNodes());
 
-    for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
         auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
 
@@ -109,7 +109,7 @@ void SimulationDomain::setupLinearSystem()
 
         auto indexs = sortIndexes(cloud.id);
 
-        for (int i = 0; i < neighborNum_; i++)
+        for (size_t i = 0; i < neighborNum_; i++)
         {
             laplaceMatrix_.insert(nodeID, cloud.id[indexs[i]]) =
                 laplaceVector[indexs[i]];
@@ -141,7 +141,7 @@ void SimulationDomain::assembleCoeffMatrix()
     varCoeffMatrix_.reserve(
         Eigen::VectorXi::Constant(myMesh_->numOfNodes(), neighborNum_));
 
-    for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
         auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
 
@@ -190,7 +190,7 @@ void SimulationDomain::assembleCoeffMatrix()
 
             auto indexs = sortIndexes(cloud.id);
 
-            for (int i = 0; i < neighborNum_; i++)
+            for (size_t i = 0; i < neighborNum_; i++)
                 varCoeffMatrix_.insert(nodeID, cloud.id[indexs[i]]) =
                     localVector[indexs[i]];
         }
@@ -224,7 +224,7 @@ void SimulationDomain::assembleRhs()
             preVarSol_;
     }
 
-    for (int nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
+    for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
         auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
 

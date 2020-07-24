@@ -8,7 +8,7 @@
 // http://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format-version-2-_0028Legacy_0029
 bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
                  std::vector<vec3d<double>>& normals,
-                 std::map<std::string, std::vector<int>>& groupToNodesMap)
+                 std::map<std::string, std::vector<size_t>>& groupToNodesMap)
 {
     const auto invalidFormat = [](std::string messages) -> bool {
         ASSERT("Invalid format: " << messages);
@@ -44,7 +44,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     }
 
     double versionNumber;
-    int fileType;  // equal to 0 indicates the ASCII file format.
+    size_t fileType;  // equal to 0 indicates the ASCII file format.
     size_t dataSize;
     fileStream >> versionNumber >> fileType >> dataSize;
 
@@ -67,11 +67,11 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     // =========================================================================
     // parse other tags
     // =========================================================================
-    std::map<int, int> nodesIndexMap;
-    std::vector<std::vector<int>> elementNodes;
-    std::vector<int> elementTypes;
-    std::map<int, std::vector<int>> groupIndexToNodesMap;
-    std::map<int, std::string> groupIndexToNamesMap;
+    std::map<size_t, size_t> nodesIndexMap;
+    std::vector<std::vector<size_t>> elementNodes;
+    std::vector<size_t> elementTypes;
+    std::map<size_t, std::vector<size_t>> groupIndexToNodesMap;
+    std::map<size_t, std::string> groupIndexToNamesMap;
 
     while (!fileStream.eof())
     {
@@ -131,12 +131,12 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
 
     //  compute normals on nodes by loop elements
     normals.resize(nodes.size());
-    for (int i = 0; i < elementNodes.size(); i++)
+    for (size_t i = 0; i < elementNodes.size(); i++)
     {
         if (elementTypes[i] == elementType::LINE)
         {
-            int n0 = nodesIndexMap.at(elementNodes[i][0]);
-            int n1 = nodesIndexMap.at(elementNodes[i][1]);
+            size_t n0 = nodesIndexMap.at(elementNodes[i][0]);
+            size_t n1 = nodesIndexMap.at(elementNodes[i][1]);
 
             vec3d<double> v0 = nodes[n0];
             vec3d<double> v1 = nodes[n1];
@@ -149,9 +149,9 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
         }
         // if (oneElementNodes.size() == 3)
         // {
-        //     int n0 = nodesIndexMap.at(oneElementNodes[0]);
-        //     int n1 = nodesIndexMap.at(oneElementNodes[1]);
-        //     int n2 = nodesIndexMap.at(oneElementNodes[2]);
+        //     size_t n0 = nodesIndexMap.at(oneElementNodes[0]);
+        //     size_t n1 = nodesIndexMap.at(oneElementNodes[1]);
+        //     size_t n2 = nodesIndexMap.at(oneElementNodes[2]);
 
         //     vec3d<double> v0 = nodes[n0];
         //     vec3d<double> v1 = nodes[n1];
@@ -166,10 +166,10 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
         // }
         // else if (oneElementNodes.size() == 4)
         // {
-        //     int n0 = nodesIndexMap.at(oneElementNodes[0]);
-        //     int n1 = nodesIndexMap.at(oneElementNodes[1]);
-        //     int n2 = nodesIndexMap.at(oneElementNodes[2]);
-        //     int n3 = nodesIndexMap.at(oneElementNodes[3]);
+        //     size_t n0 = nodesIndexMap.at(oneElementNodes[0]);
+        //     size_t n1 = nodesIndexMap.at(oneElementNodes[1]);
+        //     size_t n2 = nodesIndexMap.at(oneElementNodes[2]);
+        //     size_t n3 = nodesIndexMap.at(oneElementNodes[3]);
 
         //     vec3d<double> v0 = nodes[n0];
         //     vec3d<double> v1 = nodes[n1];
@@ -212,7 +212,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     std::cout << "    map node index to groupToNodesMap" << std::endl;
     for (auto& oneMap : groupIndexToNamesMap)
     {
-        groupToNodesMap.insert(std::pair<std::string, std::vector<int>>(
+        groupToNodesMap.insert(std::pair<std::string, std::vector<size_t>>(
             oneMap.second, groupIndexToNodesMap.at(oneMap.first)));
     }
 
@@ -220,7 +220,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
 }
 
 void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
-                std::map<int, int>& nodesIndexMap)
+                std::map<size_t, size_t>& nodesIndexMap)
 {
     size_t numOfNodes;
     fileStream >> numOfNodes;
@@ -228,17 +228,17 @@ void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
 
     for (size_t i = 0; i < numOfNodes; i++)
     {
-        int nodeIndex;
+        size_t nodeIndex;
         fileStream >> nodeIndex;
-        nodesIndexMap.insert(std::pair<int, int>(nodeIndex, i));
+        nodesIndexMap.insert(std::pair<size_t, size_t>(nodeIndex, i));
         fileStream >> nodes[i][0] >> nodes[i][1] >> nodes[i][2];
     }
 };
 
 void parseElements(std::ifstream& fileStream,
-                   std::vector<std::vector<int>>& elementNodes,
-                   std::vector<int>& elementTypes,
-                   std::map<int, std::vector<int>>& groupIndexToNodesMap)
+                   std::vector<std::vector<size_t>>& elementNodes,
+                   std::vector<size_t>& elementTypes,
+                   std::map<size_t, std::vector<size_t>>& groupIndexToNodesMap)
 {
     size_t numOfElements;
     fileStream >> numOfElements;
@@ -249,16 +249,16 @@ void parseElements(std::ifstream& fileStream,
     for (size_t i = 0; i < numOfElements; i++)
     {
         // parse per element header
-        int elementIndex, elementType, numTags;
+        size_t elementIndex, elementType, numTags;
         fileStream >> elementIndex >> elementType >> numTags;
 
         elementTypes[i] = getElementType(elementType);
 
         // https://www.manpagez.com/info/gmsh/gmsh-2.8.4/gmsh_56.php
-        int groupIndex;
+        size_t groupIndex;
         for (size_t j = 0; j < numTags; j++)
         {
-            int tag;
+            size_t tag;
             fileStream >> tag;
 
             if (j == 0)
@@ -269,10 +269,10 @@ void parseElements(std::ifstream& fileStream,
 
         // parse node index per element.
         size_t nodesNumOnElement = getNodesNumOnElement(elementType);
-        std::vector<int> nodesOnElement(nodesNumOnElement);
+        std::vector<size_t> nodesOnElement(nodesNumOnElement);
         for (size_t j = 0; j < nodesNumOnElement; j++)
         {
-            int nodeIndex;
+            size_t nodeIndex;
             fileStream >> nodeIndex;
             nodesOnElement[j] = nodeIndex;
         }
@@ -280,8 +280,8 @@ void parseElements(std::ifstream& fileStream,
 
         if (groupIndexToNodesMap.find(groupIndex) == groupIndexToNodesMap.end())
         {
-            groupIndexToNodesMap.insert(
-                std::pair<int, std::vector<int>>(groupIndex, nodesOnElement));
+            groupIndexToNodesMap.insert(std::pair<size_t, std::vector<size_t>>(
+                groupIndex, nodesOnElement));
         }
         else
         {
@@ -293,13 +293,13 @@ void parseElements(std::ifstream& fileStream,
 };
 
 void parseGroupNames(std::ifstream& fileStream,
-                     std::map<int, std::string>& groupIndexToNamesMap)
+                     std::map<size_t, std::string>& groupIndexToNamesMap)
 {
     size_t numOfGroups;
     fileStream >> numOfGroups;
     for (size_t i = 0; i < numOfGroups; i++)
     {
-        int dimension, groupIndex;
+        size_t dimension, groupIndex;
         std::string groupNameWithQuotes;
         fileStream >> dimension >> groupIndex >> groupNameWithQuotes;
 
@@ -309,6 +309,6 @@ void parseGroupNames(std::ifstream& fileStream,
         std::getline(std::getline(groupNameStream, skip, '"'), groupName, '"');
 
         groupIndexToNamesMap.insert(
-            std::pair<int, std::string>(groupIndex, groupName));
+            std::pair<size_t, std::string>(groupIndex, groupName));
     }
 };

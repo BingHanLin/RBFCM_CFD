@@ -21,7 +21,7 @@ MQBasis::MQBasis(std::shared_ptr<controlData> inControlData)
     dim_ = controlData_->paramsDataAt({"solverControl", "dimension"});
 }
 
-MQBasis::MQBasis(const double shapeParameter, const int dim)
+MQBasis::MQBasis(const double shapeParameter, const size_t dim)
     : shapeParameter_(shapeParameter), dim_(dim){};
 
 double MQBasis::getBasisValue(const vec3d<double>& nodeI,
@@ -74,7 +74,7 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
     //     temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
     //     temp = 0.0;
 
-    //     for (int dim = 0; dim < dim; dim++)
+    //     for (size_t dim = 0; dim < dim; dim++)
     //     {
     //         temp += NormVec[dim] * rr[dim] / temp1;
     //     }
@@ -92,12 +92,12 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     const std::vector<vec3d<double>>& nodesCloud,
     const rbfOperatorType inputOperatorType) const
 {
-    const int neighborNum = nodesCloud.size();
+    const size_t neighborNum = nodesCloud.size();
     Eigen::MatrixXd phi(neighborNum, neighborNum);
 
-    for (int i = 0; i < neighborNum; i++)
+    for (size_t i = 0; i < neighborNum; i++)
     {
-        for (int j = 0; j < neighborNum; j++)
+        for (size_t j = 0; j < neighborNum; j++)
         {
             phi(j, i) /* transposed */ = getBasisValue(
                 nodesCloud[i], nodesCloud[j], rbfOperatorType::CONSTANT);
@@ -105,7 +105,7 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     }
 
     Eigen::VectorXd phiL(neighborNum);
-    for (int j = 0; j < neighborNum; j++)
+    for (size_t j = 0; j < neighborNum; j++)
     {
         phiL(j) =
             getBasisValue(nodesCloud[0], nodesCloud[j], inputOperatorType);

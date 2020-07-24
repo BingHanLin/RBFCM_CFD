@@ -1,7 +1,7 @@
 # Radial basis function collocation method (RBFCM) for computational fluid dynamics
 
 ## Introduction
-**RBFCM_CFD** is a simple CFD project that solves some classical fluid prolbems. It is designed to be modified easily by students  interested in learning meshless method. More features will be added in the future.
+**RBFCM_CFD** is a simple CFD project that solves some classical fluid prolbems. It is designed to be modified easily by students  size_terested in learning meshless method. More features will be added in the future.
 ***
 ## Brief theoretical description
 

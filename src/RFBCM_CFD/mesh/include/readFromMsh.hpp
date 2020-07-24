@@ -12,18 +12,18 @@
 
 bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
                  std::vector<vec3d<double>>& normals,
-                 std::map<std::string, std::vector<int>>& groupToNodesMap);
+                 std::map<std::string, std::vector<size_t>>& groupToNodesMap);
 
 void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
-                std::map<int, int>& nodesIndexMap);
+                std::map<size_t, size_t>& nodesIndexMap);
 
 void parseElements(std::ifstream& fileStream,
-                   std::vector<std::vector<int>>& elementNodes,
-                   std::vector<int>& elementTypes,
-                   std::map<int, std::vector<int>>& groupIndexToNodesMap);
+                   std::vector<std::vector<size_t>>& elementNodes,
+                   std::vector<size_t>& elementTypes,
+                   std::map<size_t, std::vector<size_t>>& groupIndexToNodesMap);
 
 void parseGroupNames(std::ifstream& fileStream,
-                     std::map<int, std::string>& groupIndexToNameMap);
+                     std::map<size_t, std::string>& groupIndexToNameMap);
 
 inline void passWhiteSpace(std::ifstream& fileStream)
 {
@@ -35,9 +35,9 @@ inline void passWhiteSpace(std::ifstream& fileStream)
     }
 };
 
-inline size_t getNodesNumOnElement(int elementType)
+inline size_t getNodesNumOnElement(size_t elementType)
 {
-    int nodesNumOnElement = 0;
+    size_t nodesNumOnElement = 0;
     switch (elementType)
     {
         case 1:
@@ -62,7 +62,7 @@ inline size_t getNodesNumOnElement(int elementType)
     return nodesNumOnElement;
 };
 
-inline elementType getElementType(int elementTypeTag)
+inline elementType getElementType(size_t elementTypeTag)
 {
     elementType type;
     switch (elementTypeTag)

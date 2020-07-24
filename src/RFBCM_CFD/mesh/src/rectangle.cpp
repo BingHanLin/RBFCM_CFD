@@ -4,7 +4,8 @@
 // #include <math.h>
 // #include <stdio.h>
 
-Rectangle::Rectangle(int numNodeX, int numNodeY, double sizeX_, double sizeY)
+Rectangle::Rectangle(size_t numNodeX, size_t numNodeY, double sizeX_,
+                     double sizeY)
     : numNodeX_(numNodeX),
       numNodeY_(numNodeY),
       sizeX_(sizeX_),
@@ -21,12 +22,12 @@ Rectangle::Rectangle(int numNodeX, int numNodeY, double sizeX_, double sizeY)
     numBouNodes_ = 2 * numNodeX + 2 * numNodeY_;
     numAllNodes_ = numInnNodes_ + numBouNodes_;
 
-    for (int i = 0; i < numAllNodes_; i++)
+    for (size_t i = 0; i < numAllNodes_; i++)
     {
         nodes_.push_back(computeAllNodes(i + 1));
     }
 
-    for (int i = 0; i < numBouNodes_; i++)
+    for (size_t i = 0; i < numBouNodes_; i++)
     {
         normals_.push_back(computeNormals(i + 1));
     }
@@ -38,14 +39,14 @@ Rectangle::Rectangle(int numNodeX, int numNodeY, double sizeX_, double sizeY)
               << "Number of all nodes: " << numAllNodes_ << std::endl;
 }
 
-std::vector<double> Rectangle::computeInnerNodes(int i) const
+std::vector<double> Rectangle::computeInnerNodes(size_t i) const
 {
     assert(i >= 1 && i <= numNodeX_ * numNodeY_);
 
     std::vector<double> temp(2);
 
-    int I = (i - 1) / numNodeX_;
-    int J = (i - 1) % numNodeX_;
+    size_t I = (i - 1) / numNodeX_;
+    size_t J = (i - 1) % numNodeX_;
 
     temp[0] = ((double)(J) + 0.5) * sizeX_ / (double)(numNodeX_);
     temp[1] = ((double)(I) + 0.5) * sizeY_ / (double)(numNodeY_);
@@ -56,7 +57,7 @@ std::vector<double> Rectangle::computeInnerNodes(int i) const
     return temp;
 }
 
-std::vector<double> Rectangle::computeBoundaryNodes(int i) const
+std::vector<double> Rectangle::computeBoundaryNodes(size_t i) const
 {
     assert(i >= 1 && i <= 2 * (numNodeY_ + numNodeX_));
 
@@ -95,7 +96,7 @@ std::vector<double> Rectangle::computeBoundaryNodes(int i) const
     return temp;
 }
 
-std::vector<double> Rectangle::computeAllNodes(int i) const
+std::vector<double> Rectangle::computeAllNodes(size_t i) const
 {
     assert(i >= 1 && i <= numNodeX_ * numNodeY_ + 2 * (numNodeY_ + numNodeX_));
 
@@ -107,7 +108,7 @@ std::vector<double> Rectangle::computeAllNodes(int i) const
         return computeBoundaryNodes(i - numNodeX_ * numNodeY_);
 }
 
-std::vector<double> Rectangle::computeNormals(int i) const
+std::vector<double> Rectangle::computeNormals(size_t i) const
 {
     assert(i >= 1 && i <= 2 * (numNodeY_ + numNodeX_));
 

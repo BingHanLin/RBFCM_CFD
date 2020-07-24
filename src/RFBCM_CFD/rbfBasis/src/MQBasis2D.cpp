@@ -18,11 +18,11 @@ double MQBasis2D::getBasisValue(const std::vector<double>& nodeI,
 {
     assert(nodeI.size() == nodeJ.size());
 
-    int dim = nodeI.size();
+    size_t dim = nodeI.size();
 
     std::vector<double> rr(dim);
     double rs = 0;
-    for (int i = 0; i < dim; i++)
+    for (size_t i = 0; i < dim; i++)
     {
         rr[i] = nodeI[i] - nodeJ[i];
         rs += rr[i] * rr[i];
@@ -57,7 +57,7 @@ double MQBasis2D::getBasisValue(const std::vector<double>& nodeI,
     //     temp1 = std::sqrt(rs + cc_ * cc_);
     //     temp = 0.0;
 
-    //     for (int dim = 0; dim < dim; dim++)
+    //     for (size_t dim = 0; dim < dim; dim++)
     //     {
     //         temp += NormVec[dim] * rr[dim] / temp1;
     //     }
@@ -75,15 +75,15 @@ Eigen::VectorXd MQBasis2D::collectOnNodes(
     const std::vector<std::vector<double>>& nodesCloud,
     const operatorType inputOperatorType)
 {
-    int neighborNum = nodesCloud.size();
+    size_t neighborNum = nodesCloud.size();
 
     std::vector<double> nodeI(neighborNum);
     std::vector<double> nodeJ(neighborNum);
 
     Eigen::MatrixXd phi(neighborNum, neighborNum);
-    for (int i = 0; i < neighborNum; i++)
+    for (size_t i = 0; i < neighborNum; i++)
     {
-        for (int j = 0; j < neighborNum; j++)
+        for (size_t j = 0; j < neighborNum; j++)
         {
             nodeI = nodesCloud[i];
             nodeJ = nodesCloud[j];
@@ -94,7 +94,7 @@ Eigen::VectorXd MQBasis2D::collectOnNodes(
     }
 
     Eigen::VectorXd phiL(neighborNum);
-    for (int j = 0; j < neighborNum; j++)
+    for (size_t j = 0; j < neighborNum; j++)
     {
         nodeI = nodesCloud[0];
         nodeJ = nodesCloud[j];

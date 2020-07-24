@@ -17,7 +17,7 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
 
     meshType meshType = controlData_->paramsDataAt({"geometryControl", "type"});
 
-    std::map<std::string, std::vector<int>> groupToNodesMapBeforeCompact;
+    std::map<std::string, std::vector<size_t>> groupToNodesMapBeforeCompact;
 
     if (meshType == meshType::DEFAULT)
     {
@@ -50,7 +50,8 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
 }
 
 void MeshData::compactGroupToNodesMap(
-    const std::map<std::string, std::vector<int>>& groupToNodesMapBeforeCompact)
+    const std::map<std::string, std::vector<size_t>>&
+        groupToNodesMapBeforeCompact)
 {
     nodesToGroup_.resize(nodes_.size());
     groupToNodesMap_.clear();
@@ -64,13 +65,14 @@ void MeshData::compactGroupToNodesMap(
         groupToNodesMap_.insert({groupName, {}});
 
         // TODO: parallel
-        for (const int& nodeIndex : groupToNodesMapBeforeCompact.at(groupName))
+        for (const size_t& nodeIndex :
+             groupToNodesMapBeforeCompact.at(groupName))
         {
             nodesToGroup_[nodeIndex] = groupName;
         }
     }
 
-    for (int nodeID = 0; nodeID < nodes_.size(); nodeID++)
+    for (size_t nodeID = 0; nodeID < nodes_.size(); nodeID++)
     {
         groupToNodesMap_[nodesToGroup_[nodeID]].push_back(nodeID);
     }
@@ -91,28 +93,29 @@ void MeshData::buildBoundaryConditions()
             std::make_shared<ConstantValueBC>(oneBCData.at("value"));
         groupToBCMap_.insert({groupName, constantValueBC});
 
-        for (int& nodeID : groupToNodesMap_.at(groupName))
+        for (size_t& nodeID : groupToNodesMap_.at(groupName))
         {
             nodesToBC_[nodeID] = constantValueBC;
         }
     }
 }
 
-nodesCloud MeshData::neighborNodesCloud(const int nodeID, const int neighborNum)
+nodesCloud MeshData::neighborNodesCloud(const size_t nodeID,
+                                        const size_t neighborNum)
 {
     std::vector<size_t> neighboursID(neighborNum);
     std::vector<double> outDistSqr(neighborNum);
     kdTree_.query(nodeID, neighborNum, &neighboursID[0], &outDistSqr[0]);
 
     nodesCloud cloud(neighborNum);
-    for (int i = 0; i < neighborNum; i++)
+    for (size_t i = 0; i < neighborNum; i++)
     {
         cloud.id[i] = neighboursID[i];
         cloud.nodes[i] = nodes_[neighboursID[i]];
     }
 
     // std::sort(neighboursID.begin(), neighboursID.end());
-    // for (int i = 0; i < neighborNum; i++)
+    // for (size_t i = 0; i < neighborNum; i++)
     // {
     //     cloud.id[i] = neighboursID[i];
     //     cloud.nodes[i] = nodes_[neighboursID[i]];
@@ -125,12 +128,12 @@ std::vector<vec3d<double>>& MeshData::nodes()
     return nodes_;
 }
 
-std::shared_ptr<BoundaryCondition> MeshData::nodeBC(const int nodeID) const
+std::shared_ptr<BoundaryCondition> MeshData::nodeBC(const size_t nodeID) const
 {
     return nodesToBC_[nodeID];
 }
 
-int MeshData::numOfNodes() const
+size_t MeshData::numOfNodes() const
 {
     return numOfNodes_;
 };

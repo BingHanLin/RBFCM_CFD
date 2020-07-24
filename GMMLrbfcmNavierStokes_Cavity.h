@@ -34,10 +34,10 @@ class GMMLrbfcmNavierStokes
     RBFBasisType RBFBasis;
 
     vector<vector<double> > AllNodes;
-    int Nall, Nint, Nbou;
+    size_t Nall, Nint, Nbou;
     double viscous, dt;
     double CrankNicolsonEpsilon;
-    int CrankNicolsonMaxIter;
+    size_t CrankNicolsonMaxIter;
     vector<double> Bvalue;
 
     KDTreeTsaiAdaptor<vector<vector<double> >, double, 2> kdtree;
@@ -48,12 +48,12 @@ class GMMLrbfcmNavierStokes
         BouDyMatrix, IntLAPLACEMatrix, BouLAPLACEMatrix;
 
     void assembly();
-    vector<double> CrankNicolsonU(int Istep, const vector<double>& Pn,
+    vector<double> CrankNicolsonU(size_t Istep, const vector<double>& Pn,
                                   const vector<double>& Veln);
-    vector<double> InsideCrankNicolsonU(int Istep, const vector<double>& Pn,
+    vector<double> InsideCrankNicolsonU(size_t Istep, const vector<double>& Pn,
                                         const vector<double>& Veln,
                                         const vector<double>& Veltemp);
-    void SolvePU(int Istep, vector<double>& Pn1, vector<double>& Veln1,
+    void SolvePU(size_t Istep, vector<double>& Pn1, vector<double>& Veln1,
                  const vector<double>& Pn, const vector<double>& Vels);
     void SaveData(string FolderName, double SaveTime);
     void DeleteOriginData(string FolderName);
@@ -84,7 +84,7 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::GMMLrbfcmNavierStokes(
     AllNodes.resize(Nall);
     vector<double> VX(2);
 
-    for (int i = 0; i < Nall; i++)
+    for (size_t i = 0; i < Nall; i++)
     {
         VX = MESH.GetAllNode(i + 1);
         AllNodes[i].resize(2);
@@ -112,7 +112,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InitializeField()
 template <typename MeshType, typename RBFBasisType>
 void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
 {
-    int near_num = 9;
+    size_t near_num = 9;
     dense_matrix<double> nodes_cloud(near_num, 2);
     vector<size_t> neighbours(
         near_num);  // using size_t instead of UINT for compatibility reason
@@ -140,16 +140,16 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
     gmm::clear(BouLAPLACEMatrix);
 
     //====================================================================
-    // go through all interior nodes
+    // go through all size_terior nodes
     //====================================================================
 
-    for (int i = 0; i < Nint; i++)
+    for (size_t i = 0; i < Nint; i++)
     {
         // use kdtree find indexes of neighbor nodes
         kdtree.query(i, near_num, &neighbours[0], &out_dists_sqr[0]);
 
         // save nodes cloud in vector
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             nodes_cloud(j, 0) = AllNodes[neighbours[j]][0];
             nodes_cloud(j, 1) = AllNodes[neighbours[j]][1];
@@ -159,7 +159,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::LAPLACE);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             IntLAPLACEMatrix(i, neighbours[j]) = LocalVector[j];
         }
@@ -168,7 +168,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D1);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             IntDxMatrix(i, neighbours[j]) = LocalVector[j];
         }
@@ -177,7 +177,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D2);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             IntDyMatrix(i, neighbours[j]) = LocalVector[j];
         }
@@ -191,7 +191,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
          gmm::sub_matrix(SystemVelMatrix, gmm::sub_interval(0, Nint),
                          gmm::sub_interval(0, Nall)));
 
-    for (int i = 0; i < Nint; i++)
+    for (size_t i = 0; i < Nint; i++)
     {
         SystemVelMatrix(i, i) -= 2.0 / viscous / dt;
     }
@@ -209,13 +209,13 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
 
     vector<double> NormVec;
 
-    for (int i = 0; i < Nbou; i++)
+    for (size_t i = 0; i < Nbou; i++)
     {
         // use kdtree find indexes of neighbor nodes
         kdtree.query(i + Nint, near_num, &neighbours[0], &out_dists_sqr[0]);
 
         // save nodes cloud in vector
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             nodes_cloud(j, 0) = AllNodes[neighbours[j]][0];
             nodes_cloud(j, 1) = AllNodes[neighbours[j]][1];
@@ -234,7 +234,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
                 RBFBasisType::OperatorType::NEUMANN_OPERATOR, NormVec);
             LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-            for (int j = 0; j < near_num; j++)
+            for (size_t j = 0; j < near_num; j++)
             {
                 TempMatrix1(i, neighbours[j]) = LocalVector[j];
             }
@@ -245,7 +245,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::CONSTANT);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             TempMatrix2(i, neighbours[j]) = LocalVector[j];
         }
@@ -255,7 +255,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D1);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             BouDxMatrix(i, neighbours[j]) = LocalVector[j];
         }
@@ -265,7 +265,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::PARTIAL_D2);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             BouDyMatrix(i, neighbours[j]) = LocalVector[j];
         }
@@ -275,7 +275,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
         RBFBasis.SetOperatorStatus(RBFBasisType::OperatorType::LAPLACE);
         LocalVector = Collocation2D(nodes_cloud, RBFBasis);
 
-        for (int j = 0; j < near_num; j++)
+        for (size_t j = 0; j < near_num; j++)
         {
             BouLAPLACEMatrix(i, neighbours[j]) = LocalVector[j];
         }
@@ -294,11 +294,11 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::assembly()
 
 template <typename MeshType, typename RBFBasisType>
 vector<double> GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::CrankNicolsonU(
-    int Istep, const vector<double>& Pn, const vector<double>& Veln)
+    size_t Istep, const vector<double>& Pn, const vector<double>& Veln)
 {
     vector<double> temp1(Veln), temp2(Veln), temp3(Veln);
     double curr_error;
-    int IterN = 0;
+    size_t IterN = 0;
 
     do
     {
@@ -325,7 +325,7 @@ vector<double> GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::CrankNicolsonU(
 template <typename MeshType, typename RBFBasisType>
 vector<double>
 GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
-    int Istep, const vector<double>& Pn, const vector<double>& Veln,
+    size_t Istep, const vector<double>& Pn, const vector<double>& Veln,
     const vector<double>& Veltemp)
 {
     vector<double> Velout(Veln), VelHalf(Veln), RHS(Veln);
@@ -346,7 +346,7 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
               gmm::sub_vector(VelHalf, gmm::sub_interval(Nall, Nall)),
               gmm::sub_vector(RHS_temp1, gmm::sub_interval(Nall, Nint)));
 
-    for (int i = 0; i < Nint; i++)
+    for (size_t i = 0; i < Nint; i++)
     {
         RHS_temp1[i] = RHS_temp1[i] * VelHalf[i];
         RHS_temp1[Nall + i] = RHS_temp1[Nall + i] * VelHalf[i];
@@ -360,7 +360,7 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
               gmm::sub_vector(VelHalf, gmm::sub_interval(Nall, Nall)),
               gmm::sub_vector(RHS_temp2, gmm::sub_interval(Nall, Nint)));
 
-    for (int i = 0; i < Nint; i++)
+    for (size_t i = 0; i < Nint; i++)
     {
         RHS_temp2[i] = RHS_temp2[i] * VelHalf[Nall + i];
         RHS_temp2[Nall + i] = RHS_temp2[Nall + i] * VelHalf[Nall + i];
@@ -368,7 +368,7 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
 
     gmm::add(RHS_temp1, RHS_temp2, RHS);
 
-    for (int i = 0; i < Nint; i++)
+    for (size_t i = 0; i < Nint; i++)
     {
         // VelHalf?
         RHS[i] = 2.0 * RHS[i] / viscous - (2.0 / dt / viscous) * Veln[i];
@@ -393,7 +393,7 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
         gmm::sub_vector(RHS, gmm::sub_interval(Nall, Nint)));
 
     // boundary part ==========================================
-    for (int i = 0; i < Nbou; i++)
+    for (size_t i = 0; i < Nbou; i++)
     {
         if (i < 10)
         {
@@ -426,7 +426,7 @@ GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::InsideCrankNicolsonU(
 
 template <typename MeshType, typename RBFBasisType>
 void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SolvePU(
-    int Istep, vector<double>& Pn1, vector<double>& Veln1,
+    size_t Istep, vector<double>& Pn1, vector<double>& Veln1,
     const vector<double>& Pn, const vector<double>& Vels)
 {
     gmm::copy(Pn, Pn1);
@@ -448,7 +448,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SolvePU(
                     1.0 / dt),
         gmm::sub_vector(RHS, gmm::sub_interval(0, Nint)));
 
-    for (int i = 0; i < Nbou; i++)
+    for (size_t i = 0; i < Nbou; i++)
     {
         if (i == 0)
             RHS[Nint + i] = 0.0;  // reference Phi value
@@ -471,7 +471,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SolvePU(
 
     double tempP = 0.0 - Pn1[Nint];
 
-    for (int i = 0; i < Nall; i++)
+    for (size_t i = 0; i < Nall; i++)
         Pn1[i] += tempP;
 
     gmm::mult_add(IntDxMatrix, gmm::scaled(Phi, -dt),
@@ -490,7 +490,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SolvePU(
 template <typename MeshType, typename RBFBasisType>
 void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::RunSimulation()
 {
-    int StepN = 500;
+    size_t StepN = 500;
     CrankNicolsonEpsilon = 0.00001;
     CrankNicolsonMaxIter = 20;
     vector<double> Veln(Veln1), Pn(Pn1), Vels(Veln1);
@@ -499,7 +499,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::RunSimulation()
     DeleteOriginData(SaveFolderName);
 
     // time loop star
-    for (int Istep = 1; Istep <= StepN; Istep++)
+    for (size_t Istep = 1; Istep <= StepN; Istep++)
     {
         Vels = CrankNicolsonU(Istep, Pn, Veln);
         SolvePU(Istep, Pn1, Veln1, Pn, Vels);
@@ -536,7 +536,7 @@ void GMMLrbfcmNavierStokes<MeshType, RBFBasisType>::SaveData(string FolderName,
     // Save Data on Nodes
     ofstream fout(FilePath);
 
-    for (int i = 0; i < Nall; i++)
+    for (size_t i = 0; i < Nall; i++)
     {
         fout << AllNodes[i][0] << ", " << AllNodes[i][1] << ", " << Veln1[i]
              << ", " << Veln1[Nall + i] << ", " << Pn1[i] << endl;

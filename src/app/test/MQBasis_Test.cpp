@@ -22,7 +22,7 @@ TEST_CASE("MQBasis Operator Test", "[RBF]")
         // std::vector<vec3d<double>> nodesD1(10);
         // Eigen::VectorXd nodesValue(nodesD1.size());
 
-        // for (int nodeID = 0; nodeID < nodesD1.size(); ++nodeID)
+        // for (size_t nodeID = 0; nodeID < nodesD1.size(); ++nodeID)
         // {
         //     nodesD1[nodeID][0] = nodeID * 0.01;
         //     nodesValue[nodeID] = testFunc(nodesD1[nodeID]);
@@ -34,10 +34,10 @@ TEST_CASE("MQBasis Operator Test", "[RBF]")
         // Eigen::SparseMatrix<double> dyMatrix(nodesD1.size(), nodesD1.size());
         // Eigen::SparseMatrix<double> dzMatrix(nodesD1.size(), nodesD1.size());
 
-        // for (int nodeID = 0; nodeID < nodesD1.size(); ++nodeID)
+        // for (size_t nodeID = 0; nodeID < nodesD1.size(); ++nodeID)
         // {
         //     std::vector<vec3d<double>> neighborNodes(3);
-        //     std::vector<int> neighborID(3);
+        //     std::vector<size_t> neighborID(3);
         //     if (nodeID == 0)
         //     {
         //         neighborNodes[0] = nodesD1[nodeID];
@@ -80,7 +80,7 @@ TEST_CASE("MQBasis Operator Test", "[RBF]")
         //     Eigen::VectorXd dzVector = myRBFBasis->collectOnNodes(
         //         neighborNodes, rbfOperatorType::PARTIAL_D3);
 
-        //     for (int i = 0; i < 3; i++)
+        //     for (size_t i = 0; i < 3; i++)
         //     {
         //         laplaceMatrix.insert(nodeID, neighborID[i]) =
         //         laplaceVector[i]; dxMatrix.insert(nodeID, neighborID[i]) =

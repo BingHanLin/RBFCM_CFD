@@ -10,12 +10,12 @@ using vec3d = Eigen::Matrix<T, 3, 1>;
 
 struct nodesCloud
 {
-    nodesCloud(const int size)
+    nodesCloud(const size_t size)
     {
         id.resize(size);
         nodes.resize(size);
     }
-    std::vector<int> id;
+    std::vector<size_t> id;
     std::vector<vec3d<double>> nodes;
 };
 
