@@ -89,30 +89,33 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
 }
 
 Eigen::VectorXd MQBasis::collectOnNodes(
-    const std::vector<vec3d<double>>& nodesCloud,
-    const rbfOperatorType inputOperatorType) const
+    const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
+    const rbfOperatorType operatorType) const
 {
-    const size_t neighborNum = nodesCloud.size();
+    std::cout << "cloooo" << std::endl;
+    const size_t neighborNum = cloud.size_;
     Eigen::MatrixXd phi(neighborNum, neighborNum);
 
     for (size_t i = 0; i < neighborNum; i++)
     {
         for (size_t j = 0; j < neighborNum; j++)
         {
-            phi(j, i) /* transposed */ = getBasisValue(
-                nodesCloud[i], nodesCloud[j], rbfOperatorType::CONSTANT);
+            phi(j, i) /* transposed */ =
+                getBasisValue(nodes[cloud.ids_[i]], nodes[cloud.ids_[j]],
+                              rbfOperatorType::CONSTANT);
         }
     }
 
     Eigen::VectorXd phiL(neighborNum);
     for (size_t j = 0; j < neighborNum; j++)
     {
-        phiL(j) =
-            getBasisValue(nodesCloud[0], nodesCloud[j], inputOperatorType);
+        phiL(j) = getBasisValue(nodes[cloud.id0_], nodes[cloud.ids_[j]],
+                                operatorType);
     }
 
     Eigen::VectorXd x(neighborNum);
     x = phi.ldlt().solve(phiL);
+    std::cout << "cloooo===============" << std::endl;
 
     return x;
 }

@@ -123,7 +123,10 @@
 		"bit": "cpp",
 		"bitset": "cpp",
 		"unordered_set": "cpp",
-		"shared_mutex": "cpp"
+		"shared_mutex": "cpp",
+		"compare": "cpp",
+		"ranges": "cpp",
+		"stop_token": "cpp"
 	},
 	"editor.fontSize": 16,
 	// "C_Cpp.errorSquiggles": "Disabled",

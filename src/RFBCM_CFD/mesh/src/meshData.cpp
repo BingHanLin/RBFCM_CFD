@@ -1,5 +1,6 @@
 #include "meshData.hpp"
 #include "constantValueBC.hpp"
+#include "messages.hpp"
 #include "readFromMsh.hpp"
 #include "rectangle.hpp"
 
@@ -44,7 +45,7 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
     }
 
     numOfNodes_ = nodes_.size();
-    kdTree_ = KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3>(nodes_);
+    buildNodeClouds();
     compactGroupToNodesMap(groupToNodesMapBeforeCompact);
     buildBoundaryConditions();
 }
@@ -78,6 +79,28 @@ void MeshData::compactGroupToNodesMap(
     }
 }
 
+void MeshData::buildNodeClouds()
+{
+    kdTree_ = KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3>(nodes_);
+
+    size_t neighborNum =
+        controlData_->paramsDataAt({"solverControl", "neighborNumber"});
+
+    nodesCloud_.resize(nodes_.size());
+    for (size_t nodeID = 0; nodeID < nodes_.size(); nodeID++)
+    {
+        std::vector<size_t> neighboursID(neighborNum);
+        std::vector<double> outDistSqr(neighborNum);
+
+        kdTree_.query(nodeID, neighborNum, &neighboursID[0], &outDistSqr[0]);
+
+        std::sort(neighboursID.begin(), neighboursID.end());
+
+        nodesCloud cloud(nodeID, neighboursID);
+        nodesCloud_[nodeID] = cloud;
+    }
+}
+
 void MeshData::buildBoundaryConditions()
 {
     nodesToBC_.resize(nodes_.size());
@@ -100,30 +123,24 @@ void MeshData::buildBoundaryConditions()
     }
 }
 
-nodesCloud MeshData::neighborNodesCloud(const size_t nodeID,
-                                        const size_t neighborNum)
+const nodesCloud& MeshData::nodesCloudByID(const size_t nodeID) const
 {
-    std::vector<size_t> neighboursID(neighborNum);
-    std::vector<double> outDistSqr(neighborNum);
-    kdTree_.query(nodeID, neighborNum, &neighboursID[0], &outDistSqr[0]);
-
-    nodesCloud cloud(neighborNum);
-    for (size_t i = 0; i < neighborNum; i++)
-    {
-        cloud.id[i] = neighboursID[i];
-        cloud.nodes[i] = nodes_[neighboursID[i]];
-    }
-
-    // std::sort(neighboursID.begin(), neighboursID.end());
-    // for (size_t i = 0; i < neighborNum; i++)
-    // {
-    //     cloud.id[i] = neighboursID[i];
-    //     cloud.nodes[i] = nodes_[neighboursID[i]];
-    // }
-    return cloud;
+    return nodesCloud_[nodeID];
 }
 
-std::vector<vec3d<double>>& MeshData::nodes()
+const vec3d<double>& MeshData::node(const size_t nodeID) const
+{
+    if (nodeID < nodes_.size())
+    {
+        return nodes_[nodeID];
+    }
+    else
+    {
+        ASSERT("node ID out of bound, ID: " << nodeID);
+    }
+}
+
+const std::vector<vec3d<double>>& MeshData::nodes() const
 {
     return nodes_;
 }

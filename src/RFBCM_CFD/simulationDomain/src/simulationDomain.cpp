@@ -96,26 +96,24 @@ void SimulationDomain::setupLinearSystem()
 
     for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
-        auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
+        auto cloud = myMesh_->nodesCloudByID(nodeID);
+        auto nodes = myMesh_->nodes();
 
         Eigen::VectorXd laplaceVector =
-            myRBFBasis_->collectOnNodes(cloud.nodes, rbfOperatorType::LAPLACE);
+            myRBFBasis_->collectOnNodes(cloud, nodes, rbfOperatorType::LAPLACE);
         Eigen::VectorXd dxVector = myRBFBasis_->collectOnNodes(
-            cloud.nodes, rbfOperatorType::PARTIAL_D1);
+            cloud, nodes, rbfOperatorType::PARTIAL_D1);
         Eigen::VectorXd dyVector = myRBFBasis_->collectOnNodes(
-            cloud.nodes, rbfOperatorType::PARTIAL_D2);
+            cloud, nodes, rbfOperatorType::PARTIAL_D2);
         Eigen::VectorXd dzVector = myRBFBasis_->collectOnNodes(
-            cloud.nodes, rbfOperatorType::PARTIAL_D3);
+            cloud, nodes, rbfOperatorType::PARTIAL_D3);
 
-        auto indexs = sortIndexes(cloud.id);
-
-        for (size_t i = 0; i < neighborNum_; i++)
+        for (size_t i = 0; i < cloud.size_; i++)
         {
-            laplaceMatrix_.insert(nodeID, cloud.id[indexs[i]]) =
-                laplaceVector[indexs[i]];
-            dxMatrix_.insert(nodeID, cloud.id[indexs[i]]) = dxVector[indexs[i]];
-            dyMatrix_.insert(nodeID, cloud.id[indexs[i]]) = dyVector[indexs[i]];
-            dzMatrix_.insert(nodeID, cloud.id[indexs[i]]) = dzVector[indexs[i]];
+            laplaceMatrix_.insert(nodeID, cloud.ids_[i]) = laplaceVector[i];
+            dxMatrix_.insert(nodeID, cloud.ids_[i]) = dxVector[i];
+            dyMatrix_.insert(nodeID, cloud.ids_[i]) = dyVector[i];
+            dzMatrix_.insert(nodeID, cloud.ids_[i]) = dzVector[i];
         }
     }
 }
@@ -143,7 +141,8 @@ void SimulationDomain::assembleCoeffMatrix()
 
     for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
-        auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
+        auto cloud = myMesh_->nodesCloudByID(nodeID);
+        auto nodes = myMesh_->nodes();
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
@@ -152,47 +151,44 @@ void SimulationDomain::assembleCoeffMatrix()
             {
                 localVector = diffusionCoeff_ *
                               myRBFBasis_->collectOnNodes(
-                                  cloud.nodes, rbfOperatorType::LAPLACE);
+                                  cloud, nodes, rbfOperatorType::LAPLACE);
 
                 localVector += convectionVel_[0] *
                                myRBFBasis_->collectOnNodes(
-                                   cloud.nodes, rbfOperatorType::PARTIAL_D1);
+                                   cloud, nodes, rbfOperatorType::PARTIAL_D1);
 
                 localVector += convectionVel_[1] *
                                myRBFBasis_->collectOnNodes(
-                                   cloud.nodes, rbfOperatorType::PARTIAL_D2);
+                                   cloud, nodes, rbfOperatorType::PARTIAL_D2);
 
                 localVector += convectionVel_[2] *
                                myRBFBasis_->collectOnNodes(
-                                   cloud.nodes, rbfOperatorType::PARTIAL_D3);
+                                   cloud, nodes, rbfOperatorType::PARTIAL_D3);
             }
             else
             {
                 localVector = myRBFBasis_->collectOnNodes(
-                    cloud.nodes, rbfOperatorType::CONSTANT);
+                    cloud, nodes, rbfOperatorType::CONSTANT);
 
                 localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
                                 myRBFBasis_->collectOnNodes(
-                                    cloud.nodes, rbfOperatorType::LAPLACE));
+                                    cloud, nodes, rbfOperatorType::LAPLACE));
 
                 localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
                                 myRBFBasis_->collectOnNodes(
-                                    cloud.nodes, rbfOperatorType::PARTIAL_D1));
+                                    cloud, nodes, rbfOperatorType::PARTIAL_D1));
 
                 localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
                                 myRBFBasis_->collectOnNodes(
-                                    cloud.nodes, rbfOperatorType::PARTIAL_D2));
+                                    cloud, nodes, rbfOperatorType::PARTIAL_D2));
 
                 localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
                                 myRBFBasis_->collectOnNodes(
-                                    cloud.nodes, rbfOperatorType::PARTIAL_D3));
+                                    cloud, nodes, rbfOperatorType::PARTIAL_D3));
             }
 
-            auto indexs = sortIndexes(cloud.id);
-
-            for (size_t i = 0; i < neighborNum_; i++)
-                varCoeffMatrix_.insert(nodeID, cloud.id[indexs[i]]) =
-                    localVector[indexs[i]];
+            for (size_t i = 0; i < cloud.size_; i++)
+                varCoeffMatrix_.insert(nodeID, cloud.ids_[i]) = localVector[i];
         }
         else
         {
@@ -226,7 +222,7 @@ void SimulationDomain::assembleRhs()
 
     for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
-        auto cloud = myMesh_->neighborNodesCloud(nodeID, neighborNum_);
+        auto cloud = myMesh_->nodesCloudByID(nodeID);
 
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
@@ -314,9 +310,16 @@ void SimulationDomain::solveDomain()
 
 void SimulationDomain::clearVTKDirectory() const
 {
-    for (const auto& entry :
-         std::filesystem::directory_iterator(controlData_->vtkDir()))
-        std::filesystem::remove_all(entry.path());
+    if (std::filesystem::exists(controlData_->vtkDir()))
+    {
+        for (const auto& entry :
+             std::filesystem::directory_iterator(controlData_->vtkDir()))
+            std::filesystem::remove_all(entry.path());
+    }
+    else
+    {
+        std::filesystem::create_directories(controlData_->vtkDir());
+    }
 }
 
 void SimulationDomain::writeDataToVTK() const
@@ -341,7 +344,7 @@ void SimulationDomain::writeDataToVTK() const
     pugi::xml_node Cells = Piece.append_child("Cells");
     addCells(myMesh_->numOfNodes(), Cells);
 
-    std::filesystem::create_directories(controlData_->vtkDir());
+    // std::filesystem::create_directories(controlData_->vtkDir());
 
     const std::string childFileNmae = controlData_->vtkDir().string() + "/" +
                                       std::to_string(currentTime_) + ".vtu";

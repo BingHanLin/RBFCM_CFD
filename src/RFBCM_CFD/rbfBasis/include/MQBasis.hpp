@@ -20,7 +20,7 @@ class MQBasis
     ~MQBasis(){};
 
     Eigen::VectorXd collectOnNodes(
-        const std::vector<vec3d<double>>& nodesCloud,
+        const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
         const rbfOperatorType inputOperatorType) const;
 
    private:
