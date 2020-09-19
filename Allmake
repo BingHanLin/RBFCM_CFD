@@ -1,0 +1,20 @@
+# Run from this directory
+cd ${0%/*} ||exit 1     
+
+# Generate a project buildsystem
+cmake   -S. -Bbuild \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCATCH2TEST=ON \
+        -G "MinGW Makefiles"
+
+# Build a project
+cmake --build build --config Release --parallel 4
+
+# Install a project
+cmake --install build --config Release
+
+# Run test
+bin/MYAPP_Test.exe
+
+
+
