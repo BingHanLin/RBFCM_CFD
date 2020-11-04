@@ -9,14 +9,14 @@ class controlData
 {
    public:
     controlData();
-    controlData(const std::filesystem::path workingDir_);
+    controlData(const std::filesystem::path workingDir);
 
     std::filesystem::path workingDir() const;
     std::filesystem::path vtkDir() const;
     nlohmann::json paramsDataAt(const std::vector<std::string> searchEntries);
 
    private:
-    void setWorkingDir(const std::filesystem::path workingDir_);
+    void setWorkingDir(const std::filesystem::path workingDir);
     void readParamsData();
 
     std::filesystem::path workingDir_;

@@ -128,7 +128,7 @@
 		"ranges": "cpp",
 		"stop_token": "cpp"
 	},
-	"editor.fontSize": 16,
+	"editor.fontSize": 18,
 	// "C_Cpp.errorSquiggles": "Disabled",
 	"editor.quickSuggestions": true,
 }

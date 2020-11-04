@@ -8,9 +8,9 @@ controlData::controlData()
     readParamsData();
 }
 
-controlData::controlData(const std::filesystem::path workingDir_)
+controlData::controlData(const std::filesystem::path workingDir)
 {
-    setWorkingDir(workingDir_);
+    setWorkingDir(workingDir);
     readParamsData();
 }
 
