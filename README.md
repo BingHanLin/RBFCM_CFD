@@ -44,3 +44,5 @@ The following open source libraries or third party functions are used by this pr
 [1] Tsai, C.-C., Lin, Z.-H., & Hsu, T.-W. (2015). [Using a local radial basis function collocation method to approximate radiation boundary conditions](https://doi.org/10.1016/j.oceaneng.2015.06.030). Ocean Engineering, 105, 231–241. 
 
 [2] Chen, W., Zhuo. & Chen, C. (2014). Recent advances on radial basis function collocation methods. Berlin: Springer.
+
+[3] [Catch2](http://blog.guorongfei.com/2016/08/22/cpp-unit-test-catch/) 

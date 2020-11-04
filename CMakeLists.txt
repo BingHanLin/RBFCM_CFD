@@ -2,7 +2,14 @@
 # https://stackoverflow.com/questions/16398937/cmake-and-finding-other-projects-and-their-dependencies
 cmake_minimum_required(VERSION 3.1)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+project(mainProject)
+
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/bin/Release" CACHE PATH "The path to use for make install" FORCE)
+else()
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/bin/Debug" CACHE PATH "The path to use for make install" FORCE)
+endif()
 
 ##
 ## PROJECT NAME
@@ -20,5 +27,10 @@ set(CMAKE_CXX_STANDARD 17)
 ## create target and add include path
 ##
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/thirdParty)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/RFBCM_CFD)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/RFBCMCFD)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/app)
+
+if(CATCH2TEST)
+    # catch2 test
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/test)
+endif()
