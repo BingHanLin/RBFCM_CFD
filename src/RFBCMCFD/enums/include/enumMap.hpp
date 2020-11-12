@@ -25,13 +25,6 @@ NLOHMANN_JSON_SERIALIZE_ENUM(systemSateType, {
                                                  {STEADY, "steady"},
                                              })
 
-enum initConditionType
-{
-    UNIFORM
-};
-
-NLOHMANN_JSON_SERIALIZE_ENUM(initConditionType, {{UNIFORM, "uniform"}})
-
 enum meshType
 {
     RECTNAGLE,
@@ -46,6 +39,11 @@ NLOHMANN_JSON_SERIALIZE_ENUM(meshType, {
 enum boundaryConditionType
 {
     constantValue
+};
+
+enum initConditionType
+{
+    UNIFORM
 };
 
 enum elementType

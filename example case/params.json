@@ -35,10 +35,12 @@
             ]
         },
         "initialConditions": {
-            "type": "uniform",
-            "uniform": {
-                "value": 100.0
-            }
+            "constantValue": [
+                {
+                    "groupName": "",
+                    "value": 100.0
+                }
+            ]
         }
     },
     "solverControl": {

@@ -43,16 +43,16 @@ int main(int argc, char** argv)
     // ****************************************************************************
     auto myMeshData = std::make_shared<MeshData>(myControlData);
 
-    // // ****************************************************************************
-    // // Define RBF Type
-    // // ****************************************************************************
-    // auto myRBFBasis = std::make_shared<MQBasis>(myControlData);
+    // ****************************************************************************
+    // Define RBF Type
+    // ****************************************************************************
+    auto myRBFBasis = std::make_shared<MQBasis>(myControlData);
 
-    // // ****************************************************************************
-    // // Define Solver
-    // // ****************************************************************************
-    // SimulationDomain mySimulationDomain(myControlData, myMeshData, myRBFBasis);
-    // mySimulationDomain.solveDomain();
+    // ****************************************************************************
+    // Define Solver
+    // ****************************************************************************
+    SimulationDomain mySimulationDomain(myControlData, myMeshData, myRBFBasis);
+    mySimulationDomain.solveDomain();
 
     std::cout << "test ok" << std::endl;
     return 0;

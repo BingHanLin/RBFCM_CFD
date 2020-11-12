@@ -92,7 +92,6 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
     const rbfOperatorType operatorType) const
 {
-    std::cout << "cloooo" << std::endl;
     const size_t neighborNum = cloud.size_;
     Eigen::MatrixXd phi(neighborNum, neighborNum);
 
@@ -115,7 +114,6 @@ Eigen::VectorXd MQBasis::collectOnNodes(
 
     Eigen::VectorXd x(neighborNum);
     x = phi.ldlt().solve(phiL);
-    std::cout << "cloooo===============" << std::endl;
 
     return x;
 }

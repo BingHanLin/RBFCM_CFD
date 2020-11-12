@@ -123,12 +123,24 @@ void SimulationDomain::setupInitialCondition()
     const auto initCondition =
         controlData_->paramsDataAt({"physicsControl", "initialConditions"});
 
-    if (initCondition.at("type") == initConditionType::UNIFORM)
+    for (auto& oneBCData : initCondition.at("constantValue"))
     {
-        const double val = initCondition.at("uniform").at("value");
-        varSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
-        preVarSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
+        const std::string groupName = oneBCData.at("groupName");
+        const double val = oneBCData.at("value");
+        if (groupName.empty())
+        {
+            preVarSol_ = Eigen::VectorXd::Constant(myMesh_->numOfNodes(), val);
+        }
+        else
+        {
+            for (size_t& nodeID : myMesh_->groupToNodesMap().at(groupName))
+            {
+                varSol_[nodeID] = val;
+            }
+        }
     }
+
+    preVarSol_ = varSol_;
 }
 
 void SimulationDomain::assembleCoeffMatrix()
@@ -288,7 +300,6 @@ void SimulationDomain::solveMatrix()
 void SimulationDomain::solveDomain()
 {
     assembleCoeffMatrix();
-    writeDataToVTK();
 
     if (systemSateType_ == systemSateType::STEADY)
     {
@@ -298,6 +309,8 @@ void SimulationDomain::solveDomain()
     }
     else
     {
+        writeDataToVTK();
+
         while (currentTime_ < endTime_)
         {
             assembleRhs();
@@ -350,7 +363,9 @@ void SimulationDomain::writeDataToVTK() const
                                       std::to_string(currentTime_) + ".vtu";
     doc.save_file(childFileNmae.c_str());
 
+    const std::string relChildFileNmae = std::to_string(currentTime_) + ".vtu";
+
     const std::string gourpFileName =
         controlData_->vtkDir().string() + "/result.pvd";
-    writeVTKGroupFile(gourpFileName, childFileNmae, currentTime_);
+    writeVTKGroupFile(gourpFileName, relChildFileNmae, currentTime_);
 }

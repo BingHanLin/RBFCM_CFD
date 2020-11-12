@@ -30,8 +30,8 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
         const std::string absPath =
             controlData_->workingDir().concat("/" + meshFileName).string();
 
-        bool isReadSuccess = readFromMsh(absPath, nodes_, normals_,
-                                         groupToNodesMapNotCompact);
+        bool isReadSuccess =
+            readFromMsh(absPath, nodes_, normals_, groupToNodesMapNotCompact);
     }
     else if (meshType == meshType::RECTNAGLE)
     {
@@ -49,8 +49,7 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
 }
 
 void MeshData::compactGroupToNodesMap(
-    const std::map<std::string, std::vector<size_t>>&
-        groupToNodesMapNotCompact)
+    const std::map<std::string, std::vector<size_t>>& groupToNodesMapNotCompact)
 {
     nodesToGroup_.resize(nodes_.size());
     groupToNodesMap_.clear();
@@ -64,8 +63,7 @@ void MeshData::compactGroupToNodesMap(
         groupToNodesMap_.insert({groupName, {}});
 
         // TODO: parallel
-        for (const size_t& nodeIndex :
-             groupToNodesMapNotCompact.at(groupName))
+        for (const size_t& nodeIndex : groupToNodesMapNotCompact.at(groupName))
         {
             nodesToGroup_[nodeIndex] = groupName;
         }

@@ -30,6 +30,7 @@ class MeshData
     size_t numOfNodes() const;
     std::shared_ptr<BoundaryCondition> nodeBC(const size_t nodeID) const;
 
+    std::map<std::string, std::vector<size_t>> groupToNodesMap() const;
     // std::shared_ptr<BoundaryCondition> nodesBC(const size_t nodeID)
     // const;
 
@@ -53,4 +54,9 @@ class MeshData
     void buildNodeClouds();
 };
 
+inline std::map<std::string, std::vector<size_t>> MeshData::groupToNodesMap()
+    const
+{
+    return groupToNodesMap_;
+}
 #endif
