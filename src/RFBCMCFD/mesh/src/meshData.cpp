@@ -8,7 +8,6 @@
 
 MeshData::MeshData(std::shared_ptr<controlData> inControlData)
     : controlData_(inControlData),
-      numOfNodes_(),
       groupToNodesMap_(),
       nodes_(),
       normals_(),
@@ -18,7 +17,7 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
 
     meshType meshType = controlData_->paramsDataAt({"geometryControl", "type"});
 
-    std::map<std::string, std::vector<size_t>> groupToNodesMapBeforeCompact;
+    std::map<std::string, std::vector<size_t>> groupToNodesMapNotCompact;
 
     if (meshType == meshType::DEFAULT)
     {
@@ -32,7 +31,7 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
             controlData_->workingDir().concat("/" + meshFileName).string();
 
         bool isReadSuccess = readFromMsh(absPath, nodes_, normals_,
-                                         groupToNodesMapBeforeCompact);
+                                         groupToNodesMapNotCompact);
     }
     else if (meshType == meshType::RECTNAGLE)
     {
@@ -44,15 +43,14 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
         std::cout << "mesh type is not defined" << std::endl;
     }
 
-    numOfNodes_ = nodes_.size();
     buildNodeClouds();
-    compactGroupToNodesMap(groupToNodesMapBeforeCompact);
+    compactGroupToNodesMap(groupToNodesMapNotCompact);
     buildBoundaryConditions();
 }
 
 void MeshData::compactGroupToNodesMap(
     const std::map<std::string, std::vector<size_t>>&
-        groupToNodesMapBeforeCompact)
+        groupToNodesMapNotCompact)
 {
     nodesToGroup_.resize(nodes_.size());
     groupToNodesMap_.clear();
@@ -67,7 +65,7 @@ void MeshData::compactGroupToNodesMap(
 
         // TODO: parallel
         for (const size_t& nodeIndex :
-             groupToNodesMapBeforeCompact.at(groupName))
+             groupToNodesMapNotCompact.at(groupName))
         {
             nodesToGroup_[nodeIndex] = groupName;
         }
@@ -152,5 +150,5 @@ std::shared_ptr<BoundaryCondition> MeshData::nodeBC(const size_t nodeID) const
 
 size_t MeshData::numOfNodes() const
 {
-    return numOfNodes_;
+    return nodes_.size();
 };

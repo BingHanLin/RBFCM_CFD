@@ -43,7 +43,6 @@ class MeshData
     std::vector<std::shared_ptr<BoundaryCondition>> nodesToBC_;
     std::vector<std::string> nodesToGroup_;
     std::vector<nodesCloud> nodesCloud_;
-    size_t numOfNodes_;
     KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3> kdTree_;
 
     void compactGroupToNodesMap(
