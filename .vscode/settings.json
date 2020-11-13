@@ -83,7 +83,8 @@
 		"xtree": "cpp",
 		"resumable": "cpp",
 		"codecvt": "cpp",
-		"compare": "cpp"
+		"compare": "cpp",
+		"string_view": "cpp"
 	},
 	"clang-format.executable": "D:\\LLVM\\bin\\clang-format.exe"
 }

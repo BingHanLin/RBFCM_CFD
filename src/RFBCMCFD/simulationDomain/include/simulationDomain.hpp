@@ -32,27 +32,6 @@ class SimulationDomain
     std::shared_ptr<controlData> controlData_;
     std::shared_ptr<MeshData> myMesh_;
     std::shared_ptr<MQBasis> myRBFBasis_;
-    solverType solverType_;
-    systemSateType systemSateType_;
-    size_t dim_;
-
-    // physicsControl
-    double viscous_;
-    double density_;
-    double diffusionCoeff_;
-    std::array<double, 3> convectionVel_;
-
-    // solverConstrol
-    size_t neighborNum_;
-    double endTime_;
-    double tStepSize_;
-    double writeInterval_;
-    double theta_;
-
-    double currentTime_;
-
-    // size_t crankNicolsonMaxIter_;
-    // double crankNicolsonEpsilon_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;

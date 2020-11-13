@@ -14,19 +14,8 @@
 SimulationDomain::SimulationDomain(std::shared_ptr<controlData> inControlData,
                                    std::shared_ptr<MeshData> mesh,
                                    std::shared_ptr<MQBasis> RBFBasis)
-    : controlData_(inControlData),
-      myMesh_(mesh),
-      myRBFBasis_(RBFBasis),
-      viscous_(0.0),
-      density_(0.0),
-      tStepSize_(0.0),
-      endTime_(0.0),
-      currentTime_(0.0),
-      writeInterval_(0.0),
-      theta_(0.0),
-      convectionVel_(),
-      diffusionCoeff_(0.0),
-      neighborNum_(0)
+    : controlData_(inControlData), myMesh_(mesh), myRBFBasis_(RBFBasis)
+
 {
     setupSimulation();
     showSummary();
@@ -38,23 +27,6 @@ SimulationDomain::SimulationDomain(std::shared_ptr<controlData> inControlData,
 void SimulationDomain::setupSimulation()
 {
     std::cout << "#setupSimulation" << std::endl;
-
-    const auto solverControls = controlData_->paramsDataAt({"solverControl"});
-    neighborNum_ = solverControls.at("neighborNumber");
-    tStepSize_ = solverControls.at("timeStepSize");
-    endTime_ = solverControls.at("endTime");
-    writeInterval_ = solverControls.at("writeInterval");
-    systemSateType_ = solverControls.at("systemSateType");
-    dim_ = solverControls.at("dimension");
-    solverType_ = solverControls.at("solverType");
-    theta_ = solverControls.at("transferEqOptions").at("theta");
-
-    const auto physicalControls =
-        controlData_->paramsDataAt({"physicsControl"});
-    diffusionCoeff_ =
-        physicalControls.at("transferEqOptions").at("diffusionCoeff");
-    convectionVel_ =
-        physicalControls.at("transferEqOptions").at("convectionVel");
 }
 
 void SimulationDomain::showSummary()
@@ -67,18 +39,23 @@ void SimulationDomain::showSummary()
 
     std::cout << "Number of nodes: " << std::setw(8) << myMesh_->numOfNodes()
               << std::endl;
-    std::cout << "Time step size: " << std::setw(8) << tStepSize_ << std::endl;
-    std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
-    std::cout << "Write Interval: " << std::setw(8) << writeInterval_
+    std::cout << "Time step size: " << std::setw(8) << controlData_->tStepSize_
               << std::endl;
-    std::cout << "Neighbor number: " << std::setw(8) << neighborNum_
+    std::cout << "End time: " << std::setw(8) << controlData_->endTime_
               << std::endl;
+    std::cout << "Write Interval: " << std::setw(8)
+              << controlData_->writeInterval_ << std::endl;
+    std::cout << "Neighbor number: " << std::setw(8)
+              << controlData_->neighborNum_ << std::endl;
 
     std::cout << std::endl;
 
-    std::cout << "Diffusity: " << std::setw(8) << diffusionCoeff_ << std::endl;
-    std::cout << "Convectivity: " << std::setw(8) << convectionVel_[0] << ", "
-              << convectionVel_[1] << ", " << convectionVel_[2] << std::endl;
+    std::cout << "Diffusity: " << std::setw(8) << controlData_->diffusionCoeff_
+              << std::endl;
+    std::cout << "Convectivity: " << std::setw(8)
+              << controlData_->convectionVel_[0] << ", "
+              << controlData_->convectionVel_[1] << ", "
+              << controlData_->convectionVel_[2] << std::endl;
 }
 
 void SimulationDomain::setupLinearSystem()
@@ -148,8 +125,8 @@ void SimulationDomain::assembleCoeffMatrix()
     std::cout << "#assembleCoeffMatrix" << std::endl;
 
     varCoeffMatrix_.data().squeeze();
-    varCoeffMatrix_.reserve(
-        Eigen::VectorXi::Constant(myMesh_->numOfNodes(), neighborNum_));
+    varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(
+        myMesh_->numOfNodes(), controlData_->neighborNum_));
 
     for (size_t nodeID = 0; nodeID < myMesh_->numOfNodes(); ++nodeID)
     {
@@ -159,21 +136,21 @@ void SimulationDomain::assembleCoeffMatrix()
         if (myMesh_->nodeBC(nodeID) == nullptr)
         {
             Eigen::VectorXd localVector;
-            if (systemSateType_ == systemSateType::STEADY)
+            if (controlData_->systemSateType_ == systemSateType::STEADY)
             {
-                localVector = diffusionCoeff_ *
+                localVector = controlData_->diffusionCoeff_ *
                               myRBFBasis_->collectOnNodes(
                                   cloud, nodes, rbfOperatorType::LAPLACE);
 
-                localVector += convectionVel_[0] *
+                localVector += controlData_->convectionVel_[0] *
                                myRBFBasis_->collectOnNodes(
                                    cloud, nodes, rbfOperatorType::PARTIAL_D1);
 
-                localVector += convectionVel_[1] *
+                localVector += controlData_->convectionVel_[1] *
                                myRBFBasis_->collectOnNodes(
                                    cloud, nodes, rbfOperatorType::PARTIAL_D2);
 
-                localVector += convectionVel_[2] *
+                localVector += controlData_->convectionVel_[2] *
                                myRBFBasis_->collectOnNodes(
                                    cloud, nodes, rbfOperatorType::PARTIAL_D3);
             }
@@ -182,21 +159,29 @@ void SimulationDomain::assembleCoeffMatrix()
                 localVector = myRBFBasis_->collectOnNodes(
                     cloud, nodes, rbfOperatorType::CONSTANT);
 
-                localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
-                                myRBFBasis_->collectOnNodes(
-                                    cloud, nodes, rbfOperatorType::LAPLACE));
+                localVector +=
+                    (-controlData_->theta_ * controlData_->tStepSize_ *
+                     controlData_->diffusionCoeff_ *
+                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                                                 rbfOperatorType::LAPLACE));
 
-                localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
-                                myRBFBasis_->collectOnNodes(
-                                    cloud, nodes, rbfOperatorType::PARTIAL_D1));
+                localVector +=
+                    (-controlData_->theta_ * controlData_->tStepSize_ *
+                     controlData_->convectionVel_[0] *
+                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                                                 rbfOperatorType::PARTIAL_D1));
 
-                localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
-                                myRBFBasis_->collectOnNodes(
-                                    cloud, nodes, rbfOperatorType::PARTIAL_D2));
+                localVector +=
+                    (-controlData_->theta_ * controlData_->tStepSize_ *
+                     controlData_->convectionVel_[1] *
+                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                                                 rbfOperatorType::PARTIAL_D2));
 
-                localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
-                                myRBFBasis_->collectOnNodes(
-                                    cloud, nodes, rbfOperatorType::PARTIAL_D3));
+                localVector +=
+                    (-controlData_->theta_ * controlData_->tStepSize_ *
+                     controlData_->convectionVel_[2] *
+                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                                                 rbfOperatorType::PARTIAL_D3));
             }
 
             for (size_t i = 0; i < cloud.size_; i++)
@@ -217,18 +202,22 @@ void SimulationDomain::assembleRhs()
     Eigen::VectorXd rhsInnerVector =
         Eigen::VectorXd::Zero(myMesh_->numOfNodes());
 
-    if (systemSateType_ == systemSateType::TRANSIENT)
+    if (controlData_->systemSateType_ == systemSateType::TRANSIENT)
     {
         rhsInnerVector = preVarSol_;
 
         rhsInnerVector +=
-            ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
+            ((1 - controlData_->theta_) * controlData_->tStepSize_ *
+             controlData_->diffusionCoeff_ * laplaceMatrix_) *
             preVarSol_;
 
         rhsInnerVector +=
-            ((1 - theta_) * tStepSize_ * convectionVel_[0] * dxMatrix_ +
-             (1 - theta_) * tStepSize_ * convectionVel_[1] * dyMatrix_ +
-             (1 - theta_) * tStepSize_ * convectionVel_[2] * dzMatrix_) *
+            ((1 - controlData_->theta_) * controlData_->tStepSize_ *
+                 controlData_->convectionVel_[0] * dxMatrix_ +
+             (1 - controlData_->theta_) * controlData_->tStepSize_ *
+                 controlData_->convectionVel_[1] * dyMatrix_ +
+             (1 - controlData_->theta_) * controlData_->tStepSize_ *
+                 controlData_->convectionVel_[2] * dzMatrix_) *
             preVarSol_;
     }
 
@@ -301,7 +290,7 @@ void SimulationDomain::solveDomain()
 {
     assembleCoeffMatrix();
 
-    if (systemSateType_ == systemSateType::STEADY)
+    if (controlData_->systemSateType_ == systemSateType::STEADY)
     {
         assembleRhs();
         solveMatrix();
@@ -311,12 +300,14 @@ void SimulationDomain::solveDomain()
     {
         writeDataToVTK();
 
-        while (currentTime_ < endTime_)
+        while (controlData_->currentTime_ < controlData_->endTime_)
         {
             assembleRhs();
             solveMatrix();
-            currentTime_ += tStepSize_;
-            if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+            controlData_->currentTime_ += controlData_->tStepSize_;
+            if (remainder(controlData_->currentTime_,
+                          controlData_->writeInterval_) <= 0)
+                writeDataToVTK();
         }
     }
 }
@@ -359,13 +350,16 @@ void SimulationDomain::writeDataToVTK() const
 
     // std::filesystem::create_directories(controlData_->vtkDir());
 
-    const std::string childFileNmae = controlData_->vtkDir().string() + "/" +
-                                      std::to_string(currentTime_) + ".vtu";
+    const std::string childFileNmae =
+        controlData_->vtkDir().string() + "/" +
+        std::to_string(controlData_->currentTime_) + ".vtu";
     doc.save_file(childFileNmae.c_str());
 
-    const std::string relChildFileNmae = std::to_string(currentTime_) + ".vtu";
+    const std::string relChildFileNmae =
+        std::to_string(controlData_->currentTime_) + ".vtu";
 
     const std::string gourpFileName =
         controlData_->vtkDir().string() + "/result.pvd";
-    writeVTKGroupFile(gourpFileName, relChildFileNmae, currentTime_);
+    writeVTKGroupFile(gourpFileName, relChildFileNmae,
+                      controlData_->currentTime_);
 }
