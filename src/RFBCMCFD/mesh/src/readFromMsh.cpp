@@ -69,7 +69,7 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
     // =========================================================================
     std::map<size_t, size_t> nodesIndexMap;
     std::vector<std::vector<size_t>> elementNodes;
-    std::vector<size_t> elementTypes;
+    std::vector<elementType> elementTypes;
     std::map<size_t, std::vector<size_t>> groupIndexToNodesMap;
     std::map<size_t, std::string> groupIndexToNamesMap;
 
@@ -237,7 +237,7 @@ void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
 
 void parseElements(std::ifstream& fileStream,
                    std::vector<std::vector<size_t>>& elementNodes,
-                   std::vector<size_t>& elementTypes,
+                   std::vector<elementType>& elementTypes,
                    std::map<size_t, std::vector<size_t>>& groupIndexToNodesMap)
 {
     size_t numOfElements;
@@ -249,10 +249,10 @@ void parseElements(std::ifstream& fileStream,
     for (size_t i = 0; i < numOfElements; i++)
     {
         // parse per element header
-        size_t elementIndex, elementType, numTags;
-        fileStream >> elementIndex >> elementType >> numTags;
+        size_t elementIndex, elementTypeTag, numTags;
+        fileStream >> elementIndex >> elementTypeTag >> numTags;
 
-        elementTypes[i] = getElementType(elementType);
+        elementTypes[i] = getElementType(elementTypeTag);
 
         // https://www.manpagez.com/info/gmsh/gmsh-2.8.4/gmsh_56.php
         size_t groupIndex;
@@ -268,7 +268,7 @@ void parseElements(std::ifstream& fileStream,
         }
 
         // parse node index per element.
-        size_t nodesNumOnElement = getNodesNumOnElement(elementType);
+        size_t nodesNumOnElement = getNodesNumOnElement(elementTypeTag);
         std::vector<size_t> nodesOnElement(nodesNumOnElement);
         for (size_t j = 0; j < nodesNumOnElement; j++)
         {

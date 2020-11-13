@@ -19,7 +19,7 @@ void parseNodes(std::ifstream& fileStream, std::vector<vec3d<double>>& nodes,
 
 void parseElements(std::ifstream& fileStream,
                    std::vector<std::vector<size_t>>& elementNodes,
-                   std::vector<size_t>& elementTypes,
+                   std::vector<elementType>& elementTypes,
                    std::map<size_t, std::vector<size_t>>& groupIndexToNodesMap);
 
 void parseGroupNames(std::ifstream& fileStream,
@@ -35,10 +35,10 @@ inline void passWhiteSpace(std::ifstream& fileStream)
     }
 };
 
-inline size_t getNodesNumOnElement(size_t elementType)
+inline size_t getNodesNumOnElement(size_t elementTypeTag)
 {
     size_t nodesNumOnElement = 0;
-    switch (elementType)
+    switch (elementTypeTag)
     {
         case 1:
             nodesNumOnElement = 2;  // line

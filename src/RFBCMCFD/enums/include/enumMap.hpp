@@ -36,17 +36,17 @@ NLOHMANN_JSON_SERIALIZE_ENUM(meshType, {
                                            {DEFAULT, "mshFile"},
                                        })
 
-enum boundaryConditionType
+enum class boundaryConditionType
 {
     constantValue
 };
 
-enum initConditionType
+enum class initConditionType
 {
     UNIFORM
 };
 
-enum elementType
+enum class elementType
 {
     LINE,
     TRIANGLE,
@@ -56,7 +56,7 @@ enum elementType
     NONE
 };
 
-enum rbfOperatorType
+enum class rbfOperatorType
 {
     CONSTANT,
     LAPLACE,
