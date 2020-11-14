@@ -32,6 +32,12 @@
                     "groupName": "left",
                     "value": 0
                 }
+            ],
+            "neumann": [
+                {
+                    "groupName": "bottom",
+                    "value": 0
+                }
             ]
         },
         "initialConditions": {

@@ -1,3 +1,4 @@
 #include "boundaryCondition.hpp"
 
-BoundaryCondition::BoundaryCondition(MeshData* mesh) : mesh_(mesh){};
+BoundaryCondition::BoundaryCondition(MeshData* meshData)
+    : meshData_(meshData){};

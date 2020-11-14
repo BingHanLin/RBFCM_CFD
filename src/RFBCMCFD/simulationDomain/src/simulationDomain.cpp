@@ -110,7 +110,7 @@ void SimulationDomain::setupInitialCondition()
         }
         else
         {
-            for (size_t& nodeID : myMesh_->groupToNodesMap().at(groupName))
+            for (const size_t& nodeID : myMesh_->nodesIDByGroupName(groupName))
             {
                 varSol_[nodeID] = val;
             }
@@ -133,7 +133,7 @@ void SimulationDomain::assembleCoeffMatrix()
         auto cloud = myMesh_->nodesCloudByID(nodeID);
         auto nodes = myMesh_->nodes();
 
-        if (myMesh_->nodeBC(nodeID) == nullptr)
+        if (myMesh_->nodeBCByID(nodeID) == nullptr)
         {
             Eigen::VectorXd localVector;
             if (controlData_->systemSateType_ == systemSateType::STEADY)
@@ -189,8 +189,8 @@ void SimulationDomain::assembleCoeffMatrix()
         }
         else
         {
-            myMesh_->nodeBC(nodeID)->fillCoeffMatrix(nodeID, myRBFBasis_,
-                                                     varCoeffMatrix_);
+            myMesh_->nodeBCByID(nodeID)->fillCoeffMatrix(nodeID, myRBFBasis_,
+                                                         varCoeffMatrix_);
         }
     }
 }
@@ -225,14 +225,14 @@ void SimulationDomain::assembleRhs()
     {
         auto cloud = myMesh_->nodesCloudByID(nodeID);
 
-        if (myMesh_->nodeBC(nodeID) == nullptr)
+        if (myMesh_->nodeBCByID(nodeID) == nullptr)
         {
             varRhs_(nodeID) = rhsInnerVector(nodeID);
         }
         else
         {
-            myMesh_->nodeBC(nodeID)->fillRhsVector(nodeID, myRBFBasis_,
-                                                   varRhs_);
+            myMesh_->nodeBCByID(nodeID)->fillRhsVector(nodeID, myRBFBasis_,
+                                                       varRhs_);
         }
     }
 }

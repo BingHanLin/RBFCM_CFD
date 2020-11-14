@@ -1,8 +1,8 @@
 #include "constantValueBC.hpp"
 #include <iostream>
 
-ConstantValueBC::ConstantValueBC(const double constValue, MeshData* mesh)
-    : BoundaryCondition(mesh), constValue_(constValue){};
+ConstantValueBC::ConstantValueBC(const double constValue, MeshData* meshData)
+    : BoundaryCondition(meshData), constValue_(constValue){};
 
 void ConstantValueBC::fillCoeffMatrix(
     const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,

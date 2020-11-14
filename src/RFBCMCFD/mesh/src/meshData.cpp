@@ -1,6 +1,8 @@
 #include "meshData.hpp"
+#include "constant.hpp"
 #include "constantValueBC.hpp"
 #include "messages.hpp"
+#include "neumannBC.hpp"
 #include "readFromMsh.hpp"
 #include "rectangle.hpp"
 
@@ -48,33 +50,6 @@ MeshData::MeshData(std::shared_ptr<controlData> inControlData)
     buildBoundaryConditions();
 }
 
-void MeshData::compactGroupToNodesMap(
-    const std::map<std::string, std::vector<size_t>>& groupToNodesMapNotCompact)
-{
-    nodesToGroup_.resize(nodes_.size());
-    groupToNodesMap_.clear();
-
-    const auto& constantValueBCData = controlData_->paramsDataAt(
-        {"physicsControl", "boundaryConditions", "constantValue"});
-
-    for (const auto& oneBCData : constantValueBCData)
-    {
-        const std::string groupName = oneBCData.at("groupName");
-        groupToNodesMap_.insert({groupName, {}});
-
-        // TODO: parallel
-        for (const size_t& nodeIndex : groupToNodesMapNotCompact.at(groupName))
-        {
-            nodesToGroup_[nodeIndex] = groupName;
-        }
-    }
-
-    for (size_t nodeID = 0; nodeID < nodes_.size(); nodeID++)
-    {
-        groupToNodesMap_[nodesToGroup_[nodeID]].push_back(nodeID);
-    }
-}
-
 void MeshData::buildNodeClouds()
 {
     kdTree_ = KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3>(nodes_);
@@ -97,9 +72,61 @@ void MeshData::buildNodeClouds()
     }
 }
 
+void MeshData::compactGroupToNodesMap(
+    const std::map<std::string, std::vector<size_t>>& groupToNodesMapNotCompact)
+{
+    groupToNodesMap_.clear();
+
+    nodesToGroup_.resize(nodes_.size());
+    std::fill(nodesToGroup_.begin(), nodesToGroup_.end(), NOTDEFINEDGROUPNAME);
+
+    const auto names = controlData_->BCGroupNames();
+
+    for (const auto& [groupName, ids] : groupToNodesMapNotCompact)
+    {
+        if (std::find(names.begin(), names.end(), groupName) == names.end())
+            continue;
+
+        groupToNodesMap_.insert({groupName, {}});
+
+        // TODO: parallel
+        for (const size_t& id : ids)
+        {
+            nodesToGroup_[id] = groupName;
+        }
+    }
+
+    for (size_t id = 0; id < nodesToGroup_.size(); id++)
+    {
+        groupToNodesMap_[nodesToGroup_[id]].push_back(id);
+    }
+}
+
 void MeshData::buildBoundaryConditions()
 {
     nodesToBC_.resize(nodes_.size());
+
+    const auto& neumannBCData = controlData_->paramsDataAt(
+        {"physicsControl", "boundaryConditions", "neumann"});
+
+    for (auto& oneBCData : neumannBCData)
+    {
+        const std::string groupName = oneBCData.at("groupName");
+
+        if (groupToNodesMap_.find(groupName) == groupToNodesMap_.end())
+        {
+            ASSERT("buildBoundaryConditions: "
+                   << groupName << "not found in groupToNodesMap_");
+        }
+
+        auto bc = std::make_shared<neumannBC>(oneBCData.at("value"), this);
+        groupToBCMap_.insert({groupName, bc});
+
+        for (size_t& nodeID : groupToNodesMap_.at(groupName))
+        {
+            nodesToBC_[nodeID] = bc;
+        }
+    }
 
     const auto& constantValueBCData = controlData_->paramsDataAt(
         {"physicsControl", "boundaryConditions", "constantValue"});
@@ -108,27 +135,71 @@ void MeshData::buildBoundaryConditions()
     {
         const std::string groupName = oneBCData.at("groupName");
 
-        auto constantValueBC =
+        if (groupToNodesMap_.find(groupName) == groupToNodesMap_.end())
+        {
+            ASSERT("buildBoundaryConditions: "
+                   << groupName << "not found in groupToNodesMap_");
+        }
+
+        auto bc =
             std::make_shared<ConstantValueBC>(oneBCData.at("value"), this);
-        groupToBCMap_.insert({groupName, constantValueBC});
+        groupToBCMap_.insert({groupName, bc});
 
         for (size_t& nodeID : groupToNodesMap_.at(groupName))
         {
-            nodesToBC_[nodeID] = constantValueBC;
+            nodesToBC_[nodeID] = bc;
         }
     }
 }
 
-const nodesCloud& MeshData::nodesCloudByID(const size_t nodeID) const
+const std::vector<size_t>& MeshData::nodesIDByGroupName(
+    const std::string groupName) const
 {
-    return nodesCloud_[nodeID];
+    return groupToNodesMap_.at(groupName);
 }
 
-const vec3d<double>& MeshData::node(const size_t nodeID) const
+const nodesCloud& MeshData::nodesCloudByID(const size_t nodeID) const
 {
-    if (nodeID < nodes_.size())
+    if (nodeID < nodesCloud_.size())
     {
-        return nodes_[nodeID];
+        return nodesCloud_[nodeID];
+    }
+    else
+    {
+        ASSERT("node ID out of bound, ID: " << nodeID);
+    }
+}
+
+const vec3d<double>& MeshData::normalByID(const size_t nodeID) const
+{
+    if (nodeID < normals_.size())
+    {
+        return normals_[nodeID];
+    }
+    else
+    {
+        ASSERT("node ID out of bound, ID: " << nodeID);
+    }
+}
+
+// const vec3d<double>& MeshData::node(const size_t nodeID) const
+// {
+//     if (nodeID < nodes_.size())
+//     {
+//         return nodes_[nodeID];
+//     }
+//     else
+//     {
+//         ASSERT("node ID out of bound, ID: " << nodeID);
+//     }
+// }
+
+std::shared_ptr<BoundaryCondition> MeshData::nodeBCByID(
+    const size_t nodeID) const
+{
+    if (nodeID < nodesToBC_.size())
+    {
+        return nodesToBC_[nodeID];
     }
     else
     {
@@ -139,11 +210,6 @@ const vec3d<double>& MeshData::node(const size_t nodeID) const
 const std::vector<vec3d<double>>& MeshData::nodes() const
 {
     return nodes_;
-}
-
-std::shared_ptr<BoundaryCondition> MeshData::nodeBC(const size_t nodeID) const
-{
-    return nodesToBC_[nodeID];
 }
 
 size_t MeshData::numOfNodes() const

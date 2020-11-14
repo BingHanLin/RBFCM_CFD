@@ -1,4 +1,5 @@
 #include "MQBasis.hpp"
+#include "messages.hpp"
 #include <assert.h>
 #include <iostream>
 #include <math.h>
@@ -7,7 +8,7 @@
 // for nuemann, any better idea?
 // void MQBasis::setOperatorStatus(rbfOperatorType OOperatorStatus,
 //                                   const std::vector<double>& NNormVec){
-// inputOperatorType = OOperatorStatus;
+// operatorType = OOperatorStatus;
 // NormVec.resize( NNormVec.size() );
 // copy( NNormVec, NormVec );
 // };
@@ -26,17 +27,18 @@ MQBasis::MQBasis(const double shapeParameter, const size_t dim)
 
 double MQBasis::getBasisValue(const vec3d<double>& nodeI,
                               const vec3d<double>& nodeJ,
-                              const rbfOperatorType inputOperatorType) const
+                              const vec3d<double>& norm,
+                              const rbfOperatorType operatorType) const
 {
     double rs = (nodeI - nodeJ).squaredNorm();
     vec3d<double> rr = nodeI - nodeJ;
 
     double temp;
-    if (inputOperatorType == rbfOperatorType::CONSTANT)
+    if (operatorType == rbfOperatorType::CONSTANT)
     {
         temp = std::sqrt(rs + shapeParameter_ * shapeParameter_);
     }
-    else if (inputOperatorType == rbfOperatorType::LAPLACE)
+    else if (operatorType == rbfOperatorType::LAPLACE)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_) *
@@ -44,45 +46,44 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
         temp = ((dim_ - 1) * rs + dim_ * shapeParameter_ * shapeParameter_) /
                temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::DIVERGENCE)
+    else if (operatorType == rbfOperatorType::DIVERGENCE)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = (rr[0] + rr[1] + rr[2]) / temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::PARTIAL_D1)
+    else if (operatorType == rbfOperatorType::PARTIAL_D1)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = rr[0] / temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::PARTIAL_D2)
+    else if (operatorType == rbfOperatorType::PARTIAL_D2)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = rr[1] / temp1;
     }
-    else if (inputOperatorType == rbfOperatorType::PARTIAL_D3)
+    else if (operatorType == rbfOperatorType::PARTIAL_D3)
     {
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = rr[2] / temp1;
     }
-    // else if (inputOperatorType == rbfOperatorType::NEUMANN_OPERATOR)
-    // {
-    //     double temp1;
-    //     temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
-    //     temp = 0.0;
+    else if (operatorType == rbfOperatorType::NEUMANN)
+    {
+        double temp1;
+        temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
+        temp = 0.0;
 
-    //     for (size_t dim = 0; dim < dim; dim++)
-    //     {
-    //         temp += NormVec[dim] * rr[dim] / temp1;
-    //     }
-    // }
+        for (size_t d = 0; d < dim_; d++)
+        {
+            temp += norm[d] * rr[d] / temp1;
+        }
+    }
     else
     {
-        std::cout << "Operator is not defined!" << std::endl;
-        assert(false);
+        ASSERT("Operator is not defined!");
     }
 
     return temp;
@@ -90,7 +91,7 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
 
 Eigen::VectorXd MQBasis::collectOnNodes(
     const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
-    const rbfOperatorType operatorType) const
+    const vec3d<double>& norm, const rbfOperatorType operatorType) const
 {
     const size_t neighborNum = cloud.size_;
     Eigen::MatrixXd phi(neighborNum, neighborNum);
@@ -100,7 +101,7 @@ Eigen::VectorXd MQBasis::collectOnNodes(
         for (size_t j = 0; j < neighborNum; j++)
         {
             phi(j, i) /* transposed */ =
-                getBasisValue(nodes[cloud.ids_[i]], nodes[cloud.ids_[j]],
+                getBasisValue(nodes[cloud.ids_[i]], nodes[cloud.ids_[j]], norm,
                               rbfOperatorType::CONSTANT);
         }
     }
@@ -108,7 +109,7 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     Eigen::VectorXd phiL(neighborNum);
     for (size_t j = 0; j < neighborNum; j++)
     {
-        phiL(j) = getBasisValue(nodes[cloud.id0_], nodes[cloud.ids_[j]],
+        phiL(j) = getBasisValue(nodes[cloud.id0_], nodes[cloud.ids_[j]], norm,
                                 operatorType);
     }
 
@@ -116,4 +117,13 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     x = phi.ldlt().solve(phiL);
 
     return x;
+}
+
+Eigen::VectorXd MQBasis::collectOnNodes(
+    const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
+    const rbfOperatorType operatorType) const
+{
+    const vec3d<double> norm;
+
+    return collectOnNodes(cloud, nodes, norm, operatorType);
 }

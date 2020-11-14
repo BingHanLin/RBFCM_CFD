@@ -21,18 +21,18 @@ class MeshData
     ~MeshData(){};
 
     // std::map<size_t, std::string> nodeToGoupMap_;
-    // std::map<std::string, boundaryCondition> groupToBoundaryConditionMap_;
-    // std::map<size_t, boundaryCondition> nodeToBoundaryConditionMap_;
+    // std::map<std::string, boundaryCondition> groupToBCMap_;
 
     const std::vector<vec3d<double>>& nodes() const;
-    const vec3d<double>& node(const size_t nodeID) const;
-    const nodesCloud& nodesCloudByID(const size_t nodeID) const;
+    // const vec3d<double>& node(const size_t nodeID) const;
     size_t numOfNodes() const;
-    std::shared_ptr<BoundaryCondition> nodeBC(const size_t nodeID) const;
 
-    std::map<std::string, std::vector<size_t>> groupToNodesMap() const;
-    // std::shared_ptr<BoundaryCondition> nodesBC(const size_t nodeID)
-    // const;
+    const nodesCloud& nodesCloudByID(const size_t nodeID) const;
+    const vec3d<double>& normalByID(const size_t nodeID) const;
+    std::shared_ptr<BoundaryCondition> nodeBCByID(const size_t nodeID) const;
+
+    const std::vector<size_t>& nodesIDByGroupName(
+        const std::string groupName) const;
 
    private:
     std::shared_ptr<controlData> controlData_;
@@ -54,9 +54,4 @@ class MeshData
     void buildNodeClouds();
 };
 
-inline std::map<std::string, std::vector<size_t>> MeshData::groupToNodesMap()
-    const
-{
-    return groupToNodesMap_;
-}
 #endif

@@ -9,11 +9,10 @@
 #include <Eigen/Sparse>
 
 class MeshData;
-
 class BoundaryCondition
 {
    public:
-    BoundaryCondition(MeshData* mesh);
+    BoundaryCondition(MeshData* meshData);
 
     virtual void fillCoeffMatrix(
         const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,
@@ -24,7 +23,7 @@ class BoundaryCondition
                                Eigen::VectorXd& rhsVec) const = 0;
 
    protected:
-    MeshData* mesh_;
+    MeshData* meshData_;
 };
 
 #endif

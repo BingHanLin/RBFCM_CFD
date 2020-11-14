@@ -19,9 +19,14 @@ class MQBasis
     MQBasis(const double shapeParameter, const size_t dim);
     ~MQBasis(){};
 
-    Eigen::VectorXd collectOnNodes(
-        const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
-        const rbfOperatorType inputOperatorType) const;
+    Eigen::VectorXd collectOnNodes(const nodesCloud& cloud,
+                                   const std::vector<vec3d<double>>& nodes,
+                                   const rbfOperatorType operatorType) const;
+
+    Eigen::VectorXd collectOnNodes(const nodesCloud& cloud,
+                                   const std::vector<vec3d<double>>& nodes,
+                                   const vec3d<double>& norm,
+                                   const rbfOperatorType operatorType) const;
 
    private:
     std::shared_ptr<controlData> controlData_;
@@ -29,7 +34,8 @@ class MQBasis
     size_t dim_;
 
     double getBasisValue(const vec3d<double>& nodeI, const vec3d<double>& nodeJ,
-                         const rbfOperatorType inputOperatorType) const;
+                         const vec3d<double>& norm,
+                         const rbfOperatorType operatorType) const;
 
     // std::vector<double> NormVec_;
 };

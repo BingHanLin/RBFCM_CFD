@@ -1,12 +1,12 @@
-#ifndef CONSTANTVALUEBC_HPP
+#ifndef neumannBC_HPP
 #define CONSTANTVALUEBC_HPP
 #include "boundaryCondition.hpp"
 #include "meshData.hpp"
 
-class ConstantValueBC : public BoundaryCondition
+class neumannBC : public BoundaryCondition
 {
    public:
-    ConstantValueBC(const double constValue, MeshData* meshData);
+    neumannBC(const double rhsValue, MeshData* meshData);
 
     void fillCoeffMatrix(const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,
                          Eigen::SparseMatrix<double>& spMatrix) const override;
@@ -15,7 +15,7 @@ class ConstantValueBC : public BoundaryCondition
                        Eigen::VectorXd& rhsVec) const override;
 
    private:
-    double constValue_;
+    double rhsValue_;
 };
 
 #endif

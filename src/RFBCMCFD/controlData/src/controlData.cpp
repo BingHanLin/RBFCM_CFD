@@ -55,8 +55,8 @@ void controlData::readParamsData()
     }
 }
 
-nlohmann::json controlData::paramsDataAt(
-    const std::vector<std::string> searchEntries)
+const nlohmann::json controlData::paramsDataAt(
+    const std::vector<std::string> searchEntries) const
 {
     nlohmann::json queryJSON = paramsData_;
 
@@ -65,4 +65,20 @@ nlohmann::json controlData::paramsDataAt(
         queryJSON = queryJSON.at(oneEntry);
     }
     return queryJSON;
+}
+
+const std::vector<std::string> controlData::BCGroupNames() const
+{
+    std::vector<std::string> groupNameList;
+
+    for (const auto& [BCType, BCData] :
+         paramsData_.at("physicsControl").at("boundaryConditions").items())
+    {
+        for (const auto& oneBCData : BCData)
+        {
+            groupNameList.push_back(oneBCData.at("groupName"));
+        }
+    }
+
+    return groupNameList;
 }
