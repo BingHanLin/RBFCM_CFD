@@ -189,7 +189,7 @@ void SimulationDomain::assembleCoeffMatrix()
         }
         else
         {
-            myMesh_->nodeBC(nodeID)->fillCoeffMatrix(nodeID, cloud, myRBFBasis_,
+            myMesh_->nodeBC(nodeID)->fillCoeffMatrix(nodeID, myRBFBasis_,
                                                      varCoeffMatrix_);
         }
     }
@@ -231,7 +231,7 @@ void SimulationDomain::assembleRhs()
         }
         else
         {
-            myMesh_->nodeBC(nodeID)->fillRhsVector(nodeID, cloud, myRBFBasis_,
+            myMesh_->nodeBC(nodeID)->fillRhsVector(nodeID, myRBFBasis_,
                                                    varRhs_);
         }
     }

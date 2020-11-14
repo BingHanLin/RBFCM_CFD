@@ -1,12 +1,11 @@
 #include "constantValueBC.hpp"
 #include <iostream>
 
-ConstantValueBC::ConstantValueBC(const double constValue)
-    : BoundaryCondition(), constValue_(constValue){};
+ConstantValueBC::ConstantValueBC(const double constValue, MeshData* mesh)
+    : BoundaryCondition(mesh), constValue_(constValue){};
 
 void ConstantValueBC::fillCoeffMatrix(
-    const size_t nodeID, const nodesCloud& cloud,
-    std::shared_ptr<MQBasis> RBFBasis,
+    const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,
     Eigen::SparseMatrix<double>& spMatrix) const
 {
     // Eigen::VectorXd localVector =
@@ -21,23 +20,8 @@ void ConstantValueBC::fillCoeffMatrix(
 }
 
 void ConstantValueBC::fillRhsVector(const size_t nodeID,
-                                    const nodesCloud& cloud,
                                     std::shared_ptr<MQBasis> RBFBasis,
                                     Eigen::VectorXd& rhsVec) const
 {
     rhsVec(nodeID) = constValue_;
 }
-
-// boundaryConditionType ConstantValueBC::type()
-// {
-//     return boundaryConditionType::constantValue;
-// };
-
-// void ConstantValueBC::setRHSValue(double &oneRHS){
-
-// };
-
-// constantValueBC::addNode(const size_t index)
-// {
-//     nodeIndices_.push_back(index);
-// }

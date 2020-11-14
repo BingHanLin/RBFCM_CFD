@@ -109,7 +109,7 @@ void MeshData::buildBoundaryConditions()
         const std::string groupName = oneBCData.at("groupName");
 
         auto constantValueBC =
-            std::make_shared<ConstantValueBC>(oneBCData.at("value"));
+            std::make_shared<ConstantValueBC>(oneBCData.at("value"), this);
         groupToBCMap_.insert({groupName, constantValueBC});
 
         for (size_t& nodeID : groupToNodesMap_.at(groupName))

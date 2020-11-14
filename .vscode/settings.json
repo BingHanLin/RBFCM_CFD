@@ -84,7 +84,17 @@
 		"resumable": "cpp",
 		"codecvt": "cpp",
 		"compare": "cpp",
-		"string_view": "cpp"
+		"string_view": "cpp",
+		"bitset": "cpp",
+		"hash_map": "cpp",
+		"ranges": "cpp",
+		"bit": "cpp",
+		"*.tcc": "cpp",
+		"cstdarg": "cpp",
+		"cwctype": "cpp",
+		"shared_mutex": "cpp",
+		"stop_token": "cpp",
+		"cinttypes": "cpp"
 	},
 	"clang-format.executable": "D:\\LLVM\\bin\\clang-format.exe"
 }
