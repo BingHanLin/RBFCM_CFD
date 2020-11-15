@@ -8,14 +8,6 @@ void ConstantValueBC::fillCoeffMatrix(
     const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,
     Eigen::SparseMatrix<double>& spMatrix) const
 {
-    // Eigen::VectorXd localVector =
-    //     RBFBasis->collectOnNodes(nodesCloud, rbfOperatorType::LAPLACE);
-
-    // for (size_t i = 0; i < nodesCloudID.size(); i++)
-    // {
-    //     spMatrix.insert(nodeID, nodesCloudID[i]) = localVector[i];
-    // }
-
     spMatrix.insert(nodeID, nodeID) = 1.0;
 }
 
