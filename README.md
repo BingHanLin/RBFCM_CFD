@@ -1,7 +1,7 @@
-# Radial basis function collocation method (RBFCM) in computational fluid dynamics
+# Radial basis function collocation method (RBFCM) for computational fluid dynamics
 
 ## Introduction
-**RBFCM_CFD** is a simple CFD project that solves some classical fluid prolbems. It is designed to be modified easily by students  interested in learning meshless method. More features will be added in the future.
+**RBFCM_CFD** is a simple CFD project that solves some classical fluid prolbems. It is designed to be modified easily by students  size_terested in learning meshless method. More features will be added in the future.
 ***
 ## Brief theoretical description
 
@@ -26,8 +26,8 @@ A class generate a retangular domain with orthogonal node distribution. The node
 ***
 ## Examples
 
-1. **Laplace equation** \
-Laplace equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
+1. **LAPLACE equation** \
+LAPLACE equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
 
 2. **Navier Stokes equation** \
 The projection method is used to solve the Navier Stokes equation. A lid-driven square cavity flow case is presented here.
@@ -44,3 +44,5 @@ The following open source libraries or third party functions are used by this pr
 [1] Tsai, C.-C., Lin, Z.-H., & Hsu, T.-W. (2015). [Using a local radial basis function collocation method to approximate radiation boundary conditions](https://doi.org/10.1016/j.oceaneng.2015.06.030). Ocean Engineering, 105, 231–241. 
 
 [2] Chen, W., Zhuo. & Chen, C. (2014). Recent advances on radial basis function collocation methods. Berlin: Springer.
+
+[3] [Catch2](http://blog.guorongfei.com/2016/08/22/cpp-unit-test-catch/) 
