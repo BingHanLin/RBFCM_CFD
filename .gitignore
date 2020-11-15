@@ -2,3 +2,4 @@ build/*
 bin/*
 *.vtu
 *.pvd
+log

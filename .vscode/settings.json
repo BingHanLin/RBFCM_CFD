@@ -94,7 +94,8 @@
 		"cwctype": "cpp",
 		"shared_mutex": "cpp",
 		"stop_token": "cpp",
-		"cinttypes": "cpp"
+		"cinttypes": "cpp",
+		"dense": "cpp"
 	},
 	"clang-format.executable": "D:\\LLVM\\bin\\clang-format.exe"
 }

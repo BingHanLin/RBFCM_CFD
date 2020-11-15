@@ -1,0 +1,1 @@
+http://folk.ntnu.no/leifh/teaching/tkt4140/._main056.html
