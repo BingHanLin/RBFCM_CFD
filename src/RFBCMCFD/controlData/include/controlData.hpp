@@ -15,7 +15,7 @@ class controlData
     std::filesystem::path vtkDir() const;
     const nlohmann::json paramsDataAt(
         const std::vector<std::string> searchEntries) const;
-    const std::vector<std::string> BCGroupNames() const;
+    const std::vector<std::string> groupNames() const;
 
     // physicsControl
     double viscous_;

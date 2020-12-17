@@ -80,7 +80,7 @@ void MeshData::compactGroupToNodesMap(
     nodesToGroup_.resize(nodes_.size());
     std::fill(nodesToGroup_.begin(), nodesToGroup_.end(), NOTDEFINEDGROUPNAME);
 
-    const auto names = controlData_->BCGroupNames();
+    const auto names = controlData_->groupNames();
 
     for (const auto& [groupName, ids] : groupToNodesMapNotCompact)
     {

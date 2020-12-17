@@ -67,7 +67,7 @@ const nlohmann::json controlData::paramsDataAt(
     return queryJSON;
 }
 
-const std::vector<std::string> controlData::BCGroupNames() const
+const std::vector<std::string> controlData::groupNames() const
 {
     std::vector<std::string> groupNameList;
 

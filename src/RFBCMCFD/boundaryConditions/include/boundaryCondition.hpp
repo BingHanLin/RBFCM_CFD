@@ -1,7 +1,6 @@
 #ifndef BOUNDARYCONDITIONS_HPP
 #define BOUNDARYCONDITIONS_HPP
 
-#include "MQBasis.hpp"
 #include "dataStructure.hpp"
 #include "enumMap.hpp"
 
@@ -9,6 +8,8 @@
 #include <Eigen/Sparse>
 
 class MeshData;
+class MQBasis;
+
 class BoundaryCondition
 {
    public:

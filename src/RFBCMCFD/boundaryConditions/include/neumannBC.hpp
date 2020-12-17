@@ -1,8 +1,10 @@
-#ifndef neumannBC_HPP
-#define CONSTANTVALUEBC_HPP
-#include "boundaryCondition.hpp"
-#include "meshData.hpp"
+#ifndef NEUMANNBC_HPP
+#define NEUMANNBC_HPP
 
+#include "boundaryCondition.hpp"
+
+class MeshData;
+class MQBasis;
 class neumannBC : public BoundaryCondition
 {
    public:

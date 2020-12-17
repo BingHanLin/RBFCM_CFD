@@ -1,4 +1,8 @@
 #include "constantValueBC.hpp"
+#include "MQBasis.hpp"
+#include "meshData.hpp"
+
+
 #include <iostream>
 
 ConstantValueBC::ConstantValueBC(const double constValue, MeshData* meshData)
