@@ -2,7 +2,6 @@
 #include "MQBasis.hpp"
 #include "meshData.hpp"
 
-
 #include <iostream>
 
 neumannBC::neumannBC(const double rhsValue, MeshData* meshData)
@@ -12,7 +11,7 @@ void neumannBC::fillCoeffMatrix(const size_t nodeID,
                                 std::shared_ptr<MQBasis> RBFBasis,
                                 Eigen::SparseMatrix<double>& spMatrix) const
 {
-    const auto cloud = meshData_->nodesCloudByID(nodeID);
+    const auto cloud = meshData_->cloudByID(nodeID);
 
     Eigen::VectorXd localVector = RBFBasis->collectOnNodes(
         cloud, meshData_->nodes(), meshData_->normalByID(nodeID),

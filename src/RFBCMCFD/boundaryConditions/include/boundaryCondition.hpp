@@ -1,8 +1,9 @@
-#ifndef BOUNDARYCONDITIONS_HPP
-#define BOUNDARYCONDITIONS_HPP
+#ifndef BOUNDARYCONDITION_HPP
+#define BOUNDARYCONDITION_HPP
 
 #include "dataStructure.hpp"
-#include "enumMap.hpp"
+
+#include <memory>
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>

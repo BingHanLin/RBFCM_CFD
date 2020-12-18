@@ -1,7 +1,6 @@
 #ifndef SIMULATIONDOMAIN_HPP
 #define SIMULATIONDOMAIN_HPP
 #include "KDTreeEigenAdaptor.hpp"
-#include "MQBasis.hpp"
 #include "controlData.hpp"
 #include "json.h"
 #include "meshData.hpp"
@@ -15,11 +14,13 @@
 
 
 *************************************************************************/
+class MQBasis;
+class DomainData;
 class SimulationDomain
 {
    public:
     SimulationDomain(std::shared_ptr<controlData> inControlData,
-                     std::shared_ptr<MeshData> mesh,
+                     std::shared_ptr<DomainData> domainData,
                      std::shared_ptr<MQBasis> RBFBasis);
     ~SimulationDomain(){};
 
@@ -30,7 +31,7 @@ class SimulationDomain
 
    private:
     std::shared_ptr<controlData> controlData_;
-    std::shared_ptr<MeshData> myMesh_;
+    std::shared_ptr<DomainData> myDomainData_;
     std::shared_ptr<MQBasis> myRBFBasis_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
@@ -46,7 +47,7 @@ class SimulationDomain
     Eigen::SparseMatrix<double> dzMatrix_;
 
     void setupSimulation();
-    void setupInitialCondition();
+    void initializeField();
     void setupLinearSystem();
     void assembleCoeffMatrix();
     void assembleRhs();

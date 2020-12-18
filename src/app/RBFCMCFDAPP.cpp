@@ -1,7 +1,7 @@
 #include "MQBasis.hpp"
 #include "controlData.hpp"
+#include "domainData.hpp"
 #include "json.h"
-#include "meshData.hpp"
 #include "simulationDomain.hpp"
 
 #include <cxxopts.hpp>
@@ -39,9 +39,9 @@ int main(int argc, char** argv)
         myControlData = std::make_shared<controlData>();
 
     // ****************************************************************************
-    // Build mesh data
+    // Build domain data
     // ****************************************************************************
-    auto myMeshData = std::make_shared<MeshData>(myControlData);
+    auto myDomainData = std::make_shared<DomainData>(myControlData);
 
     // ****************************************************************************
     // Define RBF Type
@@ -49,9 +49,10 @@ int main(int argc, char** argv)
     auto myRBFBasis = std::make_shared<MQBasis>(myControlData);
 
     // ****************************************************************************
-    // Define Solver
+    // Define solver
     // ****************************************************************************
-    SimulationDomain mySimulationDomain(myControlData, myMeshData, myRBFBasis);
+    SimulationDomain mySimulationDomain(myControlData, myDomainData,
+                                        myRBFBasis);
     mySimulationDomain.solveDomain();
 
     std::cout << "test ok" << std::endl;
