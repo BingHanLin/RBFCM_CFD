@@ -2,7 +2,7 @@
 #include "controlData.hpp"
 #include "domainData.hpp"
 #include "json.h"
-#include "simulationDomain.hpp"
+#include "simulationFlow.hpp"
 
 #include <cxxopts.hpp>
 #include <fstream>
@@ -51,9 +51,8 @@ int main(int argc, char** argv)
     // ****************************************************************************
     // Define solver
     // ****************************************************************************
-    SimulationDomain mySimulationDomain(myControlData, myDomainData,
-                                        myRBFBasis);
-    mySimulationDomain.solveDomain();
+    SimulationFlow mySimulationFlow(myControlData, myDomainData, myRBFBasis);
+    mySimulationFlow.solveDomain();
 
     std::cout << "test ok" << std::endl;
     return 0;

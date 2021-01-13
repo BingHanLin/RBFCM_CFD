@@ -1,4 +1,4 @@
-#include "simulationDomain.hpp"
+#include "simulationFlow.hpp"
 #include "MQBasis.hpp"
 #include "domainData.hpp"
 #include "enumMap.hpp"
@@ -13,9 +13,9 @@
 #include <iomanip>
 #include <iostream>
 
-SimulationDomain::SimulationDomain(std::shared_ptr<controlData> inControlData,
-                                   std::shared_ptr<DomainData> domainData,
-                                   std::shared_ptr<MQBasis> RBFBasis)
+SimulationFlow::SimulationFlow(std::shared_ptr<controlData> inControlData,
+                               std::shared_ptr<DomainData> domainData,
+                               std::shared_ptr<MQBasis> RBFBasis)
     : controlData_(inControlData),
       myDomainData_(domainData),
       myRBFBasis_(RBFBasis)
@@ -28,12 +28,12 @@ SimulationDomain::SimulationDomain(std::shared_ptr<controlData> inControlData,
     initializeField();
 }
 
-void SimulationDomain::setupSimulation()
+void SimulationFlow::setupSimulation()
 {
     std::cout << "#setupSimulation" << std::endl;
 }
 
-void SimulationDomain::showSummary()
+void SimulationFlow::showSummary()
 {
     std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
     std::cout << std::setfill(' ') << std::setw(50) << "Summary of simulation"
@@ -63,7 +63,7 @@ void SimulationDomain::showSummary()
               << controlData_->convectionVel_[2] << std::endl;
 }
 
-void SimulationDomain::setupLinearSystem()
+void SimulationFlow::setupLinearSystem()
 {
     std::cout << "#setupLinearSystem" << std::endl;
 
@@ -102,7 +102,7 @@ void SimulationDomain::setupLinearSystem()
     }
 }
 
-void SimulationDomain::initializeField()
+void SimulationFlow::initializeField()
 {
     const auto numOfNodes = myDomainData_->meshData()->numOfNodes();
 
@@ -119,7 +119,7 @@ void SimulationDomain::initializeField()
     preVarSol_ = varSol_;
 }
 
-void SimulationDomain::assembleCoeffMatrix()
+void SimulationFlow::assembleCoeffMatrix()
 {
     std::cout << "#assembleCoeffMatrix" << std::endl;
 
@@ -195,7 +195,7 @@ void SimulationDomain::assembleCoeffMatrix()
     }
 }
 
-void SimulationDomain::assembleRhs()
+void SimulationFlow::assembleRhs()
 {
     std::cout << "#assembleRhs" << std::endl;
 
@@ -238,7 +238,7 @@ void SimulationDomain::assembleRhs()
     }
 }
 
-void SimulationDomain::solveMatrix()
+void SimulationFlow::solveMatrix()
 {
     std::cout << "#solveMatrix" << std::endl;
 
@@ -287,7 +287,7 @@ void SimulationDomain::solveMatrix()
     preVarSol_ = varSol_;
 }
 
-void SimulationDomain::solveDomain()
+void SimulationFlow::solveDomain()
 {
     assembleCoeffMatrix();
 
@@ -313,7 +313,7 @@ void SimulationDomain::solveDomain()
     }
 }
 
-void SimulationDomain::clearVTKDirectory() const
+void SimulationFlow::clearVTKDirectory() const
 {
     if (std::filesystem::exists(controlData_->vtkDir()))
     {
@@ -327,7 +327,7 @@ void SimulationDomain::clearVTKDirectory() const
     }
 }
 
-void SimulationDomain::writeDataToVTK() const
+void SimulationFlow::writeDataToVTK() const
 {
     pugi::xml_document doc;
     pugi::xml_node VTKFile = doc.append_child("VTKFile");

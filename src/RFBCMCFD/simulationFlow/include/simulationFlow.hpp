@@ -16,13 +16,13 @@
 *************************************************************************/
 class MQBasis;
 class DomainData;
-class SimulationDomain
+class SimulationFlow
 {
    public:
-    SimulationDomain(std::shared_ptr<controlData> inControlData,
-                     std::shared_ptr<DomainData> domainData,
-                     std::shared_ptr<MQBasis> RBFBasis);
-    ~SimulationDomain(){};
+    SimulationFlow(std::shared_ptr<controlData> inControlData,
+                   std::shared_ptr<DomainData> domainData,
+                   std::shared_ptr<MQBasis> RBFBasis);
+    ~SimulationFlow(){};
 
     void showSummary();
     void solveDomain();
