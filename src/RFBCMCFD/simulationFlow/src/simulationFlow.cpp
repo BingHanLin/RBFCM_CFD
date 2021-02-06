@@ -50,10 +50,10 @@ void SimulationFlow::showSummary()
               << std::endl;
     std::cout << "Write Interval: " << std::setw(8)
               << controlData_->writeInterval_ << std::endl;
-    std::cout << "Neighbor number: " << std::setw(8)
-              << controlData_->neighborNum_ << std::endl;
-
-    std::cout << std::endl;
+    std::cout << "Neighbor radius: " << std::setw(8)
+              << controlData_->neighborRadius_ << std::endl;
+    std::cout << "Estimate neighbor number: " << std::setw(8)
+              << controlData_->estimateNeighborNum_ << std::endl;
 
     std::cout << "Diffusity: " << std::setw(8) << controlData_->diffusionCoeff_
               << std::endl;
@@ -124,8 +124,9 @@ void SimulationFlow::assembleCoeffMatrix()
     std::cout << "#assembleCoeffMatrix" << std::endl;
 
     varCoeffMatrix_.data().squeeze();
-    varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(
-        myDomainData_->meshData()->numOfNodes(), controlData_->neighborNum_));
+    varCoeffMatrix_.reserve(
+        Eigen::VectorXi::Constant(myDomainData_->meshData()->numOfNodes(),
+                                  controlData_->estimateNeighborNum_));
 
     for (size_t nodeID = 0; nodeID < myDomainData_->meshData()->numOfNodes();
          ++nodeID)

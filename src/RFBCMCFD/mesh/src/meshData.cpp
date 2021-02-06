@@ -53,16 +53,14 @@ void MeshData::buildNodeClouds()
     const auto kdTree =
         KDTreeEigenAdaptor<std::vector<vec3d<double>>, double, 3>(nodes_);
 
-    size_t neighborNum =
-        controlData_->paramsDataAt({"solverControl", "neighborNumber"});
+    const double neighborRadius =
+        controlData_->paramsDataAt({"solverControl", "neighborRadius"});
 
     clouds_.resize(nodes_.size());
     for (size_t nodeID = 0; nodeID < nodes_.size(); nodeID++)
     {
-        std::vector<size_t> neighboursID(neighborNum);
-        std::vector<double> outDistSqr(neighborNum);
-
-        kdTree.query(nodeID, neighborNum, &neighboursID[0], &outDistSqr[0]);
+        std::vector<size_t> neighboursID;
+        kdTree.query(nodeID, neighborRadius, neighboursID);
 
         std::sort(neighboursID.begin(), neighboursID.end());
 

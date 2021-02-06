@@ -38,7 +38,8 @@ void controlData::readParamsData()
         paramsStream >> paramsData_;
 
         const auto solverControls = paramsData_.at("solverControl");
-        neighborNum_ = solverControls.at("neighborNumber");
+        estimateNeighborNum_ = solverControls.at("estimateNeighborNumber");
+        neighborRadius_ = solverControls.at("neighborRadius");
         tStepSize_ = solverControls.at("timeStepSize");
         endTime_ = solverControls.at("endTime");
         writeInterval_ = solverControls.at("writeInterval");

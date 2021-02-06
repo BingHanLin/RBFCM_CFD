@@ -137,6 +137,26 @@ class KDTreeEigenAdaptor
         index->findNeighbors(resultSet, query_pt, nanoflann::SearchParams());
     }
 
+    inline void query(const size_t query_index, const num_t &radius,
+                      std::vector<size_t> &out_indices) const
+    {
+        const size_t dim = m_data[0].size();
+        std::vector<num_t> query_point(dim);
+        for (size_t i = 0; i < dim; i++)
+            query_point[i] = m_data[query_index](i);
+        const num_t *query_pt = &query_point[0];
+
+        std::vector<std::pair<size_t, double>> indicesDists;
+        index->radiusSearch(query_pt, radius * radius, indicesDists,
+                            nanoflann::SearchParams());
+
+        out_indices.clear();
+        for (const auto &oneIndex : indicesDists)
+        {
+            out_indices.push_back(oneIndex.first);
+        }
+    }
+
     /** @name Interface expected by KDTreeSingleIndexAdaptor
      * @{ */
     const self_t &derived() const

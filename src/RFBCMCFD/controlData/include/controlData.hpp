@@ -24,7 +24,8 @@ class controlData
     std::array<double, 3> convectionVel_;
 
     // solverConstrol
-    size_t neighborNum_;
+    size_t estimateNeighborNum_;
+    double neighborRadius_;
     double endTime_;
     double tStepSize_;
     double writeInterval_;
