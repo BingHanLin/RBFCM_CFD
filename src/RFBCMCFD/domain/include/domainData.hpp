@@ -1,7 +1,6 @@
 #ifndef DOMAINDATA_HPP
 #define DOMAINDATA_HPP
 
-#include "KDTreeEigenAdaptor.hpp"
 #include "controlData.hpp"
 #include "dataStructure.hpp"
 #include "enumMap.hpp"

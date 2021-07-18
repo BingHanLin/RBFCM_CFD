@@ -1,6 +1,5 @@
 #ifndef SIMULATIONDOMAIN_HPP
 #define SIMULATIONDOMAIN_HPP
-#include "KDTreeEigenAdaptor.hpp"
 #include "controlData.hpp"
 #include "json.h"
 #include "meshData.hpp"
