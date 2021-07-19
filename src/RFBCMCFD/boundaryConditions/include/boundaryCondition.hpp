@@ -15,6 +15,7 @@ class BoundaryCondition
 {
    public:
     BoundaryCondition(MeshData* meshData);
+    virtual ~BoundaryCondition() = default;
 
     virtual void fillCoeffMatrix(
         const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,

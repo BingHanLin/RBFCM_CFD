@@ -6,44 +6,42 @@
     "physicsControl": {
         "viscosity": 1.0,
         "density": 1.0,
-        "transferEqOptions": {
-            "diffusionCoeff": 1.0,
-            "convectionVel": [
-                0,
-                0,
-                0
-            ]
-        },
-        "boundaryConditions": {
-            "constantValue": [
-                {
-                    "groupName": "right",
-                    "value": 0
-                },
-                {
-                    "groupName": "top",
-                    "value": 1
-                }
-            ],
-            "neumann": [
-                {
-                    "groupName": "bottom",
-                    "value": 0
-                },
-                {
-                    "groupName": "left",
-                    "value": 0
-                }
-            ]
-        },
-        "initialConditions": {
-            "constantValue": [
-                {
-                    "groupName": "",
-                    "value": 100.0
-                }
-            ]
-        }
+        "diffusionCoeff": 1.0,
+        "convectionVel": [
+            0,
+            0,
+            0
+        ]
+    },
+    "boundaryConditions": {
+        "constantValue": [
+            {
+                "groupName": "right",
+                "value": 0
+            },
+            {
+                "groupName": "top",
+                "value": 1
+            }
+        ],
+        "neumann": [
+            {
+                "groupName": "bottom",
+                "value": 0
+            },
+            {
+                "groupName": "left",
+                "value": 0
+            }
+        ]
+    },
+    "initialConditions": {
+        "constantValue": [
+            {
+                "groupName": "",
+                "value": 100.0
+            }
+        ]
     },
     "solverControl": {
         "estimateNeighborNumber": 10,
@@ -55,12 +53,6 @@
         "dimension": 2,
         "systemSateType": "steady",
         "solverType": "transferEq",
-        "navierStokesOptions": {
-            "crankNicolsonEpsilon": 0.001,
-            "crankNicolsonMaxIter": 10
-        },
-        "transferEqOptions": {
-            "theta": 0.5
-        }
+        "theta": 0.5
     }
 }

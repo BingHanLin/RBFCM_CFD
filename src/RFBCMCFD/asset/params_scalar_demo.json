@@ -1,7 +1,7 @@
 {
     "geometryControl": {
         "type": "mshFile",
-        "fileName": "2dRec20.msh"
+        "fileName": "***.msh"
     },
     "physicsControl": {
         "viscosity": 1.0,
@@ -16,25 +16,13 @@
     "boundaryConditions": {
         "constantValue": [
             {
-                "groupName": "bottom",
-                "value": 0
-            },
-            {
-                "groupName": "right",
-                "value": 0
-            },
-            {
-                "groupName": "top",
-                "value": 100
-            },
-            {
-                "groupName": "left",
+                "groupName": "patchName",
                 "value": 0
             }
         ],
         "neumann": [
             {
-                "groupName": "bottom",
+                "groupName": "patchName",
                 "value": 0
             }
         ]
@@ -42,7 +30,7 @@
     "initialConditions": {
         "constantValue": [
             {
-                "groupName": "",
+                "groupName": "patchName",
                 "value": 100.0
             }
         ]

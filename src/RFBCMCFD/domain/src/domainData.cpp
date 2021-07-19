@@ -23,8 +23,8 @@ DomainData::~DomainData(){};
 
 void DomainData::buildInitialConditions()
 {
-    const auto& constValueICData = controlData_->paramsDataAt(
-        {"physicsControl", "initialConditions", "constantValue"});
+    const auto& constValueICData =
+        controlData_->paramsDataAt({"initialConditions", "constantValue"});
 
     for (auto& oneICData : constValueICData)
     {
@@ -38,8 +38,8 @@ void DomainData::buildInitialConditions()
 
 void DomainData::buildBoundaryConditions()
 {
-    const auto& neumannBCData = controlData_->paramsDataAt(
-        {"physicsControl", "boundaryConditions", "neumann"});
+    const auto& neumannBCData =
+        controlData_->paramsDataAt({"boundaryConditions", "neumann"});
 
     for (auto& oneBCData : neumannBCData)
     {
@@ -51,8 +51,8 @@ void DomainData::buildBoundaryConditions()
         groupToBCMap_.insert({groupName, std::move(bc)});
     }
 
-    const auto& constantValueBCData = controlData_->paramsDataAt(
-        {"physicsControl", "boundaryConditions", "constantValue"});
+    const auto& constantValueBCData =
+        controlData_->paramsDataAt({"boundaryConditions", "constantValue"});
 
     for (auto& oneBCData : constantValueBCData)
     {

@@ -46,13 +46,11 @@ void controlData::readParamsData()
         systemSateType_ = solverControls.at("systemSateType");
         dim_ = solverControls.at("dimension");
         solverType_ = solverControls.at("solverType");
-        theta_ = solverControls.at("transferEqOptions").at("theta");
+        theta_ = solverControls.at("theta");
 
         const auto physicalControls = paramsData_.at("physicsControl");
-        diffusionCoeff_ =
-            physicalControls.at("transferEqOptions").at("diffusionCoeff");
-        convectionVel_ =
-            physicalControls.at("transferEqOptions").at("convectionVel");
+        diffusionCoeff_ = physicalControls.at("diffusionCoeff");
+        convectionVel_ = physicalControls.at("convectionVel");
     }
 }
 
@@ -73,7 +71,7 @@ const std::vector<std::string> controlData::groupNames() const
     std::vector<std::string> groupNameList;
 
     for (const auto& [BCType, BCData] :
-         paramsData_.at("physicsControl").at("boundaryConditions").items())
+         paramsData_.at("boundaryConditions").items())
     {
         for (const auto& oneBCData : BCData)
         {

@@ -11,6 +11,7 @@ class InitialCondition
 {
    public:
     InitialCondition();
+    virtual ~InitialCondition() = default;
 
     virtual void fillVector(const size_t nodeID,
                             Eigen::VectorXd& vec) const = 0;

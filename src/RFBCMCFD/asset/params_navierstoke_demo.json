@@ -1,0 +1,78 @@
+{
+    "geometryControl": {
+        "type": "mshFile",
+        "fileName": "***.msh"
+    },
+    "physicsControl": {
+        "viscosity": 1.0,
+        "density": 1.0,
+        "diffusionCoeff": 1.0,
+        "convectionVel": [
+            0,
+            0,
+            0
+        ]
+    },
+    "boundaryConditions": {
+        "U": {
+            "constantValue": [
+                {
+                    "groupName": "patchName",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            ],
+            "neumann": [
+                {
+                    "groupName": "bottom",
+                    "value": 0.0
+                }
+            ]
+        },
+        "P": {
+            "constantValue": [
+                {
+                    "groupName": "patchName",
+                    "value": 0.0
+                }
+            ]
+        }
+    },
+    "initialConditions": {
+        "U": {
+            "constantValue": [
+                {
+                    "groupName": "",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            ]
+        },
+        "P": {
+            "constantValue": [
+                {
+                    "groupName": "",
+                    "value": 0.0
+                }
+            ]
+        }
+    },
+    "solverControl": {
+        "estimateNeighborNumber": 10,
+        "neighborRadius": 0.07,
+        "shapeParameter": 1,
+        "timeStepSize": 0.01,
+        "endTime": 0.10,
+        "writeInterval": 0.01,
+        "dimension": 2,
+        "solverType": "navierStokes",
+        "crankNicolsonEpsilon": 0.001,
+        "crankNicolsonMaxIter": 10
+    }
+}
