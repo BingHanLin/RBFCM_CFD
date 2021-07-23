@@ -13,10 +13,10 @@
 #include <iomanip>
 #include <iostream>
 
-SimulationFlow::SimulationFlow(std::shared_ptr<controlData> inControlData,
+SimulationFlow::SimulationFlow(ControlData* controlData,
                                std::shared_ptr<DomainData> domainData,
                                std::shared_ptr<MQBasis> RBFBasis)
-    : controlData_(inControlData),
+    : controlData_(controlData),
       myDomainData_(domainData),
       myRBFBasis_(RBFBasis)
 
@@ -84,13 +84,13 @@ void SimulationFlow::setupLinearSystem()
         auto nodes = myDomainData_->meshData()->nodes();
 
         Eigen::VectorXd laplaceVector =
-            myRBFBasis_->collectOnNodes(cloud, nodes, rbfOperatorType::LAPLACE);
-        Eigen::VectorXd dxVector = myRBFBasis_->collectOnNodes(
-            cloud, nodes, rbfOperatorType::PARTIAL_D1);
-        Eigen::VectorXd dyVector = myRBFBasis_->collectOnNodes(
-            cloud, nodes, rbfOperatorType::PARTIAL_D2);
-        Eigen::VectorXd dzVector = myRBFBasis_->collectOnNodes(
-            cloud, nodes, rbfOperatorType::PARTIAL_D3);
+            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
+        Eigen::VectorXd dxVector =
+            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D1);
+        Eigen::VectorXd dyVector =
+            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D2);
+        Eigen::VectorXd dzVector =
+            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D3);
 
         for (size_t i = 0; i < cloud.size_; i++)
         {
@@ -141,47 +141,47 @@ void SimulationFlow::assembleCoeffMatrix()
             {
                 localVector = controlData_->diffusionCoeff_ *
                               myRBFBasis_->collectOnNodes(
-                                  cloud, nodes, rbfOperatorType::LAPLACE);
+                                  nodeID, rbfOperatorType::LAPLACE);
 
                 localVector += controlData_->convectionVel_[0] *
                                myRBFBasis_->collectOnNodes(
-                                   cloud, nodes, rbfOperatorType::PARTIAL_D1);
+                                   nodeID, rbfOperatorType::PARTIAL_D1);
 
                 localVector += controlData_->convectionVel_[1] *
                                myRBFBasis_->collectOnNodes(
-                                   cloud, nodes, rbfOperatorType::PARTIAL_D2);
+                                   nodeID, rbfOperatorType::PARTIAL_D2);
 
                 localVector += controlData_->convectionVel_[2] *
                                myRBFBasis_->collectOnNodes(
-                                   cloud, nodes, rbfOperatorType::PARTIAL_D3);
+                                   nodeID, rbfOperatorType::PARTIAL_D3);
             }
             else
             {
                 localVector = myRBFBasis_->collectOnNodes(
-                    cloud, nodes, rbfOperatorType::CONSTANT);
+                    nodeID, rbfOperatorType::CONSTANT);
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->diffusionCoeff_ *
-                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                     myRBFBasis_->collectOnNodes(nodeID,
                                                  rbfOperatorType::LAPLACE));
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->convectionVel_[0] *
-                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                     myRBFBasis_->collectOnNodes(nodeID,
                                                  rbfOperatorType::PARTIAL_D1));
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->convectionVel_[1] *
-                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                     myRBFBasis_->collectOnNodes(nodeID,
                                                  rbfOperatorType::PARTIAL_D2));
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->convectionVel_[2] *
-                     myRBFBasis_->collectOnNodes(cloud, nodes,
+                     myRBFBasis_->collectOnNodes(nodeID,
                                                  rbfOperatorType::PARTIAL_D3));
             }
 

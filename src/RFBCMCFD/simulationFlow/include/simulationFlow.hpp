@@ -18,7 +18,7 @@ class DomainData;
 class SimulationFlow
 {
    public:
-    SimulationFlow(std::shared_ptr<controlData> inControlData,
+    SimulationFlow(ControlData* controlData,
                    std::shared_ptr<DomainData> domainData,
                    std::shared_ptr<MQBasis> RBFBasis);
     ~SimulationFlow(){};
@@ -29,7 +29,7 @@ class SimulationFlow
     // void exportData();
 
    private:
-    std::shared_ptr<controlData> controlData_;
+    ControlData* controlData_;
     std::shared_ptr<DomainData> myDomainData_;
     std::shared_ptr<MQBasis> myRBFBasis_;
 

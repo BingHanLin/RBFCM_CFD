@@ -13,8 +13,8 @@
 // copy( NNormVec, NormVec );
 // };
 
-MQBasis::MQBasis(std::shared_ptr<controlData> inControlData)
-    : controlData_(inControlData)
+MQBasis::MQBasis(ControlData* controlData, MeshData* meshData)
+    : controlData_(controlData), meshData_(meshData)
 {
     shapeParameter_ =
         controlData_->paramsDataAt({"solverControl", "shapeParameter"});
@@ -25,11 +25,12 @@ MQBasis::MQBasis(std::shared_ptr<controlData> inControlData)
 MQBasis::MQBasis(const double shapeParameter, const size_t dim)
     : shapeParameter_(shapeParameter), dim_(dim){};
 
-double MQBasis::getBasisValue(const vec3d<double>& nodeI,
-                              const vec3d<double>& nodeJ,
-                              const vec3d<double>& norm,
-                              const rbfOperatorType operatorType) const
+double MQBasis::getBasisValue(const size_t& i, const size_t& j,
+                              const rbfOperatorType& operatorType) const
 {
+    const auto nodeI = meshData_->nodeByID(i);
+    const auto nodeJ = meshData_->nodeByID(j);
+
     double rs = (nodeI - nodeJ).squaredNorm();
     vec3d<double> rr = nodeI - nodeJ;
 
@@ -72,6 +73,8 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
     }
     else if (operatorType == rbfOperatorType::NEUMANN)
     {
+        const auto norm = meshData_->normalByID(i);
+
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = 0.0;
@@ -90,9 +93,10 @@ double MQBasis::getBasisValue(const vec3d<double>& nodeI,
 }
 
 Eigen::VectorXd MQBasis::collectOnNodes(
-    const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
-    const vec3d<double>& norm, const rbfOperatorType operatorType) const
+    const size_t& nodeID, const rbfOperatorType& operatorType) const
 {
+    const auto cloud = meshData_->cloudByID(nodeID);
+
     const size_t neighborNum = cloud.size_;
     Eigen::MatrixXd phi(neighborNum, neighborNum);
 
@@ -100,30 +104,19 @@ Eigen::VectorXd MQBasis::collectOnNodes(
     {
         for (size_t j = 0; j < neighborNum; j++)
         {
-            phi(j, i) /* transposed */ =
-                getBasisValue(nodes[cloud.ids_[i]], nodes[cloud.ids_[j]], norm,
-                              rbfOperatorType::CONSTANT);
+            phi(j, i) /* transposed */ = getBasisValue(
+                cloud.ids_[i], cloud.ids_[j], rbfOperatorType::CONSTANT);
         }
     }
 
     Eigen::VectorXd phiL(neighborNum);
     for (size_t j = 0; j < neighborNum; j++)
     {
-        phiL(j) = getBasisValue(nodes[cloud.id0_], nodes[cloud.ids_[j]], norm,
-                                operatorType);
+        phiL(j) = getBasisValue(cloud.id0_, cloud.ids_[j], operatorType);
     }
 
     Eigen::VectorXd x(neighborNum);
     x = phi.ldlt().solve(phiL);
 
     return x;
-}
-
-Eigen::VectorXd MQBasis::collectOnNodes(
-    const nodesCloud& cloud, const std::vector<vec3d<double>>& nodes,
-    const rbfOperatorType operatorType) const
-{
-    const vec3d<double> norm;
-
-    return collectOnNodes(cloud, nodes, norm, operatorType);
 }

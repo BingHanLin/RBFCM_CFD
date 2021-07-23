@@ -5,11 +5,11 @@
 #include "json.h"
 #include <filesystem>
 
-class controlData
+class ControlData
 {
    public:
-    controlData();
-    controlData(const std::filesystem::path workingDir);
+    ControlData();
+    ControlData(const std::filesystem::path workingDir);
 
     std::filesystem::path workingDir() const;
     std::filesystem::path vtkDir() const;

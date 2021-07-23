@@ -13,9 +13,8 @@ void neumannBC::fillCoeffMatrix(const size_t nodeID,
 {
     const auto cloud = meshData_->cloudByID(nodeID);
 
-    Eigen::VectorXd localVector = RBFBasis->collectOnNodes(
-        cloud, meshData_->nodes(), meshData_->normalByID(nodeID),
-        rbfOperatorType::NEUMANN);
+    Eigen::VectorXd localVector =
+        RBFBasis->collectOnNodes(nodeID, rbfOperatorType::NEUMANN);
 
     for (size_t i = 0; i < localVector.size(); i++)
     {

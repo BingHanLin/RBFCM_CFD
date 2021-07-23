@@ -2,35 +2,35 @@
 #include <fstream>
 #include <iostream>
 
-controlData::controlData()
+ControlData::ControlData()
 {
     setWorkingDir(std::filesystem::current_path());
     readParamsData();
 }
 
-controlData::controlData(const std::filesystem::path workingDir)
+ControlData::ControlData(const std::filesystem::path workingDir)
 {
     setWorkingDir(workingDir);
     readParamsData();
 }
 
-void controlData::setWorkingDir(const std::filesystem::path workingDir)
+void ControlData::setWorkingDir(const std::filesystem::path workingDir)
 {
     workingDir_ = workingDir;
     std::cout << "set working directory: " << workingDir_.string() << '\n';
 }
 
-std::filesystem::path controlData::workingDir() const
+std::filesystem::path ControlData::workingDir() const
 {
     return workingDir_;
 }
 
-std::filesystem::path controlData::vtkDir() const
+std::filesystem::path ControlData::vtkDir() const
 {
     return workingDir().concat("/vtk");
 }
 
-void controlData::readParamsData()
+void ControlData::readParamsData()
 {
     std::ifstream paramsStream(workingDir().concat("/params.json").string());
     if (paramsStream.good())
@@ -54,7 +54,7 @@ void controlData::readParamsData()
     }
 }
 
-const nlohmann::json controlData::paramsDataAt(
+const nlohmann::json ControlData::paramsDataAt(
     const std::vector<std::string> searchEntries) const
 {
     nlohmann::json queryJSON = paramsData_;
@@ -66,7 +66,7 @@ const nlohmann::json controlData::paramsDataAt(
     return queryJSON;
 }
 
-const std::vector<std::string> controlData::groupNames() const
+const std::vector<std::string> ControlData::groupNames() const
 {
     std::vector<std::string> groupNameList;
 

@@ -16,7 +16,7 @@
 class MeshData
 {
    public:
-    MeshData(std::shared_ptr<controlData> inControlData);
+    MeshData(ControlData* controlData);
     ~MeshData(){};
 
     const std::vector<vec3d<double>>& nodes() const;
@@ -28,7 +28,7 @@ class MeshData
     const std::string& groupNameByID(const size_t nodeID) const;
 
    private:
-    std::shared_ptr<controlData> controlData_;
+    ControlData* controlData_;
     std::vector<vec3d<double>> nodes_;
     std::vector<vec3d<double>> normals_;
     std::vector<nodesCloud> clouds_;

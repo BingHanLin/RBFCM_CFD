@@ -11,8 +11,8 @@
 
 #include <iostream>
 
-DomainData::DomainData(std::shared_ptr<controlData> inControlData)
-    : controlData_(inControlData),
+DomainData::DomainData(ControlData* controlData)
+    : controlData_(controlData),
       meshData_(std::make_unique<MeshData>(controlData_))
 {
     buildInitialConditions();

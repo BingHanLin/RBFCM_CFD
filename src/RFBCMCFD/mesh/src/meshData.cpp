@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-MeshData::MeshData(std::shared_ptr<controlData> inControlData)
-    : controlData_(inControlData),
+MeshData::MeshData(ControlData* controlData)
+    : controlData_(controlData),
 
       nodes_(),
       normals_(),

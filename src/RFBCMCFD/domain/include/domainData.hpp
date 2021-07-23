@@ -18,7 +18,7 @@ class MeshData;
 class DomainData
 {
    public:
-    DomainData(std::shared_ptr<controlData> inControlData);
+    DomainData(ControlData* controlData);
     ~DomainData();
 
     MeshData* meshData() const;
@@ -26,7 +26,7 @@ class DomainData
     InitialCondition* ICByID(const size_t nodeID) const;
 
    private:
-    std::shared_ptr<controlData> controlData_;
+    ControlData* controlData_;
     std::unique_ptr<MeshData> meshData_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToBCMap_;
     std::map<std::string, std::unique_ptr<InitialCondition>> groupToICMap_;

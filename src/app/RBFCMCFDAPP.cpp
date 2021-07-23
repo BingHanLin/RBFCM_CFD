@@ -1,4 +1,5 @@
 #include "MQBasis.hpp"
+#include "MeshData.hpp"
 #include "controlData.hpp"
 #include "domainData.hpp"
 #include "json.h"
@@ -29,29 +30,36 @@ int main(int argc, char** argv)
     }
 
     // ****************************************************************************
-    // build control data
+    // Build control data
     // ****************************************************************************
-    std::shared_ptr<controlData> myControlData;
+    std::shared_ptr<ControlData> myControlData;
     if (result.count("case"))
         myControlData =
-            std::make_shared<controlData>(result["case"].as<std::string>());
+            std::make_shared<ControlData>(result["case"].as<std::string>());
     else
-        myControlData = std::make_shared<controlData>();
+        myControlData = std::make_shared<ControlData>();
 
     // ****************************************************************************
-    // Build domain data
+    // Build mesh data
     // ****************************************************************************
-    auto myDomainData = std::make_shared<DomainData>(myControlData);
+    auto myMeshData = std::make_shared<MeshData>(myControlData.get());
 
     // ****************************************************************************
     // Define RBF Type
     // ****************************************************************************
-    auto myRBFBasis = std::make_shared<MQBasis>(myControlData);
+    auto myRBFBasis =
+        std::make_shared<MQBasis>(myControlData.get(), myMeshData.get());
+
+    // ****************************************************************************
+    // Build domain data
+    // ****************************************************************************
+    auto myDomainData = std::make_shared<DomainData>(myControlData.get());
 
     // ****************************************************************************
     // Define solver
     // ****************************************************************************
-    SimulationFlow mySimulationFlow(myControlData, myDomainData, myRBFBasis);
+    SimulationFlow mySimulationFlow(myControlData.get(), myDomainData,
+                                    myRBFBasis);
     mySimulationFlow.solveDomain();
 
     std::cout << "test ok" << std::endl;
