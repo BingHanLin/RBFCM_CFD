@@ -1,9 +1,12 @@
 #include "simulationFlow.hpp"
 #include "MQBasis.hpp"
+#include "controlData.hpp"
 #include "domainData.hpp"
 #include "enumMap.hpp"
 #include "freeFunctions.hpp"
 #include "initialCondition.hpp"
+#include "meshData.hpp"
+
 #include "pugixml.hpp"
 #include "rectangle.hpp"
 #include "vtkFileIO.hpp"
@@ -15,10 +18,12 @@
 
 SimulationFlow::SimulationFlow(ControlData* controlData,
                                std::shared_ptr<DomainData> domainData,
-                               std::shared_ptr<MQBasis> RBFBasis)
+                               std::shared_ptr<MQBasis> RBFBasis,
+                               MeshData* meshData)
     : controlData_(controlData),
       myDomainData_(domainData),
-      myRBFBasis_(RBFBasis)
+      myRBFBasis_(RBFBasis),
+      meshData_(meshData)
 
 {
     setupSimulation();
@@ -41,8 +46,8 @@ void SimulationFlow::showSummary()
     std::cout << std::setfill('=') << std::setw(80) << "=" << std::setfill(' ')
               << std::endl;
 
-    std::cout << "Number of nodes: " << std::setw(8)
-              << myDomainData_->meshData()->numOfNodes() << std::endl;
+    std::cout << "Number of nodes: " << std::setw(8) << meshData_->numOfNodes()
+              << std::endl;
 
     std::cout << "Time step size: " << std::setw(8) << controlData_->tStepSize_
               << std::endl;
@@ -67,7 +72,7 @@ void SimulationFlow::setupLinearSystem()
 {
     std::cout << "#setupLinearSystem" << std::endl;
 
-    const auto numOfNodes = myDomainData_->meshData()->numOfNodes();
+    const auto numOfNodes = meshData_->numOfNodes();
 
     varCoeffMatrix_.resize(numOfNodes, numOfNodes);
     varRhs_.resize(numOfNodes);
@@ -80,8 +85,8 @@ void SimulationFlow::setupLinearSystem()
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
-        auto cloud = myDomainData_->meshData()->cloudByID(nodeID);
-        auto nodes = myDomainData_->meshData()->nodes();
+        auto cloud = meshData_->cloudByID(nodeID);
+        auto nodes = meshData_->nodes();
 
         Eigen::VectorXd laplaceVector =
             myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
@@ -104,7 +109,7 @@ void SimulationFlow::setupLinearSystem()
 
 void SimulationFlow::initializeField()
 {
-    const auto numOfNodes = myDomainData_->meshData()->numOfNodes();
+    const auto numOfNodes = meshData_->numOfNodes();
 
     varSol_ = Eigen::VectorXd::Constant(numOfNodes, 0.0);
 
@@ -124,15 +129,13 @@ void SimulationFlow::assembleCoeffMatrix()
     std::cout << "#assembleCoeffMatrix" << std::endl;
 
     varCoeffMatrix_.data().squeeze();
-    varCoeffMatrix_.reserve(
-        Eigen::VectorXi::Constant(myDomainData_->meshData()->numOfNodes(),
-                                  controlData_->estimateNeighborNum_));
+    varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(
+        meshData_->numOfNodes(), controlData_->estimateNeighborNum_));
 
-    for (size_t nodeID = 0; nodeID < myDomainData_->meshData()->numOfNodes();
-         ++nodeID)
+    for (size_t nodeID = 0; nodeID < meshData_->numOfNodes(); ++nodeID)
     {
-        auto cloud = myDomainData_->meshData()->cloudByID(nodeID);
-        auto nodes = myDomainData_->meshData()->nodes();
+        auto cloud = meshData_->cloudByID(nodeID);
+        auto nodes = meshData_->nodes();
 
         if (myDomainData_->BCByID(nodeID) == nullptr)
         {
@@ -201,7 +204,7 @@ void SimulationFlow::assembleRhs()
     std::cout << "#assembleRhs" << std::endl;
 
     Eigen::VectorXd rhsInnerVector =
-        Eigen::VectorXd::Zero(myDomainData_->meshData()->numOfNodes());
+        Eigen::VectorXd::Zero(meshData_->numOfNodes());
 
     if (controlData_->systemSateType_ == systemSateType::TRANSIENT)
     {
@@ -222,10 +225,9 @@ void SimulationFlow::assembleRhs()
             preVarSol_;
     }
 
-    for (size_t nodeID = 0; nodeID < myDomainData_->meshData()->numOfNodes();
-         ++nodeID)
+    for (size_t nodeID = 0; nodeID < meshData_->numOfNodes(); ++nodeID)
     {
-        auto cloud = myDomainData_->meshData()->cloudByID(nodeID);
+        auto cloud = meshData_->cloudByID(nodeID);
 
         if (myDomainData_->BCByID(nodeID) == nullptr)
         {
@@ -338,20 +340,17 @@ void SimulationFlow::writeDataToVTK() const
     pugi::xml_node UnstructuredGrid = VTKFile.append_child("UnstructuredGrid");
 
     pugi::xml_node Piece = UnstructuredGrid.append_child("Piece");
-    Piece.append_attribute("NumberOfPoints") =
-        myDomainData_->meshData()->numOfNodes();
-    Piece.append_attribute("NumberOfCells") =
-        myDomainData_->meshData()->numOfNodes();
+    Piece.append_attribute("NumberOfPoints") = meshData_->numOfNodes();
+    Piece.append_attribute("NumberOfCells") = meshData_->numOfNodes();
 
     pugi::xml_node Points = Piece.append_child("Points");
-    appendArrayToVTKNode(myDomainData_->meshData()->nodes(), "Position",
-                         Points);
+    appendArrayToVTKNode(meshData_->nodes(), "Position", Points);
 
     pugi::xml_node PointData = Piece.append_child("PointData");
     appendScalarsToVTKNode(varSol_, "Variable", PointData);
 
     pugi::xml_node Cells = Piece.append_child("Cells");
-    addCells(myDomainData_->meshData()->numOfNodes(), Cells);
+    addCells(meshData_->numOfNodes(), Cells);
 
     // std::filesystem::create_directories(controlData_->vtkDir());
 

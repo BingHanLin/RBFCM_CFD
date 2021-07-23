@@ -12,7 +12,8 @@ MeshData::MeshData(ControlData* controlData)
 
       nodes_(),
       normals_(),
-      nodesToGroupName_()
+      nodesToGroupName_(),
+      groupNameToNodesMap_()
 {
     std::cout << "MeshData" << std::endl;
 
@@ -88,6 +89,11 @@ void MeshData::buildNodeToGroupName(
         {
             nodesToGroupName_[id] = groupName;
         }
+    }
+
+    for (size_t i = 0; i < nodesToGroupName_.size(); i++)
+    {
+        groupNameToNodesMap_[nodesToGroupName_[i]].push_back(i);
     }
 }
 

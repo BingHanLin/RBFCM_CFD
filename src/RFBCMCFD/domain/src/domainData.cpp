@@ -11,9 +11,8 @@
 
 #include <iostream>
 
-DomainData::DomainData(ControlData* controlData)
-    : controlData_(controlData),
-      meshData_(std::make_unique<MeshData>(controlData_))
+DomainData::DomainData(ControlData* controlData, MeshData* meshData)
+    : controlData_(controlData), meshData_(meshData)
 {
     buildInitialConditions();
     buildBoundaryConditions();
@@ -45,8 +44,7 @@ void DomainData::buildBoundaryConditions()
     {
         const std::string groupName = oneBCData.at("groupName");
 
-        auto bc =
-            std::make_unique<neumannBC>(oneBCData.at("value"), meshData_.get());
+        auto bc = std::make_unique<neumannBC>(oneBCData.at("value"), meshData_);
 
         groupToBCMap_.insert({groupName, std::move(bc)});
     }
@@ -58,8 +56,8 @@ void DomainData::buildBoundaryConditions()
     {
         const std::string groupName = oneBCData.at("groupName");
 
-        auto bc = std::make_unique<ConstantValueBC>(oneBCData.at("value"),
-                                                    meshData_.get());
+        auto bc =
+            std::make_unique<ConstantValueBC>(oneBCData.at("value"), meshData_);
         groupToBCMap_.insert({groupName, std::move(bc)});
     }
 }
@@ -92,5 +90,5 @@ InitialCondition* DomainData::ICByID(const size_t nodeID) const
 
 MeshData* DomainData::meshData() const
 {
-    return meshData_.get();
+    return meshData_;
 }

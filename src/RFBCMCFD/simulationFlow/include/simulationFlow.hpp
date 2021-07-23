@@ -1,8 +1,6 @@
 #ifndef SIMULATIONDOMAIN_HPP
 #define SIMULATIONDOMAIN_HPP
-#include "controlData.hpp"
 #include "json.h"
-#include "meshData.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -15,12 +13,15 @@
 *************************************************************************/
 class MQBasis;
 class DomainData;
+class MeshData;
+class ControlData;
+
 class SimulationFlow
 {
    public:
     SimulationFlow(ControlData* controlData,
                    std::shared_ptr<DomainData> domainData,
-                   std::shared_ptr<MQBasis> RBFBasis);
+                   std::shared_ptr<MQBasis> RBFBasis, MeshData* meshData);
     ~SimulationFlow(){};
 
     void showSummary();
@@ -32,6 +33,7 @@ class SimulationFlow
     ControlData* controlData_;
     std::shared_ptr<DomainData> myDomainData_;
     std::shared_ptr<MQBasis> myRBFBasis_;
+    MeshData* meshData_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;

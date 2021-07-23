@@ -53,13 +53,14 @@ int main(int argc, char** argv)
     // ****************************************************************************
     // Build domain data
     // ****************************************************************************
-    auto myDomainData = std::make_shared<DomainData>(myControlData.get());
+    auto myDomainData =
+        std::make_shared<DomainData>(myControlData.get(), myMeshData.get());
 
     // ****************************************************************************
     // Define solver
     // ****************************************************************************
     SimulationFlow mySimulationFlow(myControlData.get(), myDomainData,
-                                    myRBFBasis);
+                                    myRBFBasis, myMeshData.get());
     mySimulationFlow.solveDomain();
 
     std::cout << "test ok" << std::endl;

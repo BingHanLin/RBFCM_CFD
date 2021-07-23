@@ -18,7 +18,7 @@ class MeshData;
 class DomainData
 {
    public:
-    DomainData(ControlData* controlData);
+    DomainData(ControlData* controlData, MeshData* meshData);
     ~DomainData();
 
     MeshData* meshData() const;
@@ -27,7 +27,7 @@ class DomainData
 
    private:
     ControlData* controlData_;
-    std::unique_ptr<MeshData> meshData_;
+    MeshData* meshData_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToBCMap_;
     std::map<std::string, std::unique_ptr<InitialCondition>> groupToICMap_;
 

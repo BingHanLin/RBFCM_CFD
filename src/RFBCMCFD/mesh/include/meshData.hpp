@@ -33,6 +33,7 @@ class MeshData
     std::vector<vec3d<double>> normals_;
     std::vector<nodesCloud> clouds_;
     std::vector<std::string> nodesToGroupName_;
+    std::map<std::string, std::vector<size_t>> groupNameToNodesMap_;
 
     void buildNodeToGroupName(const std::map<std::string, std::vector<size_t>>&
                                   groupToNodesMapNotCompact);
