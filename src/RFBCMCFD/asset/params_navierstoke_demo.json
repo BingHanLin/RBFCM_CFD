@@ -5,13 +5,7 @@
     },
     "physicsControl": {
         "viscosity": 1.0,
-        "density": 1.0,
-        "diffusionCoeff": 1.0,
-        "convectionVel": [
-            0,
-            0,
-            0
-        ]
+        "density": 1.0
     },
     "boundaryConditions": {
         "U": {

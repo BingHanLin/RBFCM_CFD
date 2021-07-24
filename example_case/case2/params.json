@@ -4,7 +4,6 @@
         "fileName": "2dRec20.msh"
     },
     "physicsControl": {
-        "viscosity": 1.0,
         "density": 1.0,
         "diffusionCoeff": 1.0,
         "convectionVel": [
