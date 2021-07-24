@@ -1,11 +1,12 @@
 #ifndef SCALARCONDITIONPOOL_HPP
 #define SCALARCONDITIONPOOL_HPP
 
-#include "boundaryCondition.hpp"
-#include "controlData.hpp"
+#include "BoundaryCondition.hpp"
+#include "ControlData.hpp"
+#include "InitialCondition.hpp"
 #include "dataStructure.hpp"
 #include "enumMap.hpp"
-#include "initialCondition.hpp"
+
 
 #include "json.h"
 #include <memory>

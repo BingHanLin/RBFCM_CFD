@@ -1,14 +1,15 @@
-#include "simulationFlow.hpp"
+#include "ScalarTransportDomain.hpp"
+#include "ControlData.hpp"
+#include "InitialCondition.hpp"
 #include "MQBasis.hpp"
-#include "controlData.hpp"
+#include "MeshData.hpp"
+#include "ScalarConditionPool.hpp"
 #include "enumMap.hpp"
 #include "freeFunctions.hpp"
-#include "initialCondition.hpp"
-#include "meshData.hpp"
-#include "scalarConditionPool.hpp"
 
+
+#include "Rectangle.hpp"
 #include "pugixml.hpp"
-#include "rectangle.hpp"
 #include "vtkFileIO.hpp"
 
 #include <filesystem>
@@ -16,9 +17,10 @@
 #include <iomanip>
 #include <iostream>
 
-SimulationFlow::SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
-                               MeshData* meshData,
-                               ScalarConditionPool* conditionPool)
+ScalarTransportDomain::ScalarTransportDomain(ControlData* controlData,
+                                             MQBasis* RBFBasis,
+                                             MeshData* meshData,
+                                             ScalarConditionPool* conditionPool)
     : controlData_(controlData),
       RBFBasis_(RBFBasis),
       meshData_(meshData),
@@ -31,12 +33,12 @@ SimulationFlow::SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
     initializeField();
 }
 
-void SimulationFlow::setupSimulation()
+void ScalarTransportDomain::setupSimulation()
 {
     std::cout << "#setupSimulation" << std::endl;
 }
 
-void SimulationFlow::showSummary()
+void ScalarTransportDomain::showSummary()
 {
     std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
     std::cout << std::setfill(' ') << std::setw(50) << "Summary of simulation"
@@ -66,7 +68,7 @@ void SimulationFlow::showSummary()
               << controlData_->convectionVel_[2] << std::endl;
 }
 
-void SimulationFlow::setupLinearSystem()
+void ScalarTransportDomain::setupLinearSystem()
 {
     std::cout << "#setupLinearSystem" << std::endl;
 
@@ -105,7 +107,7 @@ void SimulationFlow::setupLinearSystem()
     }
 }
 
-void SimulationFlow::initializeField()
+void ScalarTransportDomain::initializeField()
 {
     const auto numOfNodes = meshData_->numOfNodes();
 
@@ -122,7 +124,7 @@ void SimulationFlow::initializeField()
     preVarSol_ = varSol_;
 }
 
-void SimulationFlow::assembleCoeffMatrix()
+void ScalarTransportDomain::assembleCoeffMatrix()
 {
     std::cout << "#assembleCoeffMatrix" << std::endl;
 
@@ -197,7 +199,7 @@ void SimulationFlow::assembleCoeffMatrix()
     }
 }
 
-void SimulationFlow::assembleRhs()
+void ScalarTransportDomain::assembleRhs()
 {
     std::cout << "#assembleRhs" << std::endl;
 
@@ -239,7 +241,7 @@ void SimulationFlow::assembleRhs()
     }
 }
 
-void SimulationFlow::solveMatrix()
+void ScalarTransportDomain::solveMatrix()
 {
     std::cout << "#solveMatrix" << std::endl;
 
@@ -288,7 +290,7 @@ void SimulationFlow::solveMatrix()
     preVarSol_ = varSol_;
 }
 
-void SimulationFlow::solveDomain()
+void ScalarTransportDomain::solveDomain()
 {
     assembleCoeffMatrix();
 
@@ -314,7 +316,7 @@ void SimulationFlow::solveDomain()
     }
 }
 
-void SimulationFlow::clearVTKDirectory() const
+void ScalarTransportDomain::clearVTKDirectory() const
 {
     if (std::filesystem::exists(controlData_->vtkDir()))
     {
@@ -328,7 +330,7 @@ void SimulationFlow::clearVTKDirectory() const
     }
 }
 
-void SimulationFlow::writeDataToVTK() const
+void ScalarTransportDomain::writeDataToVTK() const
 {
     pugi::xml_document doc;
     pugi::xml_node VTKFile = doc.append_child("VTKFile");

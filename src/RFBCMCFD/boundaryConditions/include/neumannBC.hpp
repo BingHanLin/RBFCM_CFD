@@ -1,7 +1,7 @@
 #ifndef NEUMANNBC_HPP
 #define NEUMANNBC_HPP
 
-#include "boundaryCondition.hpp"
+#include "BoundaryCondition.hpp"
 
 class MeshData;
 class MQBasis;

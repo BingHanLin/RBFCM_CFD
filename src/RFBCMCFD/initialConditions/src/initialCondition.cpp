@@ -1,4 +1,4 @@
-#include "initialCondition.hpp"
+#include "InitialCondition.hpp"
 
 InitialCondition::InitialCondition(){
 

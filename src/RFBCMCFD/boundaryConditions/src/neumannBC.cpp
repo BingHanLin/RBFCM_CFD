@@ -1,6 +1,6 @@
-#include "neumannBC.hpp"
+#include "NeumannBC.hpp"
 #include "MQBasis.hpp"
-#include "meshData.hpp"
+#include "MeshData.hpp"
 
 #include <iostream>
 

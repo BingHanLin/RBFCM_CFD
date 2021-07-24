@@ -1,8 +1,8 @@
+#include "ControlData.hpp"
 #include "MQBasis.hpp"
 #include "MeshData.hpp"
-#include "controlData.hpp"
-#include "scalarConditionPool.hpp"
-#include "simulationFlow.hpp"
+#include "ScalarConditionPool.hpp"
+#include "ScalarTransportDomain.hpp"
 
 #include <cxxopts.hpp>
 #include <fstream>
@@ -58,10 +58,10 @@ int main(int argc, char** argv)
     // ****************************************************************************
     // Define solver
     // ****************************************************************************
-    SimulationFlow mySimulationFlow(myControlData.get(), myRBFBasis.get(),
-                                    myMeshData.get(),
-                                    myConditionPoolPool.get());
-    mySimulationFlow.solveDomain();
+    ScalarTransportDomain myScalarTransportDomain(
+        myControlData.get(), myRBFBasis.get(), myMeshData.get(),
+        myConditionPoolPool.get());
+    myScalarTransportDomain.solveDomain();
 
     std::cout << "test ok" << std::endl;
     return 0;

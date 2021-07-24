@@ -1,13 +1,14 @@
-#include "scalarConditionPool.hpp"
+#include "ScalarConditionPool.hpp"
+#include "MeshData.hpp"
 #include "constant.hpp"
-#include "meshData.hpp"
 #include "messages.hpp"
 
-#include "constantValueBC.hpp"
-#include "neumannBC.hpp"
 
-#include "constantValueIC.hpp"
-#include "initialCondition.hpp"
+#include "ConstantValueBC.hpp"
+#include "NeumannBC.hpp"
+
+#include "ConstantValueIC.hpp"
+#include "InitialCondition.hpp"
 
 #include <iostream>
 

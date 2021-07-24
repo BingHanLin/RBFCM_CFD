@@ -1,6 +1,6 @@
 #ifndef CONSTANTVALUEBC_HPP
 #define CONSTANTVALUEBC_HPP
-#include "boundaryCondition.hpp"
+#include "BoundaryCondition.hpp"
 
 class MeshData;
 class MQBasis;

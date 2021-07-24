@@ -16,12 +16,13 @@ class MeshData;
 class ControlData;
 class ScalarConditionPool;
 
-class SimulationFlow
+class ScalarTransportDomain
 {
    public:
-    SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
-                   MeshData* meshData, ScalarConditionPool* conditionPool);
-    ~SimulationFlow(){};
+    ScalarTransportDomain(ControlData* controlData, MQBasis* RBFBasis,
+                          MeshData* meshData,
+                          ScalarConditionPool* conditionPool);
+    ~ScalarTransportDomain(){};
 
     void showSummary();
     void solveDomain();
