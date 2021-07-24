@@ -4,9 +4,9 @@
 #include "MQBasis.hpp"
 #include "MeshData.hpp"
 #include "ScalarConditionPool.hpp"
+#include "constant.hpp"
 #include "enumMap.hpp"
 #include "freeFunctions.hpp"
-
 
 #include "Rectangle.hpp"
 #include "pugixml.hpp"
@@ -36,6 +36,21 @@ ScalarTransportDomain::ScalarTransportDomain(ControlData* controlData,
 void ScalarTransportDomain::setupSimulation()
 {
     std::cout << "#setupSimulation" << std::endl;
+
+    const auto solverControls = controlData_->paramsDataAt({"solverControl"});
+
+    neighborRadius_ = solverControls.at("neighborRadius");
+    tStepSize_ = solverControls.at("timeStepSize");
+    endTime_ = solverControls.at("endTime");
+    writeInterval_ = solverControls.at("writeInterval");
+    systemSateType_ = solverControls.at("systemSateType");
+    dim_ = solverControls.at("dimension");
+    theta_ = solverControls.at("theta");
+
+    const auto physicalControls =
+        controlData_->paramsDataAt({"physicsControl"});
+    diffusionCoeff_ = physicalControls.at("diffusionCoeff");
+    convectionVel_ = physicalControls.at("convectionVel");
 }
 
 void ScalarTransportDomain::showSummary()
@@ -49,23 +64,16 @@ void ScalarTransportDomain::showSummary()
     std::cout << "Number of nodes: " << std::setw(8) << meshData_->numOfNodes()
               << std::endl;
 
-    std::cout << "Time step size: " << std::setw(8) << controlData_->tStepSize_
+    std::cout << "Time step size: " << std::setw(8) << tStepSize_ << std::endl;
+    std::cout << "End time: " << std::setw(8) << endTime_ << std::endl;
+    std::cout << "Write Interval: " << std::setw(8) << writeInterval_
               << std::endl;
-    std::cout << "End time: " << std::setw(8) << controlData_->endTime_
+    std::cout << "Neighbor radius: " << std::setw(8) << neighborRadius_
               << std::endl;
-    std::cout << "Write Interval: " << std::setw(8)
-              << controlData_->writeInterval_ << std::endl;
-    std::cout << "Neighbor radius: " << std::setw(8)
-              << controlData_->neighborRadius_ << std::endl;
-    std::cout << "Estimate neighbor number: " << std::setw(8)
-              << controlData_->estimateNeighborNum_ << std::endl;
 
-    std::cout << "Diffusity: " << std::setw(8) << controlData_->diffusionCoeff_
-              << std::endl;
-    std::cout << "Convectivity: " << std::setw(8)
-              << controlData_->convectionVel_[0] << ", "
-              << controlData_->convectionVel_[1] << ", "
-              << controlData_->convectionVel_[2] << std::endl;
+    std::cout << "Diffusity: " << std::setw(8) << diffusionCoeff_ << std::endl;
+    std::cout << "Convectivity: " << std::setw(8) << convectionVel_[0] << ", "
+              << convectionVel_[1] << ", " << convectionVel_[2] << std::endl;
 }
 
 void ScalarTransportDomain::setupLinearSystem()
@@ -129,8 +137,8 @@ void ScalarTransportDomain::assembleCoeffMatrix()
     std::cout << "#assembleCoeffMatrix" << std::endl;
 
     varCoeffMatrix_.data().squeeze();
-    varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(
-        meshData_->numOfNodes(), controlData_->estimateNeighborNum_));
+    varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(meshData_->numOfNodes(),
+                                                      ESTIMATENEIGHBORNUM));
 
     for (size_t nodeID = 0; nodeID < meshData_->numOfNodes(); ++nodeID)
     {
@@ -140,21 +148,21 @@ void ScalarTransportDomain::assembleCoeffMatrix()
         if (conditionPool_->BCByNodeID(nodeID) == nullptr)
         {
             Eigen::VectorXd localVector;
-            if (controlData_->systemSateType_ == systemSateType::STEADY)
+            if (systemSateType_ == systemSateType::STEADY)
             {
                 localVector =
-                    controlData_->diffusionCoeff_ *
+                    diffusionCoeff_ *
                     RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
 
-                localVector += controlData_->convectionVel_[0] *
+                localVector += convectionVel_[0] *
                                RBFBasis_->collectOnNodes(
                                    nodeID, rbfOperatorType::PARTIAL_D1);
 
-                localVector += controlData_->convectionVel_[1] *
+                localVector += convectionVel_[1] *
                                RBFBasis_->collectOnNodes(
                                    nodeID, rbfOperatorType::PARTIAL_D2);
 
-                localVector += controlData_->convectionVel_[2] *
+                localVector += convectionVel_[2] *
                                RBFBasis_->collectOnNodes(
                                    nodeID, rbfOperatorType::PARTIAL_D3);
             }
@@ -163,29 +171,21 @@ void ScalarTransportDomain::assembleCoeffMatrix()
                 localVector = RBFBasis_->collectOnNodes(
                     nodeID, rbfOperatorType::CONSTANT);
 
-                localVector +=
-                    (-controlData_->theta_ * controlData_->tStepSize_ *
-                     controlData_->diffusionCoeff_ *
-                     RBFBasis_->collectOnNodes(nodeID,
-                                               rbfOperatorType::LAPLACE));
+                localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
+                                RBFBasis_->collectOnNodes(
+                                    nodeID, rbfOperatorType::LAPLACE));
 
-                localVector +=
-                    (-controlData_->theta_ * controlData_->tStepSize_ *
-                     controlData_->convectionVel_[0] *
-                     RBFBasis_->collectOnNodes(nodeID,
-                                               rbfOperatorType::PARTIAL_D1));
+                localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
+                                RBFBasis_->collectOnNodes(
+                                    nodeID, rbfOperatorType::PARTIAL_D1));
 
-                localVector +=
-                    (-controlData_->theta_ * controlData_->tStepSize_ *
-                     controlData_->convectionVel_[1] *
-                     RBFBasis_->collectOnNodes(nodeID,
-                                               rbfOperatorType::PARTIAL_D2));
+                localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
+                                RBFBasis_->collectOnNodes(
+                                    nodeID, rbfOperatorType::PARTIAL_D2));
 
-                localVector +=
-                    (-controlData_->theta_ * controlData_->tStepSize_ *
-                     controlData_->convectionVel_[2] *
-                     RBFBasis_->collectOnNodes(nodeID,
-                                               rbfOperatorType::PARTIAL_D3));
+                localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
+                                RBFBasis_->collectOnNodes(
+                                    nodeID, rbfOperatorType::PARTIAL_D3));
             }
 
             for (size_t i = 0; i < cloud.size_; i++)
@@ -206,22 +206,18 @@ void ScalarTransportDomain::assembleRhs()
     Eigen::VectorXd rhsInnerVector =
         Eigen::VectorXd::Zero(meshData_->numOfNodes());
 
-    if (controlData_->systemSateType_ == systemSateType::TRANSIENT)
+    if (systemSateType_ == systemSateType::TRANSIENT)
     {
         rhsInnerVector = preVarSol_;
 
         rhsInnerVector +=
-            ((1 - controlData_->theta_) * controlData_->tStepSize_ *
-             controlData_->diffusionCoeff_ * laplaceMatrix_) *
+            ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
             preVarSol_;
 
         rhsInnerVector +=
-            ((1 - controlData_->theta_) * controlData_->tStepSize_ *
-                 controlData_->convectionVel_[0] * dxMatrix_ +
-             (1 - controlData_->theta_) * controlData_->tStepSize_ *
-                 controlData_->convectionVel_[1] * dyMatrix_ +
-             (1 - controlData_->theta_) * controlData_->tStepSize_ *
-                 controlData_->convectionVel_[2] * dzMatrix_) *
+            ((1 - theta_) * tStepSize_ * convectionVel_[0] * dxMatrix_ +
+             (1 - theta_) * tStepSize_ * convectionVel_[1] * dyMatrix_ +
+             (1 - theta_) * tStepSize_ * convectionVel_[2] * dzMatrix_) *
             preVarSol_;
     }
 
@@ -294,7 +290,7 @@ void ScalarTransportDomain::solveDomain()
 {
     assembleCoeffMatrix();
 
-    if (controlData_->systemSateType_ == systemSateType::STEADY)
+    if (systemSateType_ == systemSateType::STEADY)
     {
         assembleRhs();
         solveMatrix();
@@ -304,14 +300,12 @@ void ScalarTransportDomain::solveDomain()
     {
         writeDataToVTK();
 
-        while (controlData_->currentTime_ < controlData_->endTime_)
+        while (currentTime_ < endTime_)
         {
             assembleRhs();
             solveMatrix();
-            controlData_->currentTime_ += controlData_->tStepSize_;
-            if (remainder(controlData_->currentTime_,
-                          controlData_->writeInterval_) <= 0)
-                writeDataToVTK();
+            currentTime_ += tStepSize_;
+            if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
         }
     }
 }
@@ -352,18 +346,15 @@ void ScalarTransportDomain::writeDataToVTK() const
     pugi::xml_node Cells = Piece.append_child("Cells");
     addCells(meshData_->numOfNodes(), Cells);
 
-    // std::filesystem::create_directories(controlData_->vtkDir());
+    // std::filesystem::create_directories(vtkDir());
 
-    const std::string childFileNmae =
-        controlData_->vtkDir().string() + "/" +
-        std::to_string(controlData_->currentTime_) + ".vtu";
+    const std::string childFileNmae = controlData_->vtkDir().string() + "/" +
+                                      std::to_string(currentTime_) + ".vtu";
     doc.save_file(childFileNmae.c_str());
 
-    const std::string relChildFileNmae =
-        std::to_string(controlData_->currentTime_) + ".vtu";
+    const std::string relChildFileNmae = std::to_string(currentTime_) + ".vtu";
 
     const std::string gourpFileName =
         controlData_->vtkDir().string() + "/result.pvd";
-    writeVTKGroupFile(gourpFileName, relChildFileNmae,
-                      controlData_->currentTime_);
+    writeVTKGroupFile(gourpFileName, relChildFileNmae, currentTime_);
 }

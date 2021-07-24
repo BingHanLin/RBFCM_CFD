@@ -1,5 +1,6 @@
 #ifndef SIMULATIONDOMAIN_HPP
 #define SIMULATIONDOMAIN_HPP
+#include "enumMap.hpp"
 #include "json.h"
 
 #include <Eigen/Dense>
@@ -35,6 +36,23 @@ class ScalarTransportDomain
     MeshData* meshData_;
     ScalarConditionPool* conditionPool_;
 
+    // physicsControl
+    double viscous_;
+    double density_;
+    double diffusionCoeff_;
+    std::array<double, 3> convectionVel_;
+
+    // solverConstrol
+    double neighborRadius_;
+    double endTime_;
+    double tStepSize_;
+    double writeInterval_;
+    double theta_;
+    systemSateType systemSateType_;
+    size_t dim_;
+    double currentTime_;
+
+    // matrix
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;
     Eigen::VectorXd varSol_;

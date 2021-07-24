@@ -64,7 +64,6 @@
         }
     },
     "solverControl": {
-        "estimateNeighborNumber": 10,
         "neighborRadius": 0.07,
         "shapeParameter": 1,
         "timeStepSize": 0.01,

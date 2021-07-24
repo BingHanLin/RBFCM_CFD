@@ -33,25 +33,8 @@ std::filesystem::path ControlData::vtkDir() const
 void ControlData::readParamsData()
 {
     std::ifstream paramsStream(workingDir().concat("/params.json").string());
-    if (paramsStream.good())
-    {
-        paramsStream >> paramsData_;
 
-        const auto solverControls = paramsData_.at("solverControl");
-        estimateNeighborNum_ = solverControls.at("estimateNeighborNumber");
-        neighborRadius_ = solverControls.at("neighborRadius");
-        tStepSize_ = solverControls.at("timeStepSize");
-        endTime_ = solverControls.at("endTime");
-        writeInterval_ = solverControls.at("writeInterval");
-        systemSateType_ = solverControls.at("systemSateType");
-        dim_ = solverControls.at("dimension");
-        solverType_ = solverControls.at("solverType");
-        theta_ = solverControls.at("theta");
-
-        const auto physicalControls = paramsData_.at("physicsControl");
-        diffusionCoeff_ = physicalControls.at("diffusionCoeff");
-        convectionVel_ = physicalControls.at("convectionVel");
-    }
+    if (paramsStream.good()) paramsStream >> paramsData_;
 }
 
 const nlohmann::json ControlData::paramsDataAt(
