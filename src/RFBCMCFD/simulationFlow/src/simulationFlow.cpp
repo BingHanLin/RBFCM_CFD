@@ -1,11 +1,12 @@
 #include "simulationFlow.hpp"
 #include "MQBasis.hpp"
 #include "controlData.hpp"
-#include "domainData.hpp"
 #include "enumMap.hpp"
 #include "freeFunctions.hpp"
 #include "initialCondition.hpp"
 #include "meshData.hpp"
+#include "scalarBCPool.hpp"
+#include "scalarICPool.hpp"
 
 #include "pugixml.hpp"
 #include "rectangle.hpp"
@@ -16,14 +17,14 @@
 #include <iomanip>
 #include <iostream>
 
-SimulationFlow::SimulationFlow(ControlData* controlData,
-                               std::shared_ptr<DomainData> domainData,
-                               std::shared_ptr<MQBasis> RBFBasis,
-                               MeshData* meshData)
+SimulationFlow::SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
+                               MeshData* meshData, ScalarBCPool* BCPool,
+                               ScalarICPool* ICPool)
     : controlData_(controlData),
-      myDomainData_(domainData),
-      myRBFBasis_(RBFBasis),
-      meshData_(meshData)
+      RBFBasis_(RBFBasis),
+      meshData_(meshData),
+      BCPool_(BCPool),
+      ICPool_(ICPool)
 
 {
     setupSimulation();
@@ -89,13 +90,13 @@ void SimulationFlow::setupLinearSystem()
         auto nodes = meshData_->nodes();
 
         Eigen::VectorXd laplaceVector =
-            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
         Eigen::VectorXd dxVector =
-            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D1);
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D1);
         Eigen::VectorXd dyVector =
-            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D2);
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D2);
         Eigen::VectorXd dzVector =
-            myRBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D3);
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D3);
 
         for (size_t i = 0; i < cloud.size_; i++)
         {
@@ -115,9 +116,9 @@ void SimulationFlow::initializeField()
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
-        if (myDomainData_->ICByID(nodeID))
+        if (ICPool_->ICByNodeID(nodeID))
         {
-            myDomainData_->ICByID(nodeID)->fillVector(nodeID, varSol_);
+            ICPool_->ICByNodeID(nodeID)->fillVector(nodeID, varSol_);
         }
     }
 
@@ -137,55 +138,55 @@ void SimulationFlow::assembleCoeffMatrix()
         auto cloud = meshData_->cloudByID(nodeID);
         auto nodes = meshData_->nodes();
 
-        if (myDomainData_->BCByID(nodeID) == nullptr)
+        if (BCPool_->BCByNodeID(nodeID) == nullptr)
         {
             Eigen::VectorXd localVector;
             if (controlData_->systemSateType_ == systemSateType::STEADY)
             {
-                localVector = controlData_->diffusionCoeff_ *
-                              myRBFBasis_->collectOnNodes(
-                                  nodeID, rbfOperatorType::LAPLACE);
+                localVector =
+                    controlData_->diffusionCoeff_ *
+                    RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
 
                 localVector += controlData_->convectionVel_[0] *
-                               myRBFBasis_->collectOnNodes(
+                               RBFBasis_->collectOnNodes(
                                    nodeID, rbfOperatorType::PARTIAL_D1);
 
                 localVector += controlData_->convectionVel_[1] *
-                               myRBFBasis_->collectOnNodes(
+                               RBFBasis_->collectOnNodes(
                                    nodeID, rbfOperatorType::PARTIAL_D2);
 
                 localVector += controlData_->convectionVel_[2] *
-                               myRBFBasis_->collectOnNodes(
+                               RBFBasis_->collectOnNodes(
                                    nodeID, rbfOperatorType::PARTIAL_D3);
             }
             else
             {
-                localVector = myRBFBasis_->collectOnNodes(
+                localVector = RBFBasis_->collectOnNodes(
                     nodeID, rbfOperatorType::CONSTANT);
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->diffusionCoeff_ *
-                     myRBFBasis_->collectOnNodes(nodeID,
-                                                 rbfOperatorType::LAPLACE));
+                     RBFBasis_->collectOnNodes(nodeID,
+                                               rbfOperatorType::LAPLACE));
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->convectionVel_[0] *
-                     myRBFBasis_->collectOnNodes(nodeID,
-                                                 rbfOperatorType::PARTIAL_D1));
+                     RBFBasis_->collectOnNodes(nodeID,
+                                               rbfOperatorType::PARTIAL_D1));
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->convectionVel_[1] *
-                     myRBFBasis_->collectOnNodes(nodeID,
-                                                 rbfOperatorType::PARTIAL_D2));
+                     RBFBasis_->collectOnNodes(nodeID,
+                                               rbfOperatorType::PARTIAL_D2));
 
                 localVector +=
                     (-controlData_->theta_ * controlData_->tStepSize_ *
                      controlData_->convectionVel_[2] *
-                     myRBFBasis_->collectOnNodes(nodeID,
-                                                 rbfOperatorType::PARTIAL_D3));
+                     RBFBasis_->collectOnNodes(nodeID,
+                                               rbfOperatorType::PARTIAL_D3));
             }
 
             for (size_t i = 0; i < cloud.size_; i++)
@@ -193,8 +194,8 @@ void SimulationFlow::assembleCoeffMatrix()
         }
         else
         {
-            myDomainData_->BCByID(nodeID)->fillCoeffMatrix(nodeID, myRBFBasis_,
-                                                           varCoeffMatrix_);
+            BCPool_->BCByNodeID(nodeID)->fillCoeffMatrix(nodeID, RBFBasis_,
+                                                         varCoeffMatrix_);
         }
     }
 }
@@ -229,14 +230,14 @@ void SimulationFlow::assembleRhs()
     {
         auto cloud = meshData_->cloudByID(nodeID);
 
-        if (myDomainData_->BCByID(nodeID) == nullptr)
+        if (BCPool_->BCByNodeID(nodeID) == nullptr)
         {
             varRhs_(nodeID) = rhsInnerVector(nodeID);
         }
         else
         {
-            myDomainData_->BCByID(nodeID)->fillRhsVector(nodeID, myRBFBasis_,
-                                                         varRhs_);
+            BCPool_->BCByNodeID(nodeID)->fillRhsVector(nodeID, RBFBasis_,
+                                                       varRhs_);
         }
     }
 }

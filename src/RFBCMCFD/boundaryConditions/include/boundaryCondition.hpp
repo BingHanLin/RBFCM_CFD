@@ -18,11 +18,10 @@ class BoundaryCondition
     virtual ~BoundaryCondition() = default;
 
     virtual void fillCoeffMatrix(
-        const size_t nodeID, std::shared_ptr<MQBasis> RBFBasis,
+        const size_t nodeID, MQBasis* RBFBasis,
         Eigen::SparseMatrix<double>& spMatrix) const = 0;
 
-    virtual void fillRhsVector(const size_t nodeID,
-                               std::shared_ptr<MQBasis> RBFBasis,
+    virtual void fillRhsVector(const size_t nodeID, MQBasis* RBFBasis,
                                Eigen::VectorXd& rhsVec) const = 0;
 
    protected:

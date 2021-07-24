@@ -2,7 +2,8 @@
 #include "MeshData.hpp"
 #include "controlData.hpp"
 #include "domainData.hpp"
-#include "json.h"
+#include "scalarBCPool.hpp"
+#include "scalarICPool.hpp"
 #include "simulationFlow.hpp"
 
 #include <cxxopts.hpp>
@@ -45,7 +46,7 @@ int main(int argc, char** argv)
     auto myMeshData = std::make_shared<MeshData>(myControlData.get());
 
     // ****************************************************************************
-    // Define RBF Type
+    // Define RBF type
     // ****************************************************************************
     auto myRBFBasis =
         std::make_shared<MQBasis>(myControlData.get(), myMeshData.get());
@@ -57,10 +58,20 @@ int main(int argc, char** argv)
         std::make_shared<DomainData>(myControlData.get(), myMeshData.get());
 
     // ****************************************************************************
+    // Build BC, IC pool
+    // ****************************************************************************
+    auto myBCPool =
+        std::make_shared<ScalarBCPool>(myControlData.get(), myMeshData.get());
+
+    auto myICPool =
+        std::make_shared<ScalarICPool>(myControlData.get(), myMeshData.get());
+
+    // ****************************************************************************
     // Define solver
     // ****************************************************************************
-    SimulationFlow mySimulationFlow(myControlData.get(), myDomainData,
-                                    myRBFBasis, myMeshData.get());
+    SimulationFlow mySimulationFlow(myControlData.get(), myRBFBasis.get(),
+                                    myMeshData.get(), myBCPool.get(),
+                                    myICPool.get());
     mySimulationFlow.solveDomain();
 
     std::cout << "test ok" << std::endl;

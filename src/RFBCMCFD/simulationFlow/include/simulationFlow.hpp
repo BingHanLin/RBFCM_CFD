@@ -12,16 +12,17 @@
 
 *************************************************************************/
 class MQBasis;
-class DomainData;
 class MeshData;
 class ControlData;
+class ScalarBCPool;
+class ScalarICPool;
 
 class SimulationFlow
 {
    public:
-    SimulationFlow(ControlData* controlData,
-                   std::shared_ptr<DomainData> domainData,
-                   std::shared_ptr<MQBasis> RBFBasis, MeshData* meshData);
+    SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
+                   MeshData* meshData, ScalarBCPool* BCPool,
+                   ScalarICPool* ICPool);
     ~SimulationFlow(){};
 
     void showSummary();
@@ -31,9 +32,10 @@ class SimulationFlow
 
    private:
     ControlData* controlData_;
-    std::shared_ptr<DomainData> myDomainData_;
-    std::shared_ptr<MQBasis> myRBFBasis_;
+    MQBasis* RBFBasis_;
     MeshData* meshData_;
+    ScalarBCPool* BCPool_;
+    ScalarICPool* ICPool_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;
