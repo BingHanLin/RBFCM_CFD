@@ -15,14 +15,13 @@
 class MQBasis;
 class MeshData;
 class ControlData;
-class ScalarConditionPool;
+class PUConditionPool;
 
 class IncompressibleDomain
 {
    public:
     IncompressibleDomain(ControlData* controlData, MQBasis* RBFBasis,
-                         MeshData* meshData,
-                         ScalarConditionPool* conditionPool);
+                         MeshData* meshData, PUConditionPool* conditionPool);
     ~IncompressibleDomain(){};
 
     void showSummary();
@@ -34,7 +33,7 @@ class IncompressibleDomain
     ControlData* controlData_;
     MQBasis* RBFBasis_;
     MeshData* meshData_;
-    ScalarConditionPool* conditionPool_;
+    PUConditionPool* conditionPool_;
 
     // physicsControl
     double viscosity_;

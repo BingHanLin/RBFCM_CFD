@@ -75,7 +75,7 @@ void MeshData::buildNodeToGroupName(
 {
     nodesToGroupName_.resize(nodes_.size());
     std::fill(nodesToGroupName_.begin(), nodesToGroupName_.end(),
-              NOTDEFINEDGROUPNAME);
+              NOTDEFINED_GROUPNAME);
 
     for (const auto& [groupName, ids] : groupToNodesMapNotCompact)
     {

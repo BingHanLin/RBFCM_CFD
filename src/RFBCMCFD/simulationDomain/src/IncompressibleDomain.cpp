@@ -3,7 +3,7 @@
 #include "InitialCondition.hpp"
 #include "MQBasis.hpp"
 #include "MeshData.hpp"
-#include "ScalarConditionPool.hpp"
+#include "PUConditionPool.hpp"
 #include "constant.hpp"
 #include "enumMap.hpp"
 #include "freeFunctions.hpp"
@@ -20,7 +20,7 @@
 IncompressibleDomain::IncompressibleDomain(ControlData* controlData,
                                            MQBasis* RBFBasis,
                                            MeshData* meshData,
-                                           ScalarConditionPool* conditionPool)
+                                           PUConditionPool* conditionPool)
     : controlData_(controlData),
       RBFBasis_(RBFBasis),
       meshData_(meshData),

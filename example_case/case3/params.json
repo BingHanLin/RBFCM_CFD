@@ -55,7 +55,12 @@
         }
     },
     "initialConditions": {
-        "constantValue": []
+        "U": {
+            "constantValue": []
+        },
+        "P": {
+            "constantValue": []
+        }
     },
     "solverControl": {
         "neighborRadius": 0.07,

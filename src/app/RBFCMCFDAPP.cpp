@@ -1,9 +1,11 @@
 #include "ControlData.hpp"
 #include "MQBasis.hpp"
 #include "MeshData.hpp"
+#include "PUConditionPool.hpp"
 #include "ScalarConditionPool.hpp"
 #include "ScalarTransportDomain.hpp"
 #include "enumMap.hpp"
+
 
 #include <cxxopts.hpp>
 #include <fstream>
@@ -74,7 +76,7 @@ int main(int argc, char** argv)
         // ****************************************************************************
         // Build condition pool
         // ****************************************************************************
-        auto myConditionPoolPool = std::make_shared<ScalarConditionPool>(
+        auto myConditionPoolPool = std::make_shared<PUConditionPool>(
             myControlData.get(), myMeshData.get());
 
         // //
