@@ -5,14 +5,15 @@
 
 enum solverType
 {
-    NAVIERSTOKES,
-    TRANSFEREQ
+    INCOMPRESSIBLE,
+    SCALARTRANSPORT
 };
 
-NLOHMANN_JSON_SERIALIZE_ENUM(solverType, {
-                                             {NAVIERSTOKES, "navierStokes"},
-                                             {TRANSFEREQ, "transferEq"},
-                                         })
+NLOHMANN_JSON_SERIALIZE_ENUM(solverType,
+                             {
+                                 {INCOMPRESSIBLE, "incompressible"},
+                                 {SCALARTRANSPORT, "scalarTransport"},
+                             })
 
 enum systemSateType
 {

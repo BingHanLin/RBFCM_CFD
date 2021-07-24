@@ -2,7 +2,7 @@
     "solverType": "incompressible",
     "geometryControl": {
         "type": "mshFile",
-        "fileName": "***.msh"
+        "fileName": "2dRec20.msh"
     },
     "physicsControl": {
         "viscosity": 1.0,
@@ -12,18 +12,36 @@
         "U": {
             "constantValue": [
                 {
-                    "groupName": "patchName",
+                    "groupName": "top",
+                    "value": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "groupName": "left",
                     "value": [
                         0.0,
                         0.0,
                         0.0
                     ]
-                }
-            ],
-            "neumann": [
+                },
+                {
+                    "groupName": "rigth",
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
                 {
                     "groupName": "bottom",
-                    "value": 0.0
+                    "value": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
                 }
             ]
         },
@@ -37,26 +55,7 @@
         }
     },
     "initialConditions": {
-        "U": {
-            "constantValue": [
-                {
-                    "groupName": "",
-                    "value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            ]
-        },
-        "P": {
-            "constantValue": [
-                {
-                    "groupName": "",
-                    "value": 0.0
-                }
-            ]
-        }
+        "constantValue": []
     },
     "solverControl": {
         "neighborRadius": 0.07,

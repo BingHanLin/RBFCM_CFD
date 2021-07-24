@@ -3,6 +3,7 @@
 #include "MeshData.hpp"
 #include "ScalarConditionPool.hpp"
 #include "ScalarTransportDomain.hpp"
+#include "enumMap.hpp"
 
 #include <cxxopts.hpp>
 #include <fstream>
@@ -49,19 +50,43 @@ int main(int argc, char** argv)
     auto myRBFBasis =
         std::make_shared<MQBasis>(myControlData.get(), myMeshData.get());
 
-    // ****************************************************************************
-    // Build condition pool
-    // ****************************************************************************
-    auto myConditionPoolPool = std::make_shared<ScalarConditionPool>(
-        myControlData.get(), myMeshData.get());
+    const auto mySolverType =
+        myControlData->paramsDataAt({"solverType"}).get<solverType>();
 
-    // ****************************************************************************
-    // Define solver
-    // ****************************************************************************
-    ScalarTransportDomain myScalarTransportDomain(
-        myControlData.get(), myRBFBasis.get(), myMeshData.get(),
-        myConditionPoolPool.get());
-    myScalarTransportDomain.solveDomain();
+    if (mySolverType == solverType::SCALARTRANSPORT)
+    {
+        // ****************************************************************************
+        // Build condition pool
+        // ****************************************************************************
+        auto myConditionPoolPool = std::make_shared<ScalarConditionPool>(
+            myControlData.get(), myMeshData.get());
+
+        // ****************************************************************************
+        // Define solver
+        // ****************************************************************************
+        ScalarTransportDomain myScalarTransportDomain(
+            myControlData.get(), myRBFBasis.get(), myMeshData.get(),
+            myConditionPoolPool.get());
+        myScalarTransportDomain.solveDomain();
+    }
+    else
+    {
+        // ****************************************************************************
+        // Build condition pool
+        // ****************************************************************************
+        auto myConditionPoolPool = std::make_shared<ScalarConditionPool>(
+            myControlData.get(), myMeshData.get());
+
+        // //
+        // ****************************************************************************
+        // // Define solver
+        // //
+        // ****************************************************************************
+        // ScalarTransportDomain myScalarTransportDomain(
+        //     myControlData.get(), myRBFBasis.get(), myMeshData.get(),
+        //     myConditionPoolPool.get());
+        // myScalarTransportDomain.solveDomain();
+    }
 
     std::cout << "test ok" << std::endl;
     return 0;

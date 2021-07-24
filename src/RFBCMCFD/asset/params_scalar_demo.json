@@ -1,4 +1,5 @@
 {
+    "solverType": "scalarTransport",
     "geometryControl": {
         "type": "mshFile",
         "fileName": "***.msh"
@@ -43,7 +44,6 @@
         "writeInterval": 0.01,
         "dimension": 2,
         "systemSateType": "steady",
-        "solverType": "transferEq",
         "theta": 0.5
     }
 }
