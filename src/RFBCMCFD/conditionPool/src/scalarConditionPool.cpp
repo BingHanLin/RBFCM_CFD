@@ -1,9 +1,9 @@
-#include "domainData.hpp"
-#include "boundaryCondition.hpp"
+#include "scalarConditionPool.hpp"
 #include "constant.hpp"
-#include "constantValueBC.hpp"
 #include "meshData.hpp"
 #include "messages.hpp"
+
+#include "constantValueBC.hpp"
 #include "neumannBC.hpp"
 
 #include "constantValueIC.hpp"
@@ -11,16 +11,15 @@
 
 #include <iostream>
 
-DomainData::DomainData(ControlData* controlData, MeshData* meshData)
+ScalarConditionPool::ScalarConditionPool(ControlData* controlData,
+                                         MeshData* meshData)
     : controlData_(controlData), meshData_(meshData)
 {
     buildInitialConditions();
     buildBoundaryConditions();
 }
 
-DomainData::~DomainData(){};
-
-void DomainData::buildInitialConditions()
+void ScalarConditionPool::buildInitialConditions()
 {
     const auto& constValueICData =
         controlData_->paramsDataAt({"initialConditions", "constantValue"});
@@ -34,8 +33,7 @@ void DomainData::buildInitialConditions()
         groupToICMap_.insert({groupName, std::move(ic)});
     }
 }
-
-void DomainData::buildBoundaryConditions()
+void ScalarConditionPool::buildBoundaryConditions()
 {
     const auto& neumannBCData =
         controlData_->paramsDataAt({"boundaryConditions", "neumann"});
@@ -62,20 +60,7 @@ void DomainData::buildBoundaryConditions()
     }
 }
 
-BoundaryCondition* DomainData::BCByID(const size_t nodeID) const
-{
-    if (groupToBCMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToBCMap_.end())
-    {
-        return groupToBCMap_.at(meshData_->groupNameByID(nodeID)).get();
-    }
-    else
-    {
-        return nullptr;
-    }
-}
-
-InitialCondition* DomainData::ICByID(const size_t nodeID) const
+InitialCondition* ScalarConditionPool::ICByNodeID(const size_t nodeID) const
 {
     if (groupToICMap_.find(meshData_->groupNameByID(nodeID)) !=
         groupToICMap_.end())
@@ -88,7 +73,15 @@ InitialCondition* DomainData::ICByID(const size_t nodeID) const
     }
 }
 
-MeshData* DomainData::meshData() const
+BoundaryCondition* ScalarConditionPool::BCByNodeID(const size_t nodeID) const
 {
-    return meshData_;
+    if (groupToBCMap_.find(meshData_->groupNameByID(nodeID)) !=
+        groupToBCMap_.end())
+    {
+        return groupToBCMap_.at(meshData_->groupNameByID(nodeID)).get();
+    }
+    else
+    {
+        return nullptr;
+    }
 }

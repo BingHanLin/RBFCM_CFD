@@ -1,9 +1,7 @@
 #include "MQBasis.hpp"
 #include "MeshData.hpp"
 #include "controlData.hpp"
-#include "domainData.hpp"
-#include "scalarBCPool.hpp"
-#include "scalarICPool.hpp"
+#include "scalarConditionPool.hpp"
 #include "simulationFlow.hpp"
 
 #include <cxxopts.hpp>
@@ -52,26 +50,17 @@ int main(int argc, char** argv)
         std::make_shared<MQBasis>(myControlData.get(), myMeshData.get());
 
     // ****************************************************************************
-    // Build domain data
+    // Build condition pool
     // ****************************************************************************
-    auto myDomainData =
-        std::make_shared<DomainData>(myControlData.get(), myMeshData.get());
-
-    // ****************************************************************************
-    // Build BC, IC pool
-    // ****************************************************************************
-    auto myBCPool =
-        std::make_shared<ScalarBCPool>(myControlData.get(), myMeshData.get());
-
-    auto myICPool =
-        std::make_shared<ScalarICPool>(myControlData.get(), myMeshData.get());
+    auto myConditionPoolPool = std::make_shared<ScalarConditionPool>(
+        myControlData.get(), myMeshData.get());
 
     // ****************************************************************************
     // Define solver
     // ****************************************************************************
     SimulationFlow mySimulationFlow(myControlData.get(), myRBFBasis.get(),
-                                    myMeshData.get(), myBCPool.get(),
-                                    myICPool.get());
+                                    myMeshData.get(),
+                                    myConditionPoolPool.get());
     mySimulationFlow.solveDomain();
 
     std::cout << "test ok" << std::endl;

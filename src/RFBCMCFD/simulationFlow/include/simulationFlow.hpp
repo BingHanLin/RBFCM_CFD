@@ -14,15 +14,13 @@
 class MQBasis;
 class MeshData;
 class ControlData;
-class ScalarBCPool;
-class ScalarICPool;
+class ScalarConditionPool;
 
 class SimulationFlow
 {
    public:
     SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
-                   MeshData* meshData, ScalarBCPool* BCPool,
-                   ScalarICPool* ICPool);
+                   MeshData* meshData, ScalarConditionPool* conditionPool);
     ~SimulationFlow(){};
 
     void showSummary();
@@ -34,8 +32,7 @@ class SimulationFlow
     ControlData* controlData_;
     MQBasis* RBFBasis_;
     MeshData* meshData_;
-    ScalarBCPool* BCPool_;
-    ScalarICPool* ICPool_;
+    ScalarConditionPool* conditionPool_;
 
     Eigen::SparseMatrix<double> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;

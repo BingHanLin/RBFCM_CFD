@@ -5,8 +5,7 @@
 #include "freeFunctions.hpp"
 #include "initialCondition.hpp"
 #include "meshData.hpp"
-#include "scalarBCPool.hpp"
-#include "scalarICPool.hpp"
+#include "scalarConditionPool.hpp"
 
 #include "pugixml.hpp"
 #include "rectangle.hpp"
@@ -18,14 +17,12 @@
 #include <iostream>
 
 SimulationFlow::SimulationFlow(ControlData* controlData, MQBasis* RBFBasis,
-                               MeshData* meshData, ScalarBCPool* BCPool,
-                               ScalarICPool* ICPool)
+                               MeshData* meshData,
+                               ScalarConditionPool* conditionPool)
     : controlData_(controlData),
       RBFBasis_(RBFBasis),
       meshData_(meshData),
-      BCPool_(BCPool),
-      ICPool_(ICPool)
-
+      conditionPool_(conditionPool)
 {
     setupSimulation();
     showSummary();
@@ -116,9 +113,9 @@ void SimulationFlow::initializeField()
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
-        if (ICPool_->ICByNodeID(nodeID))
+        if (conditionPool_->ICByNodeID(nodeID))
         {
-            ICPool_->ICByNodeID(nodeID)->fillVector(nodeID, varSol_);
+            conditionPool_->ICByNodeID(nodeID)->fillVector(nodeID, varSol_);
         }
     }
 
@@ -138,7 +135,7 @@ void SimulationFlow::assembleCoeffMatrix()
         auto cloud = meshData_->cloudByID(nodeID);
         auto nodes = meshData_->nodes();
 
-        if (BCPool_->BCByNodeID(nodeID) == nullptr)
+        if (conditionPool_->BCByNodeID(nodeID) == nullptr)
         {
             Eigen::VectorXd localVector;
             if (controlData_->systemSateType_ == systemSateType::STEADY)
@@ -194,8 +191,8 @@ void SimulationFlow::assembleCoeffMatrix()
         }
         else
         {
-            BCPool_->BCByNodeID(nodeID)->fillCoeffMatrix(nodeID, RBFBasis_,
-                                                         varCoeffMatrix_);
+            conditionPool_->BCByNodeID(nodeID)->fillCoeffMatrix(
+                nodeID, RBFBasis_, varCoeffMatrix_);
         }
     }
 }
@@ -230,14 +227,14 @@ void SimulationFlow::assembleRhs()
     {
         auto cloud = meshData_->cloudByID(nodeID);
 
-        if (BCPool_->BCByNodeID(nodeID) == nullptr)
+        if (conditionPool_->BCByNodeID(nodeID) == nullptr)
         {
             varRhs_(nodeID) = rhsInnerVector(nodeID);
         }
         else
         {
-            BCPool_->BCByNodeID(nodeID)->fillRhsVector(nodeID, RBFBasis_,
-                                                       varRhs_);
+            conditionPool_->BCByNodeID(nodeID)->fillRhsVector(nodeID, RBFBasis_,
+                                                              varRhs_);
         }
     }
 }
