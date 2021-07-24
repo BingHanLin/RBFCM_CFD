@@ -56,10 +56,18 @@
     },
     "initialConditions": {
         "U": {
-            "constantValue": []
+            "constantValue": {
+                "value": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         "P": {
-            "constantValue": []
+            "constantValue": {
+                "value": 0.0
+            }
         }
     },
     "solverControl": {

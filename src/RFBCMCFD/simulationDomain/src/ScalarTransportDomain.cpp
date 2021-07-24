@@ -123,9 +123,9 @@ void ScalarTransportDomain::initializeField()
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
-        if (conditionPool_->ICByNodeID(nodeID))
+        if (conditionPool_->IC())
         {
-            conditionPool_->ICByNodeID(nodeID)->fillVector(nodeID, varSol_);
+            conditionPool_->IC()->fillVector(nodeID, varSol_);
         }
     }
 

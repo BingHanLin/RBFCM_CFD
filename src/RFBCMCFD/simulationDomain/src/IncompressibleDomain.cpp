@@ -120,9 +120,9 @@ void IncompressibleDomain::initializeField()
 
     // for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     // {
-    //     if (conditionPool_->ICByNodeID(nodeID))
+    //     if (conditionPool_->IC()nodeID))
     //     {
-    //         conditionPool_->ICByNodeID(nodeID)->fillVector(nodeID, varSol_);
+    //         conditionPool_->IC()nodeID)->fillVector(nodeID, varSol_);
     //     }
     // }
 

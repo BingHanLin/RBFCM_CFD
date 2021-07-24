@@ -24,19 +24,19 @@ class PUConditionPool
    public:
     explicit PUConditionPool(ControlData* controlData, MeshData* meshData);
 
-    InitialCondition* UICByNodeID(const size_t nodeID) const;
+    InitialCondition* UIC() const;
     BoundaryCondition* UBCByNodeID(const size_t nodeID) const;
 
-    InitialCondition* PICByNodeID(const size_t nodeID) const;
+    InitialCondition* PIC() const;
     BoundaryCondition* PBCByNodeID(const size_t nodeID) const;
 
    private:
     ControlData* controlData_;
     MeshData* meshData_;
-    std::map<std::string, std::unique_ptr<InitialCondition>> groupToUICMap_;
+    std::unique_ptr<InitialCondition> UIC_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToUBCMap_;
 
-    std::map<std::string, std::unique_ptr<InitialCondition>> groupToPICMap_;
+    std::unique_ptr<InitialCondition> PIC_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToPBCMap_;
 
     void buildInitialConditions();

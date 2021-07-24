@@ -7,7 +7,6 @@
 #include "dataStructure.hpp"
 #include "enumMap.hpp"
 
-
 #include "json.h"
 #include <memory>
 #include <vector>
@@ -25,13 +24,13 @@ class ScalarConditionPool
    public:
     explicit ScalarConditionPool(ControlData* controlData, MeshData* meshData);
 
-    InitialCondition* ICByNodeID(const size_t nodeID) const;
+    InitialCondition* IC() const;
     BoundaryCondition* BCByNodeID(const size_t nodeID) const;
 
    private:
     ControlData* controlData_;
     MeshData* meshData_;
-    std::map<std::string, std::unique_ptr<InitialCondition>> groupToICMap_;
+    std::unique_ptr<InitialCondition> IC_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToBCMap_;
 
     void buildInitialConditions();

@@ -36,12 +36,9 @@
         ]
     },
     "initialConditions": {
-        "constantValue": [
-            {
-                "groupName": "",
-                "value": 100.0
-            }
-        ]
+        "constantValue": {
+            "value": 100.0
+        }
     },
     "solverControl": {
         "neighborRadius": 0.07,

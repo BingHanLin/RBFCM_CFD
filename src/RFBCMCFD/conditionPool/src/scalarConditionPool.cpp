@@ -3,7 +3,6 @@
 #include "constant.hpp"
 #include "messages.hpp"
 
-
 #include "ConstantValueBC.hpp"
 #include "NeumannBC.hpp"
 
@@ -25,14 +24,7 @@ void ScalarConditionPool::buildInitialConditions()
     const auto& constValueICData =
         controlData_->paramsDataAt({"initialConditions", "constantValue"});
 
-    for (auto& oneICData : constValueICData)
-    {
-        const std::string groupName = oneICData.at("groupName");
-
-        auto ic = std::make_unique<ConstantValueIC>(oneICData.at("value"));
-
-        groupToICMap_.insert({groupName, std::move(ic)});
-    }
+    IC_ = std::make_unique<ConstantValueIC>(constValueICData.at("value"));
 }
 void ScalarConditionPool::buildBoundaryConditions()
 {
@@ -61,17 +53,9 @@ void ScalarConditionPool::buildBoundaryConditions()
     }
 }
 
-InitialCondition* ScalarConditionPool::ICByNodeID(const size_t nodeID) const
+InitialCondition* ScalarConditionPool::IC() const
 {
-    if (groupToICMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToICMap_.end())
-    {
-        return groupToICMap_.at(meshData_->groupNameByID(nodeID)).get();
-    }
-    else
-    {
-        return nullptr;
-    }
+    return IC_.get();
 }
 
 BoundaryCondition* ScalarConditionPool::BCByNodeID(const size_t nodeID) const

@@ -38,24 +38,18 @@
     },
     "initialConditions": {
         "U": {
-            "constantValue": [
-                {
-                    "groupName": "",
-                    "value": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                }
-            ]
+            "constantValue": {
+                "value": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         "P": {
-            "constantValue": [
-                {
-                    "groupName": "",
-                    "value": 0.0
-                }
-            ]
+            "constantValue": {
+                "value": 0.0
+            }
         }
     },
     "solverControl": {

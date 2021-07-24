@@ -23,15 +23,9 @@ void PUConditionPool::buildInitialConditions()
     const auto& constValueUICData =
         controlData_->paramsDataAt({"initialConditions", "U", "constantValue"});
 
-    for (auto& oneICData : constValueUICData)
-    {
-        const std::string groupName = oneICData.at("groupName");
-
-        auto ic = std::make_unique<ConstantValueIC>(oneICData.at("value"));
-
-        groupToUICMap_.insert({groupName, std::move(ic)});
-    }
+    UIC_ = std::make_unique<ConstantValueIC>(constValueUICData.at("value"));
 }
+
 void PUConditionPool::buildBoundaryConditions()
 {
     const auto& neumannUBCData =
@@ -59,17 +53,9 @@ void PUConditionPool::buildBoundaryConditions()
     }
 }
 
-InitialCondition* PUConditionPool::UICByNodeID(const size_t nodeID) const
+InitialCondition* PUConditionPool::UIC() const
 {
-    if (groupToUICMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToUICMap_.end())
-    {
-        return groupToUICMap_.at(meshData_->groupNameByID(nodeID)).get();
-    }
-    else
-    {
-        return nullptr;
-    }
+    return UIC_.get();
 }
 
 BoundaryCondition* PUConditionPool::UBCByNodeID(const size_t nodeID) const
@@ -85,17 +71,9 @@ BoundaryCondition* PUConditionPool::UBCByNodeID(const size_t nodeID) const
     }
 }
 
-InitialCondition* PUConditionPool::PICByNodeID(const size_t nodeID) const
+InitialCondition* PUConditionPool::PIC() const
 {
-    if (groupToPICMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToPICMap_.end())
-    {
-        return groupToPICMap_.at(meshData_->groupNameByID(nodeID)).get();
-    }
-    else
-    {
-        return nullptr;
-    }
+    return PIC_.get();
 }
 
 BoundaryCondition* PUConditionPool::PBCByNodeID(const size_t nodeID) const
