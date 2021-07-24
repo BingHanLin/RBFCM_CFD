@@ -46,3 +46,7 @@ The following open source libraries or third party functions are used by this pr
 [2] Chen, W., Zhuo. & Chen, C. (2014). Recent advances on radial basis function collocation methods. Berlin: Springer.
 
 [3] [Catch2](http://blog.guorongfei.com/2016/08/22/cpp-unit-test-catch/) 
+
+https://gist.github.com/gocarlos/c91237b02c120c6319612e42fa196d77
+
+https://eigen.tuxfamily.org/dox/TopicPreprocessorDirectives.html

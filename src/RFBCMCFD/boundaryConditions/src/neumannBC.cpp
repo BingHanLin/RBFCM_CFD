@@ -7,8 +7,9 @@
 neumannBC::neumannBC(const double rhsValue, MeshData* meshData)
     : BoundaryCondition(meshData), rhsValue_(rhsValue_){};
 
-void neumannBC::fillCoeffMatrix(const size_t nodeID, MQBasis* RBFBasis,
-                                Eigen::SparseMatrix<double>& spMatrix) const
+void neumannBC::fillCoeffMatrix(
+    const size_t nodeID, MQBasis* RBFBasis,
+    Eigen::SparseMatrix<double, Eigen::RowMajor>& spMatrix) const
 {
     const auto cloud = meshData_->cloudByID(nodeID);
 

@@ -19,7 +19,7 @@ class BoundaryCondition
 
     virtual void fillCoeffMatrix(
         const size_t nodeID, MQBasis* RBFBasis,
-        Eigen::SparseMatrix<double>& spMatrix) const = 0;
+        Eigen::SparseMatrix<double, Eigen::RowMajor>& spMatrix) const = 0;
 
     virtual void fillRhsVector(const size_t nodeID, MQBasis* RBFBasis,
                                Eigen::VectorXd& rhsVec) const = 0;

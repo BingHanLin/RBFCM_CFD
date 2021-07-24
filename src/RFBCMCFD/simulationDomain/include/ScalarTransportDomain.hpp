@@ -52,15 +52,15 @@ class ScalarTransportDomain
     double currentTime_;
 
     // matrix
-    Eigen::SparseMatrix<double> varCoeffMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> varCoeffMatrix_;
     Eigen::VectorXd varRhs_;
     Eigen::VectorXd varSol_;
     Eigen::VectorXd preVarSol_;
 
-    Eigen::SparseMatrix<double> laplaceMatrix_;
-    Eigen::SparseMatrix<double> dxMatrix_;
-    Eigen::SparseMatrix<double> dyMatrix_;
-    Eigen::SparseMatrix<double> dzMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> laplaceMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> dxMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> dyMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> dzMatrix_;
 
     void setupSimulation();
     void initializeField();

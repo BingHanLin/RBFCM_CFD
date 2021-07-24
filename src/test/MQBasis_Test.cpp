@@ -28,11 +28,13 @@ TEST_CASE("MQBasis Operator Test", "[RBF]")
         //     nodesValue[nodeID] = testFunc(nodesD1[nodeID]);
         // };
 
-        // Eigen::SparseMatrix<double> laplaceMatrix(nodesD1.size(),
+        // Eigen::SparseMatrix<double, Eigen::RowMajor>
+        // laplaceMatrix(nodesD1.size(),
         //                                           nodesD1.size());
-        // Eigen::SparseMatrix<double> dxMatrix(nodesD1.size(), nodesD1.size());
-        // Eigen::SparseMatrix<double> dyMatrix(nodesD1.size(), nodesD1.size());
-        // Eigen::SparseMatrix<double> dzMatrix(nodesD1.size(), nodesD1.size());
+        // Eigen::SparseMatrix<double, Eigen::RowMajor> dxMatrix(nodesD1.size(),
+        // nodesD1.size()); Eigen::SparseMatrix<double, Eigen::RowMajor>
+        // dyMatrix(nodesD1.size(), nodesD1.size()); Eigen::SparseMatrix<double,
+        // Eigen::RowMajor> dzMatrix(nodesD1.size(), nodesD1.size());
 
         // for (size_t nodeID = 0; nodeID < nodesD1.size(); ++nodeID)
         // {

@@ -84,7 +84,6 @@ void ScalarTransportDomain::setupLinearSystem()
 
     varCoeffMatrix_.resize(numOfNodes, numOfNodes);
     varRhs_.resize(numOfNodes);
-    preVarSol_.resize(numOfNodes);
 
     laplaceMatrix_.resize(numOfNodes, numOfNodes);
     dxMatrix_.resize(numOfNodes, numOfNodes);
@@ -242,8 +241,8 @@ void ScalarTransportDomain::solveMatrix()
     std::cout << "#solveMatrix" << std::endl;
 
     // =========================================
-    // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
-    // solver.compute(varCoeffMatrix_);
+    // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double,
+    // Eigen::RowMajor>> solver; solver.compute(varCoeffMatrix_);
 
     // if (solver.info() != Eigen::Success)
     // {
@@ -259,7 +258,8 @@ void ScalarTransportDomain::solveMatrix()
     // varSol_ = solver.solve(varRhs_);
 
     // =========================================
-    Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
+    Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::RowMajor>,
+                    Eigen::COLAMDOrdering<int>>
         solver;
 
     // Compute the ordering permutation vector from the structural
@@ -272,7 +272,7 @@ void ScalarTransportDomain::solveMatrix()
     // =========================================
 
     // fill A and b
-    // Eigen::ConjugateGradient<Eigen::SparseMatrix<double>,
+    // Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::RowMajor>,
     //                          Eigen::Lower | Eigen::Upper>
     //     cg;
     // cg.compute(varCoeffMatrix_);

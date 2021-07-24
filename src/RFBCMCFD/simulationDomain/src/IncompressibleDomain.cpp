@@ -75,127 +75,119 @@ void IncompressibleDomain::showSummary()
 
 void IncompressibleDomain::setupLinearSystem()
 {
-    // std::cout << "#setupLinearSystem" << std::endl;
+    std::cout << "#setupLinearSystem" << std::endl;
 
-    // const auto numOfNodes = meshData_->numOfNodes();
+    const auto numOfNodes = meshData_->numOfNodes();
 
-    // varCoeffMatrix_.resize(numOfNodes, numOfNodes);
-    // varRhs_.resize(numOfNodes);
-    // preVarSol_.resize(numOfNodes);
+    laplaceMatrix_.data().squeeze();
+    laplaceMatrix_.reserve(
+        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
 
-    // laplaceMatrix_.resize(numOfNodes, numOfNodes);
-    // dxMatrix_.resize(numOfNodes, numOfNodes);
-    // dyMatrix_.resize(numOfNodes, numOfNodes);
-    // dzMatrix_.resize(numOfNodes, numOfNodes);
+    dxMatrix_.resize(numOfNodes, numOfNodes);
+    dyMatrix_.resize(numOfNodes, numOfNodes);
+    dzMatrix_.resize(numOfNodes, numOfNodes);
 
-    // for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
-    // {
-    //     auto cloud = meshData_->cloudByID(nodeID);
-    //     auto nodes = meshData_->nodes();
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+    {
+        auto cloud = meshData_->cloudByID(nodeID);
+        auto nodes = meshData_->nodes();
 
-    //     Eigen::VectorXd laplaceVector =
-    //         RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
-    //     Eigen::VectorXd dxVector =
-    //         RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D1);
-    //     Eigen::VectorXd dyVector =
-    //         RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D2);
-    //     Eigen::VectorXd dzVector =
-    //         RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D3);
+        Eigen::VectorXd laplaceVector =
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
+        Eigen::VectorXd dxVector =
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D1);
+        Eigen::VectorXd dyVector =
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D2);
+        Eigen::VectorXd dzVector =
+            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D3);
 
-    //     for (size_t i = 0; i < cloud.size_; i++)
-    //     {
-    //         laplaceMatrix_.insert(nodeID, cloud.ids_[i]) = laplaceVector[i];
-    //         dxMatrix_.insert(nodeID, cloud.ids_[i]) = dxVector[i];
-    //         dyMatrix_.insert(nodeID, cloud.ids_[i]) = dyVector[i];
-    //         dzMatrix_.insert(nodeID, cloud.ids_[i]) = dzVector[i];
-    //     }
-    // }
+        for (size_t i = 0; i < cloud.size_; i++)
+        {
+            laplaceMatrix_.insert(nodeID, cloud.ids_[i]) = laplaceVector[i];
+            dxMatrix_.insert(nodeID, cloud.ids_[i]) = dxVector[i];
+            dyMatrix_.insert(nodeID, cloud.ids_[i]) = dyVector[i];
+            dzMatrix_.insert(nodeID, cloud.ids_[i]) = dzVector[i];
+        }
+    }
 }
 
 void IncompressibleDomain::initializeField()
 {
-    // const auto numOfNodes = meshData_->numOfNodes();
+    const auto numOfNodes = meshData_->numOfNodes();
 
-    // varSol_ = Eigen::VectorXd::Constant(numOfNodes, 0.0);
+    velSol_.resize(dim_ * numOfNodes);
+    pSol_.resize(dim_ * numOfNodes);
 
-    // for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
-    // {
-    //     if (conditionPool_->IC()nodeID))
-    //     {
-    //         conditionPool_->IC()nodeID)->fillVector(nodeID, varSol_);
-    //     }
-    // }
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+    {
+        if (conditionPool_->PIC())
+        {
+            conditionPool_->PIC()->fillVector(nodeID, pSol_);
+        }
 
-    // preVarSol_ = varSol_;
+        if (conditionPool_->UIC())
+        {
+            conditionPool_->UIC()->fillVector(nodeID, velSol_);
+        }
+    }
+
+    preVelSol_ = velSol_;
+    prePSol_ = pSol_;
 }
 
 void IncompressibleDomain::assembleCoeffMatrix()
 {
-    // std::cout << "#assembleCoeffMatrix" << std::endl;
+    std::cout << "#assembleCoeffMatrix" << std::endl;
 
-    // varCoeffMatrix_.data().squeeze();
-    // varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(meshData_->numOfNodes(),
-    //                                                   ESTIMATE_NEIGHBOR_NUM));
+    const auto numOfNodes = meshData_->numOfNodes();
 
-    // for (size_t nodeID = 0; nodeID < meshData_->numOfNodes(); ++nodeID)
-    // {
-    //     auto cloud = meshData_->cloudByID(nodeID);
-    //     auto nodes = meshData_->nodes();
+    phiCoeffMatrix_.data().squeeze();
+    phiCoeffMatrix_.reserve(
+        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
 
-    //     if (conditionPool_->BCByNodeID(nodeID) == nullptr)
-    //     {
-    //         Eigen::VectorXd localVector;
-    //         if (systemSateType_ == systemSateType::STEADY)
-    //         {
-    //             localVector =
-    //                 diffusionCoeff_ *
-    //                 RBFBasis_->collectOnNodes(nodeID,
-    //                 rbfOperatorType::LAPLACE);
+    velCoeffMatrix_.data().squeeze();
+    velCoeffMatrix_.reserve(
+        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
 
-    //             localVector += convectionVel_[0] *
-    //                            RBFBasis_->collectOnNodes(
-    //                                nodeID, rbfOperatorType::PARTIAL_D1);
+    bool refPhiGiven = false;
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+    {
+        if (conditionPool_->UBCByNodeID(nodeID) != nullptr)
+        {
+            conditionPool_->UBCByNodeID(nodeID)->fillCoeffMatrix(
+                nodeID, RBFBasis_, velCoeffMatrix_);
+        }
+        else
+        {
+            velCoeffMatrix_.row(nodeID) = laplaceMatrix_.row(nodeID);
 
-    //             localVector += convectionVel_[1] *
-    //                            RBFBasis_->collectOnNodes(
-    //                                nodeID, rbfOperatorType::PARTIAL_D2);
+            velCoeffMatrix_.coeffRef(nodeID, nodeID) -=
+                2.0 / viscosity_ / tStepSize_;
+        }
+    }
 
-    //             localVector += convectionVel_[2] *
-    //                            RBFBasis_->collectOnNodes(
-    //                                nodeID, rbfOperatorType::PARTIAL_D3);
-    //         }
-    //         else
-    //         {
-    //             localVector = RBFBasis_->collectOnNodes(
-    //                 nodeID, rbfOperatorType::CONSTANT);
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+    {
+        if (conditionPool_->UBCByNodeID(nodeID) != nullptr)
+        {
+            const auto cloud = meshData_->cloudByID(nodeID);
 
-    //             localVector += (-theta_ * tStepSize_ * diffusionCoeff_ *
-    //                             RBFBasis_->collectOnNodes(
-    //                                 nodeID, rbfOperatorType::LAPLACE));
-
-    //             localVector += (-theta_ * tStepSize_ * convectionVel_[0] *
-    //                             RBFBasis_->collectOnNodes(
-    //                                 nodeID, rbfOperatorType::PARTIAL_D1));
-
-    //             localVector += (-theta_ * tStepSize_ * convectionVel_[1] *
-    //                             RBFBasis_->collectOnNodes(
-    //                                 nodeID, rbfOperatorType::PARTIAL_D2));
-
-    //             localVector += (-theta_ * tStepSize_ * convectionVel_[2] *
-    //                             RBFBasis_->collectOnNodes(
-    //                                 nodeID, rbfOperatorType::PARTIAL_D3));
-    //         }
-
-    //         for (size_t i = 0; i < cloud.size_; i++)
-    //             varCoeffMatrix_.insert(nodeID, cloud.ids_[i]) =
-    //             localVector[i];
-    //     }
-    //     else
-    //     {
-    //         conditionPool_->BCByNodeID(nodeID)->fillCoeffMatrix(
-    //             nodeID, RBFBasis_, varCoeffMatrix_);
-    //     }
-    // }
+            Eigen::VectorXd localVector =
+                RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::NEUMANN);
+            for (size_t i = 0; i < localVector.size(); i++)
+            {
+                phiCoeffMatrix_.insert(nodeID, cloud.ids_[i]) = localVector[i];
+            }
+        }
+        else
+        {
+            if (refPhiGiven == false)
+            {
+                phiCoeffMatrix_.insert(nodeID, nodeID) = 1.0;
+                refPhiGiven = true;
+            }
+        }
+    }
 }
 
 void IncompressibleDomain::assembleRhs()
@@ -242,8 +234,8 @@ void IncompressibleDomain::solveMatrix()
     // std::cout << "#solveMatrix" << std::endl;
 
     // // =========================================
-    // // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>>
-    // solver;
+    // // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double,
+    // Eigen::RowMajor>> solver;
     // // solver.compute(varCoeffMatrix_);
 
     // // if (solver.info() != Eigen::Success)
@@ -260,7 +252,8 @@ void IncompressibleDomain::solveMatrix()
     // // varSol_ = solver.solve(varRhs_);
 
     // // =========================================
-    // Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
+    // Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::RowMajor>,
+    // Eigen::COLAMDOrdering<int>>
     //     solver;
 
     // // Compute the ordering permutation vector from the structural
@@ -273,7 +266,7 @@ void IncompressibleDomain::solveMatrix()
     // // =========================================
 
     // // fill A and b
-    // // Eigen::ConjugateGradient<Eigen::SparseMatrix<double>,
+    // // Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::RowMajor>,
     // //                          Eigen::Lower | Eigen::Upper>
     // //     cg;
     // // cg.compute(varCoeffMatrix_);

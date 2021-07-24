@@ -9,7 +9,7 @@ ConstantValueBC::ConstantValueBC(const double constValue, MeshData* meshData)
 
 void ConstantValueBC::fillCoeffMatrix(
     const size_t nodeID, MQBasis* RBFBasis,
-    Eigen::SparseMatrix<double>& spMatrix) const
+    Eigen::SparseMatrix<double, Eigen::RowMajor>& spMatrix) const
 {
     spMatrix.insert(nodeID, nodeID) = 1.0;
 }

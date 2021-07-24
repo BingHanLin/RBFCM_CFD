@@ -96,7 +96,23 @@
 		"stop_token": "cpp",
 		"cinttypes": "cpp",
 		"dense": "cpp",
-		"sparse": "cpp"
+		"sparse": "cpp",
+		"core": "cpp",
+		"superlusupport": "cpp",
+		"*.evaluator": "cpp",
+		"*.traits": "cpp",
+		"adolcforward": "cpp",
+		"autodiff": "cpp",
+		"bvh": "cpp",
+		"eulerangles": "cpp",
+		"fft": "cpp",
+		"kroneckerproduct": "cpp",
+		"mprealsupport": "cpp",
+		"numericaldiff": "cpp",
+		"openglsupport": "cpp",
+		"specialfunctions": "cpp",
+		"splines": "cpp",
+		"sparsecore": "cpp"
 	},
 	"clang-format.executable": "D:\\LLVM\\bin\\clang-format.exe"
 }

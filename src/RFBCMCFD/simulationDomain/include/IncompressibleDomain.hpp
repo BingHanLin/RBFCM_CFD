@@ -50,20 +50,19 @@ class IncompressibleDomain
     double currentTime_;
 
     // matrix
-    Eigen::SparseMatrix<double> varCoeffMatrix_;
-    Eigen::VectorXd allRhs_;
+    Eigen::VectorXd velRhs_;
     Eigen::VectorXd velSol_;
     Eigen::VectorXd preVelSol_;
     Eigen::VectorXd pSol_;
     Eigen::VectorXd prePSol_;
 
-    Eigen::SparseMatrix<double> phiCoeffMatrix_;
-    Eigen::SparseMatrix<double> velCoeffMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> phiCoeffMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> velCoeffMatrix_;
 
-    Eigen::SparseMatrix<double> laplaceMatrix_;
-    Eigen::SparseMatrix<double> dxMatrix_;
-    Eigen::SparseMatrix<double> dyMatrix_;
-    Eigen::SparseMatrix<double> dzMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> laplaceMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> dxMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> dyMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> dzMatrix_;
 
     void setupSimulation();
     void initializeField();
