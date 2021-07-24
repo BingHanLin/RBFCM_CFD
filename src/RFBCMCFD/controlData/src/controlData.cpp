@@ -48,19 +48,3 @@ const nlohmann::json ControlData::paramsDataAt(
     }
     return queryJSON;
 }
-
-const std::vector<std::string> ControlData::groupNames() const
-{
-    std::vector<std::string> groupNameList;
-
-    for (const auto& [BCType, BCData] :
-         paramsData_.at("boundaryConditions").items())
-    {
-        for (const auto& oneBCData : BCData)
-        {
-            groupNameList.push_back(oneBCData.at("groupName"));
-        }
-    }
-
-    return groupNameList;
-}

@@ -16,8 +16,6 @@ class ControlData
     const nlohmann::json paramsDataAt(
         const std::vector<std::string> searchEntries) const;
 
-    const std::vector<std::string> groupNames() const;
-
    private:
     void setWorkingDir(const std::filesystem::path workingDir);
     void readParamsData();

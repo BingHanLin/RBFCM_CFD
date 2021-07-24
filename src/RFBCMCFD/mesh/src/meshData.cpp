@@ -77,13 +77,8 @@ void MeshData::buildNodeToGroupName(
     std::fill(nodesToGroupName_.begin(), nodesToGroupName_.end(),
               NOTDEFINEDGROUPNAME);
 
-    const auto names = controlData_->groupNames();
-
     for (const auto& [groupName, ids] : groupToNodesMapNotCompact)
     {
-        if (std::find(names.begin(), names.end(), groupName) == names.end())
-            continue;
-
         // TODO: parallel
         for (const size_t& id : ids)
         {

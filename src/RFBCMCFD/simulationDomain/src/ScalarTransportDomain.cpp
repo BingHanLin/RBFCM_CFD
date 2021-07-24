@@ -138,7 +138,7 @@ void ScalarTransportDomain::assembleCoeffMatrix()
 
     varCoeffMatrix_.data().squeeze();
     varCoeffMatrix_.reserve(Eigen::VectorXi::Constant(meshData_->numOfNodes(),
-                                                      ESTIMATENEIGHBORNUM));
+                                                      ESTIMATE_NEIGHBOR_NUM));
 
     for (size_t nodeID = 0; nodeID < meshData_->numOfNodes(); ++nodeID)
     {
