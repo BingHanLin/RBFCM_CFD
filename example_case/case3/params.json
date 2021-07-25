@@ -72,12 +72,12 @@
     },
     "solverControl": {
         "neighborRadius": 0.07,
-        "shapeParameter": 1,
-        "timeStepSize": 0.01,
+        "shapeParameter": 0.6,
+        "timeStepSize": 0.001,
         "endTime": 0.10,
         "writeInterval": 0.05,
         "dimension": 2,
-        "crankNicolsonEpsilon": 0.001,
-        "crankNicolsonMaxIter": 10
+        "crankNicolsonEpsilon": 10e-5,
+        "crankNicolsonMaxIter": 15
     }
 }

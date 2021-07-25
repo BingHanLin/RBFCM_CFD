@@ -44,6 +44,8 @@ void IncompressibleDomain::setupSimulation()
     endTime_ = solverControls.at("endTime");
     writeInterval_ = solverControls.at("writeInterval");
     dim_ = solverControls.at("dimension");
+    crankNicolsonEpsilon_ = solverControls.at("crankNicolsonEpsilon");
+    crankNicolsonMaxIter_ = solverControls.at("crankNicolsonMaxIter");
 
     const auto physicalControls =
         controlData_->paramsDataAt({"physicsControl"});
@@ -68,6 +70,12 @@ void IncompressibleDomain::showSummary()
               << std::endl;
     std::cout << "Neighbor radius: " << std::setw(8) << neighborRadius_
               << std::endl;
+
+    std::cout << "CrankNicolson Epsilon: " << std::setw(8)
+              << crankNicolsonEpsilon_ << std::endl;
+
+    std::cout << "CrankNicolson Max Iteration: " << std::setw(8)
+              << crankNicolsonMaxIter_ << std::endl;
 
     std::cout << "Viscosity: " << std::setw(8) << viscosity_ << std::endl;
     std::cout << "Density: " << std::setw(8) << density_ << std::endl;
@@ -212,6 +220,8 @@ void IncompressibleDomain::assembleCoeffMatrix()
 
 void IncompressibleDomain::solveDomain()
 {
+    std::cout << "IncompressibleDomain::solveDomain" << std::endl;
+
     assembleCoeffMatrix();
 
     writeDataToVTK();
@@ -221,10 +231,14 @@ void IncompressibleDomain::solveDomain()
 
     while (currentTime_ < endTime_)
     {
+        currentTime_ += tStepSize_;
+
         Eigen::VectorXd velS = crankNicolsonU(pSol_, velSol_);
         solvePU(pSol_, velS, pSolNext, velSolNext);
 
-        currentTime_ += tStepSize_;
+        velSol_ = velSolNext;
+        pSol_ = pSolNext;
+
         if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
     }
 }
@@ -250,6 +264,9 @@ Eigen::VectorXd IncompressibleDomain::crankNicolsonU(
         temp1 = temp2;
 
         iterNum++;
+
+        std::cout << "..............iterNum: " << iterNum
+                  << ", currError: " << currError << std::endl;
 
         if (iterNum > crankNicolsonMaxIter_) break;
 
@@ -294,8 +311,8 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
                     2.0 * RHS(start + nodeID) / viscosity_ -
                     (2.0 / tStepSize_ / viscosity_) * velHalf(start + nodeID);
 
-                const double pGrad = firstOrderDerMatrix_.row(start + nodeID) *
-                                     pSol.segment(start, numOfNodes);
+                const double pGrad =
+                    firstOrderDerMatrix_.row(start + nodeID) * pSol;
                 RHS(start + nodeID) += pGrad * (2.0 / viscosity_);
 
                 const double velLaplacian = laplaceMatrix_.row(nodeID) *
