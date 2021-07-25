@@ -7,6 +7,8 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/rbfBasis/src DIR_RBFBASIS_SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/simulationDomain/src DIR_SIMULATIONDOMAIN_SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/controlData/src DIR_CONTROLDATA_SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/conditionPool/src DIR_CONDITIONPOOL_SRCS)
+aux_source_directory(${PROJECT_SOURCE_DIR}/utility/src DIR_UTILITY_SRCS)
+
 
 add_library( ${PROJECT_NAME}
     ${DIR_MESH_SRCS} 
@@ -16,6 +18,7 @@ add_library( ${PROJECT_NAME}
     ${DIR_SIMULATIONDOMAIN_SRCS}
     ${DIR_CONTROLDATA_SRCS}
     ${DIR_CONDITIONPOOL_SRCS}
+    ${DIR_UTILITY_SRCS}
 )
 
 target_include_directories(${PROJECT_NAME}

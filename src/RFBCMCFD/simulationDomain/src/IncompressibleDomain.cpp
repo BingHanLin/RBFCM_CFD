@@ -436,12 +436,12 @@ void IncompressibleDomain::writeDataToVTK() const
         velSol_.segment(numOfNodes * 0, numOfNodes * 1);
     const Eigen::VectorXd vSol =
         velSol_.segment(numOfNodes * 1, numOfNodes * 2);
-    const Eigen::VectorXd wSol =
-        velSol_.segment(numOfNodes * 2, numOfNodes * 3);
+    // const Eigen::VectorXd wSol =
+    //     velSol_.segment(numOfNodes * 2, numOfNodes * 3);
 
     appendScalarsToVTKNode(uSol, "u", PointData);
     appendScalarsToVTKNode(vSol, "v", PointData);
-    appendScalarsToVTKNode(wSol, "w", PointData);
+    // appendScalarsToVTKNode(wSol, "w", PointData);
     appendScalarsToVTKNode(pSol_, "p", PointData);
 
     pugi::xml_node Cells = Piece.append_child("Cells");

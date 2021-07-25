@@ -3,11 +3,9 @@
 #include "constant.hpp"
 #include "messages.hpp"
 
-#include "ConstantValueBC.hpp"
-#include "NeumannBC.hpp"
+#include "ConstantVecValueBC.hpp"
 
-#include "ConstantValueIC.hpp"
-#include "InitialCondition.hpp"
+#include "ConstantVecValueIC.hpp"
 
 #include <iostream>
 
@@ -23,23 +21,13 @@ void PUConditionPool::buildInitialConditions()
     const auto& constValueUICData =
         controlData_->paramsDataAt({"initialConditions", "U", "constantValue"});
 
-    UIC_ = std::make_unique<ConstantValueIC>(constValueUICData.at("value"));
+    const auto vel = constValueUICData.at("value").get<std::array<double, 3>>();
+
+    UIC_ = std::make_unique<ConstantVecValueIC>(vel, meshData_);
 }
 
 void PUConditionPool::buildBoundaryConditions()
 {
-    const auto& neumannUBCData =
-        controlData_->paramsDataAt({"boundaryConditions", "U", "neumann"});
-
-    for (auto& oneBCData : neumannUBCData)
-    {
-        const std::string groupName = oneBCData.at("groupName");
-
-        auto bc = std::make_unique<neumannBC>(oneBCData.at("value"), meshData_);
-
-        groupToUBCMap_.insert({groupName, std::move(bc)});
-    }
-
     const auto& constantValueUBCData = controlData_->paramsDataAt(
         {"boundaryConditions", "U", "constantValue"});
 
@@ -47,8 +35,9 @@ void PUConditionPool::buildBoundaryConditions()
     {
         const std::string groupName = oneBCData.at("groupName");
 
-        auto bc =
-            std::make_unique<ConstantValueBC>(oneBCData.at("value"), meshData_);
+        const auto vel = oneBCData.at("value").get<std::array<double, 3>>();
+
+        auto bc = std::make_unique<ConstantVecValueBC>(vel, meshData_);
         groupToUBCMap_.insert({groupName, std::move(bc)});
     }
 }

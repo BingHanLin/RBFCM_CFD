@@ -75,7 +75,7 @@
         "shapeParameter": 1,
         "timeStepSize": 0.01,
         "endTime": 0.10,
-        "writeInterval": 0.01,
+        "writeInterval": 0.05,
         "dimension": 2,
         "crankNicolsonEpsilon": 0.001,
         "crankNicolsonMaxIter": 10

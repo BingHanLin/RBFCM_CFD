@@ -5,7 +5,7 @@
 #include "ScalarConditionPool.hpp"
 #include "ScalarTransportDomain.hpp"
 #include "enumMap.hpp"
-
+#include "incompressibleDomain.hpp"
 
 #include <cxxopts.hpp>
 #include <fstream>
@@ -66,10 +66,10 @@ int main(int argc, char** argv)
         // ****************************************************************************
         // Define solver
         // ****************************************************************************
-        ScalarTransportDomain myScalarTransportDomain(
-            myControlData.get(), myRBFBasis.get(), myMeshData.get(),
-            myConditionPoolPool.get());
-        myScalarTransportDomain.solveDomain();
+        ScalarTransportDomain mySolverDomain(myControlData.get(),
+                                             myRBFBasis.get(), myMeshData.get(),
+                                             myConditionPoolPool.get());
+        mySolverDomain.solveDomain();
     }
     else
     {
@@ -79,15 +79,13 @@ int main(int argc, char** argv)
         auto myConditionPoolPool = std::make_shared<PUConditionPool>(
             myControlData.get(), myMeshData.get());
 
-        // //
         // ****************************************************************************
-        // // Define solver
-        // //
+        // Define solver
         // ****************************************************************************
-        // ScalarTransportDomain myScalarTransportDomain(
-        //     myControlData.get(), myRBFBasis.get(), myMeshData.get(),
-        //     myConditionPoolPool.get());
-        // myScalarTransportDomain.solveDomain();
+        IncompressibleDomain mySolverDomain(myControlData.get(),
+                                            myRBFBasis.get(), myMeshData.get(),
+                                            myConditionPoolPool.get());
+        mySolverDomain.solveDomain();
     }
 
     std::cout << "test ok" << std::endl;
