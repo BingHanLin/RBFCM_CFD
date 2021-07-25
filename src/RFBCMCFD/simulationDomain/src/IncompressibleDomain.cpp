@@ -80,14 +80,14 @@ void IncompressibleDomain::setupLinearSystem()
     const auto numOfNodes = meshData_->numOfNodes();
 
     // numOfNodes x numOfNodes
-    laplaceMatrix_.data().squeeze();
-    laplaceMatrix_.reserve(
-        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+    // laplaceMatrix_.data().squeeze();
+    // laplaceMatrix_.reserve(
+    //     Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
 
+    laplaceMatrix_.resize(numOfNodes, numOfNodes);
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
         auto cloud = meshData_->cloudByID(nodeID);
-        auto nodes = meshData_->nodes();
 
         Eigen::VectorXd laplaceVector =
             RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
@@ -98,10 +98,11 @@ void IncompressibleDomain::setupLinearSystem()
         }
     }
 
-    // dim_* numOfNodes x numOfNodes
-    firstOrderDerMatrix_.data().squeeze();
-    firstOrderDerMatrix_.reserve(
-        Eigen::VectorXi::Constant(dim_ * numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+    // dim_* numOfNodes x numOfNodes firstOrderDerMatrix_.data().squeeze();
+    // firstOrderDerMatrix_.reserve(
+    //     Eigen::VectorXi::Constant(dim_ * numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+
+    firstOrderDerMatrix_.resize(numOfNodes * dim_, numOfNodes);
 
     for (size_t d = 0; d < dim_; ++d)
     {
@@ -111,8 +112,8 @@ void IncompressibleDomain::setupLinearSystem()
         {
             const auto cloud = meshData_->cloudByID(nodeID);
 
-            Eigen::VectorXd firstDerVector = RBFBasis_->collectOnNodes(
-                start + nodeID, firstOrderOperatorTypes[d]);
+            Eigen::VectorXd firstDerVector =
+                RBFBasis_->collectOnNodes(nodeID, firstOrderOperatorTypes[d]);
 
             for (size_t i = 0; i < cloud.size_; i++)
             {
@@ -150,9 +151,11 @@ void IncompressibleDomain::assembleCoeffMatrix()
 
     const auto numOfNodes = meshData_->numOfNodes();
 
-    velCoeffMatrix_.data().squeeze();
-    velCoeffMatrix_.reserve(
-        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+    // velCoeffMatrix_.data().squeeze();
+    // velCoeffMatrix_.reserve(
+    //     Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+
+    velCoeffMatrix_.resize(numOfNodes, numOfNodes);
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
@@ -170,31 +173,39 @@ void IncompressibleDomain::assembleCoeffMatrix()
         }
     }
 
-    phiCoeffMatrix_.data().squeeze();
-    phiCoeffMatrix_.reserve(
-        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+    // phiCoeffMatrix_.data().squeeze();
+    // phiCoeffMatrix_.reserve(
+    //     Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+
+    phiCoeffMatrix_.resize(numOfNodes, numOfNodes);
+
     bool refPhiGiven = false;
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
         if (conditionPool_->UBCByNodeID(nodeID) != nullptr)
         {
-            const auto cloud = meshData_->cloudByID(nodeID);
-
-            Eigen::VectorXd localVector =
-                RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::NEUMANN);
-            for (size_t i = 0; i < localVector.size(); i++)
-            {
-                phiCoeffMatrix_.insert(nodeID, cloud.ids_[i]) = localVector[i];
-            }
-        }
-        else
-        {
             if (refPhiGiven == false)
             {
                 phiCoeffMatrix_.insert(nodeID, nodeID) = 1.0;
                 refPhiGiven = true;
             }
+            else
+            {
+                const auto cloud = meshData_->cloudByID(nodeID);
+
+                Eigen::VectorXd localVector =
+                    RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::NEUMANN);
+                for (size_t i = 0; i < localVector.size(); i++)
+                {
+                    phiCoeffMatrix_.insert(nodeID, cloud.ids_[i]) =
+                        localVector[i];
+                }
+            }
+        }
+        else
+        {
+            phiCoeffMatrix_.row(nodeID) = laplaceMatrix_.row(nodeID);
         }
     }
 }
@@ -238,9 +249,6 @@ Eigen::VectorXd IncompressibleDomain::crankNicolsonU(
 
         temp1 = temp2;
 
-        std::cout << "CrankNicolson error at " << iterNum << " = " << std::fixed
-                  << std::setprecision(10) << currError << std::endl;
-
         iterNum++;
 
         if (iterNum > crankNicolsonMaxIter_) break;
@@ -271,13 +279,12 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
             for (int d = 0; d < dim_; ++d)
             {
                 const auto start = d * numOfNodes;
-                const auto end = (d + 1) * numOfNodes;
 
                 for (int dd = 0; dd < dim_; ++dd)
                 {
                     const double velGrad =
                         firstOrderDerMatrix_.row(dd * numOfNodes + nodeID) *
-                        velHalf.segment(start, end);
+                        velHalf.segment(start, numOfNodes);
 
                     RHS(start + nodeID) +=
                         velGrad * velHalf(dd * numOfNodes + nodeID);
@@ -288,11 +295,11 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
                     (2.0 / tStepSize_ / viscosity_) * velHalf(start + nodeID);
 
                 const double pGrad = firstOrderDerMatrix_.row(start + nodeID) *
-                                     pSol.segment(start, end);
+                                     pSol.segment(start, numOfNodes);
                 RHS(start + nodeID) += pGrad * (2.0 / viscosity_);
 
-                const double velLaplacian = laplaceMatrix_.row(start + nodeID) *
-                                            velSol.segment(start, end);
+                const double velLaplacian = laplaceMatrix_.row(nodeID) *
+                                            velSol.segment(start, numOfNodes);
                 RHS(start + nodeID) -= velLaplacian;
             }
         }
@@ -313,8 +320,8 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
     for (int d = 0; d < dim_; ++d)
     {
         const auto start = d * numOfNodes;
-        const auto end = (d + 1) * numOfNodes;
-        velOut.segment(start, end) = solver.solve(RHS.segment(start, end));
+        velOut.segment(start, numOfNodes) =
+            solver.solve(RHS.segment(start, numOfNodes));
     }
 
     return velOut;
@@ -353,11 +360,10 @@ void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
             for (int d = 0; d < dim_; ++d)
             {
                 const auto start = d * numOfNodes;
-                const auto end = (d + 1) * numOfNodes;
 
                 const double velSGrad =
                     firstOrderDerMatrix_.row(start + nodeID) *
-                    velS.segment(start, end);
+                    velS.segment(start, numOfNodes);
 
                 RHS(nodeID) += velSGrad / tStepSize_;
             }
@@ -375,7 +381,6 @@ void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
     solver.factorize(phiCoeffMatrix_);
     // Use the factors to solve the linear system
     const Eigen::VectorXd phi = solver.solve(RHS);
-
     pSolNext += phi;
     pSolNext -= (viscosity_ * tStepSize_ / 2.0) * laplaceMatrix_ * phi;
 
@@ -386,11 +391,10 @@ void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
             for (int d = 0; d < dim_; ++d)
             {
                 const auto start = d * numOfNodes;
-                const auto end = (d + 1) * numOfNodes;
 
                 const double phiGrad =
                     firstOrderDerMatrix_.row(start + nodeID) *
-                    phi.segment(start, end);
+                    phi.segment(start, numOfNodes);
 
                 velSolNext(nodeID) -= phiGrad / tStepSize_;
             }
@@ -432,10 +436,8 @@ void IncompressibleDomain::writeDataToVTK() const
 
     pugi::xml_node PointData = Piece.append_child("PointData");
 
-    const Eigen::VectorXd uSol =
-        velSol_.segment(numOfNodes * 0, numOfNodes * 1);
-    const Eigen::VectorXd vSol =
-        velSol_.segment(numOfNodes * 1, numOfNodes * 2);
+    const Eigen::VectorXd uSol = velSol_.segment(0, numOfNodes);
+    const Eigen::VectorXd vSol = velSol_.segment(numOfNodes, numOfNodes);
     // const Eigen::VectorXd wSol =
     //     velSol_.segment(numOfNodes * 2, numOfNodes * 3);
 
