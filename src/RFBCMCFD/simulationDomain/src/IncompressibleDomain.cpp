@@ -9,6 +9,7 @@
 #include "freeFunctions.hpp"
 
 #include "Rectangle.hpp"
+#include "freeFunctions.hpp"
 #include "pugixml.hpp"
 #include "vtkFileIO.hpp"
 
@@ -239,7 +240,8 @@ void IncompressibleDomain::solveDomain()
         velSol_ = velSolNext;
         pSol_ = pSolNext;
 
-        if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+        if (writeNow(currentTime_, writeInterval_, tStepSize_))
+            writeDataToVTK();
     }
 }
 
@@ -265,12 +267,12 @@ Eigen::VectorXd IncompressibleDomain::crankNicolsonU(
 
         iterNum++;
 
-        std::cout << "..............iterNum: " << iterNum
-                  << ", currError: " << currError << std::endl;
-
         if (iterNum > crankNicolsonMaxIter_) break;
 
     } while (currError > crankNicolsonEpsilon_);
+
+    std::cout << "CrankNicolson iterNum: " << iterNum
+              << ", error: " << currError << std::endl;
 
     return temp2;
 }
@@ -410,10 +412,9 @@ void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
                 const auto start = d * numOfNodes;
 
                 const double phiGrad =
-                    firstOrderDerMatrix_.row(start + nodeID) *
-                    phi.segment(start, numOfNodes);
+                    firstOrderDerMatrix_.row(start + nodeID) * phi;
 
-                velSolNext(nodeID) -= phiGrad / tStepSize_;
+                velSolNext(start + nodeID) -= phiGrad * tStepSize_;
             }
         }
     }

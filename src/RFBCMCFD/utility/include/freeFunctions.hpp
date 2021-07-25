@@ -1,3 +1,6 @@
+#ifndef FREEFUNCTIONS_HPP
+#define FREEFUNCTIONS_HPP
+
 #include <algorithm>  // std::sort, std::stable_sort
 #include <numeric>    // std::iota
 #include <vector>
@@ -5,7 +8,7 @@
 using namespace std;
 
 template <typename T>
-std::vector<size_t> sortIndexes(const std::vector<T> &vec)
+std::vector<size_t> sortIndexes(const std::vector<T>& vec)
 {
     // initialize original index locations
     std::vector<size_t> idx(vec.size());
@@ -21,3 +24,14 @@ std::vector<size_t> sortIndexes(const std::vector<T> &vec)
 
     return idx;
 }
+
+bool inline writeNow(const double& currentTime, const double& writeInterval,
+                     const double& tStepSize)
+{
+    return (std::remainder(currentTime, writeInterval) / tStepSize <
+                0.5 - 10e-13 &&
+            std::remainder(currentTime, writeInterval) / tStepSize >=
+                -0.5 - 10e-13);
+}
+
+#endif

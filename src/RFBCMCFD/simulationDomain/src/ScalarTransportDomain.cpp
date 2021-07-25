@@ -9,6 +9,7 @@
 #include "freeFunctions.hpp"
 
 #include "Rectangle.hpp"
+#include "freeFunctions.hpp"
 #include "pugixml.hpp"
 #include "vtkFileIO.hpp"
 
@@ -305,7 +306,9 @@ void ScalarTransportDomain::solveDomain()
             assembleRhs();
             solveMatrix();
             currentTime_ += tStepSize_;
-            if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+
+            if (writeNow(currentTime_, writeInterval_, tStepSize_))
+                writeDataToVTK();
         }
     }
 }

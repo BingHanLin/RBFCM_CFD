@@ -71,13 +71,13 @@
         }
     },
     "solverControl": {
-        "neighborRadius": 0.07,
-        "shapeParameter": 0.6,
-        "timeStepSize": 0.001,
-        "endTime": 0.10,
-        "writeInterval": 0.05,
+        "neighborRadius": 0.11,
+        "shapeParameter": 1,
+        "timeStepSize": 0.0005,
+        "endTime": 0.1,
+        "writeInterval": 0.01,
         "dimension": 2,
-        "crankNicolsonEpsilon": 10e-5,
-        "crankNicolsonMaxIter": 15
+        "crankNicolsonEpsilon": 10e-8,
+        "crankNicolsonMaxIter": 40
     }
 }
