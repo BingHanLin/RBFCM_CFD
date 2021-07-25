@@ -49,20 +49,19 @@ class IncompressibleDomain
     size_t dim_;
     double currentTime_;
 
+    const std::array<rbfOperatorType, 3> firstOrderOperatorTypes = {
+        rbfOperatorType::PARTIAL_D1, rbfOperatorType::PARTIAL_D2,
+        rbfOperatorType::PARTIAL_D3};
+
     // matrix
-    Eigen::VectorXd velRhs_;
     Eigen::VectorXd velSol_;
-    Eigen::VectorXd preVelSol_;
     Eigen::VectorXd pSol_;
-    Eigen::VectorXd prePSol_;
 
     Eigen::SparseMatrix<double, Eigen::RowMajor> phiCoeffMatrix_;
     Eigen::SparseMatrix<double, Eigen::RowMajor> velCoeffMatrix_;
 
     Eigen::SparseMatrix<double, Eigen::RowMajor> laplaceMatrix_;
-    Eigen::SparseMatrix<double, Eigen::RowMajor> dxMatrix_;
-    Eigen::SparseMatrix<double, Eigen::RowMajor> dyMatrix_;
-    Eigen::SparseMatrix<double, Eigen::RowMajor> dzMatrix_;
+    Eigen::SparseMatrix<double, Eigen::RowMajor> firstOrderDerMatrix_;
 
     void setupSimulation();
     void initializeField();
@@ -72,5 +71,12 @@ class IncompressibleDomain
     void solveMatrix();
     void writeDataToVTK() const;
     void clearVTKDirectory() const;
+
+    Eigen::VectorXd crankNicolsonU(const Eigen::VectorXd& prePSol,
+                                   const Eigen::VectorXd& preVelSol);
+
+    Eigen::VectorXd innerCrankNicolsonU(const Eigen::VectorXd& prePSol,
+                                        const Eigen::VectorXd& preVelSol,
+                                        const Eigen::VectorXd& velTemp);
 };
 #endif

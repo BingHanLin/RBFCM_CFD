@@ -79,13 +79,10 @@ void IncompressibleDomain::setupLinearSystem()
 
     const auto numOfNodes = meshData_->numOfNodes();
 
+    // numOfNodes x numOfNodes
     laplaceMatrix_.data().squeeze();
     laplaceMatrix_.reserve(
         Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
-
-    dxMatrix_.resize(numOfNodes, numOfNodes);
-    dyMatrix_.resize(numOfNodes, numOfNodes);
-    dzMatrix_.resize(numOfNodes, numOfNodes);
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
@@ -94,19 +91,34 @@ void IncompressibleDomain::setupLinearSystem()
 
         Eigen::VectorXd laplaceVector =
             RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
-        Eigen::VectorXd dxVector =
-            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D1);
-        Eigen::VectorXd dyVector =
-            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D2);
-        Eigen::VectorXd dzVector =
-            RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::PARTIAL_D3);
 
         for (size_t i = 0; i < cloud.size_; i++)
         {
             laplaceMatrix_.insert(nodeID, cloud.ids_[i]) = laplaceVector[i];
-            dxMatrix_.insert(nodeID, cloud.ids_[i]) = dxVector[i];
-            dyMatrix_.insert(nodeID, cloud.ids_[i]) = dyVector[i];
-            dzMatrix_.insert(nodeID, cloud.ids_[i]) = dzVector[i];
+        }
+    }
+
+    // dim_* numOfNodes x numOfNodes
+    firstOrderDerMatrix_.data().squeeze();
+    firstOrderDerMatrix_.reserve(
+        Eigen::VectorXi::Constant(dim_ * numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+
+    for (size_t d = 0; d < dim_; ++d)
+    {
+        const auto start = d * numOfNodes;
+
+        for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+        {
+            const auto cloud = meshData_->cloudByID(nodeID);
+
+            Eigen::VectorXd firstDerVector = RBFBasis_->collectOnNodes(
+                start + nodeID, firstOrderOperatorTypes[d]);
+
+            for (size_t i = 0; i < cloud.size_; i++)
+            {
+                firstOrderDerMatrix_.insert(start + nodeID, cloud.ids_[i]) =
+                    firstDerVector[i];
+            }
         }
     }
 }
@@ -116,7 +128,7 @@ void IncompressibleDomain::initializeField()
     const auto numOfNodes = meshData_->numOfNodes();
 
     velSol_.resize(dim_ * numOfNodes);
-    pSol_.resize(dim_ * numOfNodes);
+    pSol_.resize(numOfNodes);
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
@@ -130,9 +142,6 @@ void IncompressibleDomain::initializeField()
             conditionPool_->UIC()->fillVector(nodeID, velSol_);
         }
     }
-
-    preVelSol_ = velSol_;
-    prePSol_ = pSol_;
 }
 
 void IncompressibleDomain::assembleCoeffMatrix()
@@ -141,15 +150,10 @@ void IncompressibleDomain::assembleCoeffMatrix()
 
     const auto numOfNodes = meshData_->numOfNodes();
 
-    phiCoeffMatrix_.data().squeeze();
-    phiCoeffMatrix_.reserve(
-        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
-
     velCoeffMatrix_.data().squeeze();
     velCoeffMatrix_.reserve(
         Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
 
-    bool refPhiGiven = false;
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
         if (conditionPool_->UBCByNodeID(nodeID) != nullptr)
@@ -165,6 +169,11 @@ void IncompressibleDomain::assembleCoeffMatrix()
                 2.0 / viscosity_ / tStepSize_;
         }
     }
+
+    phiCoeffMatrix_.data().squeeze();
+    phiCoeffMatrix_.reserve(
+        Eigen::VectorXi::Constant(numOfNodes, ESTIMATE_NEIGHBOR_NUM));
+    bool refPhiGiven = false;
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
@@ -280,29 +289,126 @@ void IncompressibleDomain::solveMatrix()
     // preVarSol_ = varSol_;
 }
 
+Eigen::VectorXd IncompressibleDomain::crankNicolsonU(
+    const Eigen::VectorXd& prePSol, const Eigen::VectorXd& preVelSol)
+{
+    Eigen::VectorXd temp1(preVelSol);
+    Eigen::VectorXd temp2(preVelSol);
+    Eigen::VectorXd temp3(preVelSol);
+
+    double currError;
+    size_t iterNum = 0;
+
+    do
+    {
+        temp2 = innerCrankNicolsonU(prePSol, preVelSol, temp1);
+
+        temp3 = temp1 - temp2;
+
+        currError = temp3.lpNorm<1>() / temp2.lpNorm<1>();
+
+        temp1 = temp2;
+
+        std::cout << "CrankNicolson error at " << iterNum << " = " << std::fixed
+                  << std::setprecision(10) << currError << std::endl;
+
+        iterNum++;
+
+        if (iterNum > crankNicolsonMaxIter_) break;
+
+    } while (currError > crankNicolsonEpsilon_);
+
+    return temp2;
+}
+
+Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
+    const Eigen::VectorXd& prePSol, const Eigen::VectorXd& preVelSol,
+    const Eigen::VectorXd& velTemp)
+{
+    Eigen::VectorXd velHalf = velTemp * 0.5 + preVelSol * 0.5;
+
+    Eigen::VectorXd RHS = Eigen::VectorXd::Zero(preVelSol.size());
+
+    const auto numOfNodes = meshData_->numOfNodes();
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+    {
+        if (conditionPool_->UBCByNodeID(nodeID) != nullptr)
+        {
+            conditionPool_->UBCByNodeID(nodeID)->fillRhsVector(nodeID,
+                                                               RBFBasis_, RHS);
+        }
+        else
+        {
+            for (int d = 0; d < dim_; ++d)
+            {
+                const auto start = d * numOfNodes;
+                const auto end = (d + 1) * numOfNodes;
+
+                for (int dd = 0; dd < dim_; ++dd)
+                {
+                    double velGrad =
+                        firstOrderDerMatrix_.row(dd * numOfNodes + nodeID) *
+                        velHalf.segment(start, end);
+
+                    RHS(start + nodeID) +=
+                        velGrad * velHalf(dd * numOfNodes + nodeID);
+                }
+
+                RHS(start + nodeID) =
+                    2.0 * RHS(start + nodeID) / viscosity_ -
+                    (2.0 / tStepSize_ / viscosity_) * velHalf(start + nodeID);
+
+                double pGrad = firstOrderDerMatrix_.row(start + nodeID) *
+                               prePSol.segment(start, end);
+                RHS(start + nodeID) += pGrad * (2.0 / viscosity_);
+
+                double velLaplacian = laplaceMatrix_.row(start + nodeID) *
+                                      preVelSol.segment(start, end);
+                RHS(start + nodeID) -= velLaplacian;
+            }
+        }
+    }
+
+    auto velOut = Eigen::VectorXd::Zero(preVelSol.size());
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::RowMajor>,
+                    Eigen::COLAMDOrdering<int>>
+        solver;
+
+    // Compute the ordering permutation vector from the structural
+    // pattern of A
+    solver.analyzePattern(velCoeffMatrix_);
+    // Compute the numerical factorization
+    solver.factorize(velCoeffMatrix_);
+    // Use the factors to solve the linear system
+    for (int d = 0; d < dim_; ++d)
+    {
+        const auto start = d * numOfNodes;
+        const auto end = (d + 1) * numOfNodes;
+        velOut.segment(start, end) = solver.solve(RHS.segment(start, end));
+    }
+
+    return velOut;
+}
+
 void IncompressibleDomain::solveDomain()
 {
-    // assembleCoeffMatrix();
+    assembleCoeffMatrix();
 
-    // if (systemSateType_ == systemSateType::STEADY)
-    // {
-    //     assembleRhs();
-    //     solveMatrix();
-    //     writeDataToVTK();
-    // }
-    // else
-    // {
-    //     writeDataToVTK();
+    writeDataToVTK();
 
-    //     while (currentTime_ < endTime_)
-    //     {
-    //         assembleRhs();
-    //         solveMatrix();
-    //         currentTime_ += tStepSize_;
-    //         if (remainder(currentTime_, writeInterval_) <= 0)
-    //         writeDataToVTK();
-    //     }
-    // }
+    auto preVelSol = velSol_;
+    auto prePSol = pSol_;
+
+    while (currentTime_ < endTime_)
+    {
+        crankNicolsonU(prePSol, preVelSol);
+
+        assembleRhs();
+        solveMatrix();
+        currentTime_ += tStepSize_;
+        if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+    }
 }
 
 void IncompressibleDomain::clearVTKDirectory() const
@@ -344,8 +450,10 @@ void IncompressibleDomain::writeDataToVTK() const
 
     // // std::filesystem::create_directories(vtkDir());
 
-    // const std::string childFileNmae = controlData_->vtkDir().string() + "/" +
-    //                                   std::to_string(currentTime_) + ".vtu";
+    // const std::string childFileNmae = controlData_->vtkDir().string() +
+    // "/" +
+    //                                   std::to_string(currentTime_) +
+    //                                   ".vtu";
     // doc.save_file(childFileNmae.c_str());
 
     // const std::string relChildFileNmae = std::to_string(currentTime_) +
