@@ -199,109 +199,38 @@ void IncompressibleDomain::assembleCoeffMatrix()
     }
 }
 
-void IncompressibleDomain::assembleRhs()
+void IncompressibleDomain::solveDomain()
 {
-    // std::cout << "#assembleRhs" << std::endl;
+    assembleCoeffMatrix();
 
-    // Eigen::VectorXd rhsInnerVector =
-    //     Eigen::VectorXd::Zero(meshData_->numOfNodes());
+    writeDataToVTK();
 
-    // if (systemSateType_ == systemSateType::TRANSIENT)
-    // {
-    //     rhsInnerVector = preVarSol_;
+    Eigen::VectorXd velSolNext = velSol_;
+    Eigen::VectorXd pSolNext = pSol_;
 
-    //     rhsInnerVector +=
-    //         ((1 - theta_) * tStepSize_ * diffusionCoeff_ * laplaceMatrix_) *
-    //         preVarSol_;
+    while (currentTime_ < endTime_)
+    {
+        Eigen::VectorXd velS = crankNicolsonU(pSol_, velSol_);
+        solvePU(pSol_, velS, pSolNext, velSolNext);
 
-    //     rhsInnerVector +=
-    //         ((1 - theta_) * tStepSize_ * convectionVel_[0] * dxMatrix_ +
-    //          (1 - theta_) * tStepSize_ * convectionVel_[1] * dyMatrix_ +
-    //          (1 - theta_) * tStepSize_ * convectionVel_[2] * dzMatrix_) *
-    //         preVarSol_;
-    // }
-
-    // for (size_t nodeID = 0; nodeID < meshData_->numOfNodes(); ++nodeID)
-    // {
-    //     auto cloud = meshData_->cloudByID(nodeID);
-
-    //     if (conditionPool_->BCByNodeID(nodeID) == nullptr)
-    //     {
-    //         varRhs_(nodeID) = rhsInnerVector(nodeID);
-    //     }
-    //     else
-    //     {
-    //         conditionPool_->BCByNodeID(nodeID)->fillRhsVector(nodeID,
-    //         RBFBasis_,
-    //                                                           varRhs_);
-    //     }
-    // }
-}
-
-void IncompressibleDomain::solveMatrix()
-{
-    // std::cout << "#solveMatrix" << std::endl;
-
-    // // =========================================
-    // // Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double,
-    // Eigen::RowMajor>> solver;
-    // // solver.compute(varCoeffMatrix_);
-
-    // // if (solver.info() != Eigen::Success)
-    // // {
-    // //     std::cout << " decomposition failed" << std::endl;
-    // //     return;
-    // // }
-    // // // solution_ = solver.solveWithGuess(rhs, x0);
-    // // varSol_ = solver.solve(varRhs_);
-
-    // // std::cout << "#iterations:     " << solver.iterations() << std::endl;
-    // // std::cout << "estimated error: " << solver.error() << std::endl;
-
-    // // varSol_ = solver.solve(varRhs_);
-
-    // // =========================================
-    // Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::RowMajor>,
-    // Eigen::COLAMDOrdering<int>>
-    //     solver;
-
-    // // Compute the ordering permutation vector from the structural
-    // // pattern of A
-    // solver.analyzePattern(varCoeffMatrix_);
-    // // Compute the numerical factorization
-    // solver.factorize(varCoeffMatrix_);
-    // // Use the factors to solve the linear system
-    // varSol_ = solver.solve(varRhs_);
-    // // =========================================
-
-    // // fill A and b
-    // // Eigen::ConjugateGradient<Eigen::SparseMatrix<double, Eigen::RowMajor>,
-    // //                          Eigen::Lower | Eigen::Upper>
-    // //     cg;
-    // // cg.compute(varCoeffMatrix_);
-    // // varSol_ = cg.solve(varRhs_);
-    // // std::cout << "#iterations:     " << cg.iterations() << std::endl;
-    // // std::cout << "estimated error: " << cg.error() << std::endl;
-    // // // update b, and solve again
-    // // varSol_ = cg.solve(varRhs_);
-    // // =========================================
-
-    // preVarSol_ = varSol_;
+        currentTime_ += tStepSize_;
+        if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+    }
 }
 
 Eigen::VectorXd IncompressibleDomain::crankNicolsonU(
-    const Eigen::VectorXd& prePSol, const Eigen::VectorXd& preVelSol)
+    const Eigen::VectorXd& pSol, const Eigen::VectorXd& velSol) const
 {
-    Eigen::VectorXd temp1(preVelSol);
-    Eigen::VectorXd temp2(preVelSol);
-    Eigen::VectorXd temp3(preVelSol);
+    Eigen::VectorXd temp1(velSol);
+    Eigen::VectorXd temp2(velSol);
+    Eigen::VectorXd temp3(velSol);
 
     double currError;
     size_t iterNum = 0;
 
     do
     {
-        temp2 = innerCrankNicolsonU(prePSol, preVelSol, temp1);
+        temp2 = innerCrankNicolsonU(pSol, velSol, temp1);
 
         temp3 = temp1 - temp2;
 
@@ -322,12 +251,12 @@ Eigen::VectorXd IncompressibleDomain::crankNicolsonU(
 }
 
 Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
-    const Eigen::VectorXd& prePSol, const Eigen::VectorXd& preVelSol,
-    const Eigen::VectorXd& velTemp)
+    const Eigen::VectorXd& pSol, const Eigen::VectorXd& velSol,
+    const Eigen::VectorXd& velTemp) const
 {
-    Eigen::VectorXd velHalf = velTemp * 0.5 + preVelSol * 0.5;
+    Eigen::VectorXd velHalf = velTemp * 0.5 + velSol * 0.5;
 
-    Eigen::VectorXd RHS = Eigen::VectorXd::Zero(preVelSol.size());
+    Eigen::VectorXd RHS = Eigen::VectorXd::Zero(velSol.size());
 
     const auto numOfNodes = meshData_->numOfNodes();
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
@@ -346,7 +275,7 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
 
                 for (int dd = 0; dd < dim_; ++dd)
                 {
-                    double velGrad =
+                    const double velGrad =
                         firstOrderDerMatrix_.row(dd * numOfNodes + nodeID) *
                         velHalf.segment(start, end);
 
@@ -358,18 +287,18 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
                     2.0 * RHS(start + nodeID) / viscosity_ -
                     (2.0 / tStepSize_ / viscosity_) * velHalf(start + nodeID);
 
-                double pGrad = firstOrderDerMatrix_.row(start + nodeID) *
-                               prePSol.segment(start, end);
+                const double pGrad = firstOrderDerMatrix_.row(start + nodeID) *
+                                     pSol.segment(start, end);
                 RHS(start + nodeID) += pGrad * (2.0 / viscosity_);
 
-                double velLaplacian = laplaceMatrix_.row(start + nodeID) *
-                                      preVelSol.segment(start, end);
+                const double velLaplacian = laplaceMatrix_.row(start + nodeID) *
+                                            velSol.segment(start, end);
                 RHS(start + nodeID) -= velLaplacian;
             }
         }
     }
 
-    auto velOut = Eigen::VectorXd::Zero(preVelSol.size());
+    Eigen::VectorXd velOut = Eigen::VectorXd::Zero(velSol.size());
 
     Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::RowMajor>,
                     Eigen::COLAMDOrdering<int>>
@@ -391,23 +320,81 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
     return velOut;
 }
 
-void IncompressibleDomain::solveDomain()
+void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
+                                   const Eigen::VectorXd& velS,
+                                   Eigen::VectorXd& pSolNext,
+                                   Eigen::VectorXd& velSolNext) const
 {
-    assembleCoeffMatrix();
+    const auto numOfNodes = meshData_->numOfNodes();
 
-    writeDataToVTK();
+    pSolNext = pSol;
+    velSolNext = velS;
 
-    auto preVelSol = velSol_;
-    auto prePSol = pSol_;
+    Eigen::VectorXd RHS = Eigen::VectorXd::Zero(numOfNodes);
 
-    while (currentTime_ < endTime_)
+    bool refPhiGiven = false;
+
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
     {
-        crankNicolsonU(prePSol, preVelSol);
+        if (conditionPool_->UBCByNodeID(nodeID) != nullptr)
+        {
+            if (refPhiGiven == false)
+            {
+                RHS(nodeID) = 0.0;  // reference Phi value
+                refPhiGiven = true;
+            }
+            else
+            {
+                RHS(nodeID) = 0.0;
+            }
+        }
+        else
+        {
+            for (int d = 0; d < dim_; ++d)
+            {
+                const auto start = d * numOfNodes;
+                const auto end = (d + 1) * numOfNodes;
 
-        assembleRhs();
-        solveMatrix();
-        currentTime_ += tStepSize_;
-        if (remainder(currentTime_, writeInterval_) <= 0) writeDataToVTK();
+                const double velSGrad =
+                    firstOrderDerMatrix_.row(start + nodeID) *
+                    velS.segment(start, end);
+
+                RHS(nodeID) += velSGrad / tStepSize_;
+            }
+        }
+    }
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::RowMajor>,
+                    Eigen::COLAMDOrdering<int>>
+        solver;
+
+    // Compute the ordering permutation vector from the structural
+    // pattern of A
+    solver.analyzePattern(phiCoeffMatrix_);
+    // Compute the numerical factorization
+    solver.factorize(phiCoeffMatrix_);
+    // Use the factors to solve the linear system
+    const Eigen::VectorXd phi = solver.solve(RHS);
+
+    pSolNext += phi;
+    pSolNext -= (viscosity_ * tStepSize_ / 2.0) * laplaceMatrix_ * phi;
+
+    for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
+    {
+        if (conditionPool_->UBCByNodeID(nodeID) == nullptr)
+        {
+            for (int d = 0; d < dim_; ++d)
+            {
+                const auto start = d * numOfNodes;
+                const auto end = (d + 1) * numOfNodes;
+
+                const double phiGrad =
+                    firstOrderDerMatrix_.row(start + nodeID) *
+                    phi.segment(start, end);
+
+                velSolNext(nodeID) -= phiGrad / tStepSize_;
+            }
+        }
     }
 }
 
@@ -427,39 +414,48 @@ void IncompressibleDomain::clearVTKDirectory() const
 
 void IncompressibleDomain::writeDataToVTK() const
 {
-    // pugi::xml_document doc;
-    // pugi::xml_node VTKFile = doc.append_child("VTKFile");
-    // VTKFile.append_attribute("type") = "UnstructuredGrid";
-    // VTKFile.append_attribute("version") = "0.1";
-    // VTKFile.append_attribute("byte_order") = "LittleEndian";
-    // pugi::xml_node UnstructuredGrid =
-    // VTKFile.append_child("UnstructuredGrid");
+    const auto numOfNodes = meshData_->numOfNodes();
 
-    // pugi::xml_node Piece = UnstructuredGrid.append_child("Piece");
-    // Piece.append_attribute("NumberOfPoints") = meshData_->numOfNodes();
-    // Piece.append_attribute("NumberOfCells") = meshData_->numOfNodes();
+    pugi::xml_document doc;
+    pugi::xml_node VTKFile = doc.append_child("VTKFile");
+    VTKFile.append_attribute("type") = "UnstructuredGrid";
+    VTKFile.append_attribute("version") = "0.1";
+    VTKFile.append_attribute("byte_order") = "LittleEndian";
+    pugi::xml_node UnstructuredGrid = VTKFile.append_child("UnstructuredGrid");
 
-    // pugi::xml_node Points = Piece.append_child("Points");
-    // appendArrayToVTKNode(meshData_->nodes(), "Position", Points);
+    pugi::xml_node Piece = UnstructuredGrid.append_child("Piece");
+    Piece.append_attribute("NumberOfPoints") = numOfNodes;
+    Piece.append_attribute("NumberOfCells") = numOfNodes;
 
-    // pugi::xml_node PointData = Piece.append_child("PointData");
-    // appendScalarsToVTKNode(varSol_, "Variable", PointData);
+    pugi::xml_node Points = Piece.append_child("Points");
+    appendArrayToVTKNode(meshData_->nodes(), "Position", Points);
 
-    // pugi::xml_node Cells = Piece.append_child("Cells");
-    // addCells(meshData_->numOfNodes(), Cells);
+    pugi::xml_node PointData = Piece.append_child("PointData");
 
-    // // std::filesystem::create_directories(vtkDir());
+    const Eigen::VectorXd uSol =
+        velSol_.segment(numOfNodes * 0, numOfNodes * 1);
+    const Eigen::VectorXd vSol =
+        velSol_.segment(numOfNodes * 1, numOfNodes * 2);
+    const Eigen::VectorXd wSol =
+        velSol_.segment(numOfNodes * 2, numOfNodes * 3);
 
-    // const std::string childFileNmae = controlData_->vtkDir().string() +
-    // "/" +
-    //                                   std::to_string(currentTime_) +
-    //                                   ".vtu";
-    // doc.save_file(childFileNmae.c_str());
+    appendScalarsToVTKNode(uSol, "u", PointData);
+    appendScalarsToVTKNode(vSol, "v", PointData);
+    appendScalarsToVTKNode(wSol, "w", PointData);
+    appendScalarsToVTKNode(pSol_, "p", PointData);
 
-    // const std::string relChildFileNmae = std::to_string(currentTime_) +
-    // ".vtu";
+    pugi::xml_node Cells = Piece.append_child("Cells");
+    addCells(numOfNodes, Cells);
 
-    // const std::string gourpFileName =
-    //     controlData_->vtkDir().string() + "/result.pvd";
-    // writeVTKGroupFile(gourpFileName, relChildFileNmae, currentTime_);
+    // std::filesystem::create_directories(vtkDir());
+
+    const std::string childFileNmae = controlData_->vtkDir().string() + "/" +
+                                      std::to_string(currentTime_) + ".vtu";
+    doc.save_file(childFileNmae.c_str());
+
+    const std::string relChildFileNmae = std::to_string(currentTime_) + ".vtu";
+
+    const std::string gourpFileName =
+        controlData_->vtkDir().string() + "/result.pvd";
+    writeVTKGroupFile(gourpFileName, relChildFileNmae, currentTime_);
 }

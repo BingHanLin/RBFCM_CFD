@@ -67,16 +67,17 @@ class IncompressibleDomain
     void initializeField();
     void setupLinearSystem();
     void assembleCoeffMatrix();
-    void assembleRhs();
-    void solveMatrix();
     void writeDataToVTK() const;
     void clearVTKDirectory() const;
 
-    Eigen::VectorXd crankNicolsonU(const Eigen::VectorXd& prePSol,
-                                   const Eigen::VectorXd& preVelSol);
+    Eigen::VectorXd crankNicolsonU(const Eigen::VectorXd& pSol,
+                                   const Eigen::VectorXd& velSol) const;
 
-    Eigen::VectorXd innerCrankNicolsonU(const Eigen::VectorXd& prePSol,
-                                        const Eigen::VectorXd& preVelSol,
-                                        const Eigen::VectorXd& velTemp);
+    Eigen::VectorXd innerCrankNicolsonU(const Eigen::VectorXd& pSol,
+                                        const Eigen::VectorXd& velSol,
+                                        const Eigen::VectorXd& velTemp) const;
+
+    void solvePU(const Eigen::VectorXd& pSol, const Eigen::VectorXd& velS,
+                 Eigen::VectorXd& pSolNext, Eigen::VectorXd& velSolNext) const;
 };
 #endif
