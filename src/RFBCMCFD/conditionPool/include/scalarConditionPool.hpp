@@ -32,9 +32,13 @@ class ScalarConditionPool
     MeshData* meshData_;
     std::unique_ptr<InitialCondition> IC_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToBCMap_;
+    std::vector<std::string> nodesToBCName_;
 
     void buildInitialConditions();
     void buildBoundaryConditions();
+    void buildNodesToConditions();
+
+    std::vector<std::string> BCNames() const;
 };
 
 #endif

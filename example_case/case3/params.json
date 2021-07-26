@@ -28,7 +28,7 @@
                     ]
                 },
                 {
-                    "groupName": "rigth",
+                    "groupName": "right",
                     "value": [
                         0.0,
                         0.0,
@@ -73,11 +73,11 @@
     "solverControl": {
         "neighborRadius": 0.11,
         "shapeParameter": 1,
-        "timeStepSize": 0.0005,
-        "endTime": 0.1,
-        "writeInterval": 0.01,
+        "timeStepSize": 0.001,
+        "endTime": 1.0,
+        "writeInterval": 0.1,
         "dimension": 2,
         "crankNicolsonEpsilon": 10e-8,
-        "crankNicolsonMaxIter": 40
+        "crankNicolsonMaxIter": 25
     }
 }

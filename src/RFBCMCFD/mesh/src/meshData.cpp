@@ -12,14 +12,11 @@ MeshData::MeshData(ControlData* controlData)
 
       nodes_(),
       normals_(),
-      nodesToGroupName_(),
       groupNameToNodesMap_()
 {
     std::cout << "MeshData" << std::endl;
 
     meshType meshType = controlData_->paramsDataAt({"geometryControl", "type"});
-
-    std::map<std::string, std::vector<size_t>> groupToNodesMapNotCompact;
 
     if (meshType == meshType::DEFAULT)
     {
@@ -33,7 +30,7 @@ MeshData::MeshData(ControlData* controlData)
             controlData_->workingDir().concat("/" + meshFileName).string();
 
         bool isReadSuccess =
-            readFromMsh(absPath, nodes_, normals_, groupToNodesMapNotCompact);
+            readFromMsh(absPath, nodes_, normals_, groupNameToNodesMap_);
     }
     else if (meshType == meshType::RECTNAGLE)
     {
@@ -46,7 +43,6 @@ MeshData::MeshData(ControlData* controlData)
     }
 
     buildNodeClouds();
-    buildNodeToGroupName(groupToNodesMapNotCompact);
 }
 
 void MeshData::buildNodeClouds()
@@ -67,28 +63,6 @@ void MeshData::buildNodeClouds()
 
         nodesCloud cloud(nodeID, neighboursID);
         clouds_[nodeID] = cloud;
-    }
-}
-
-void MeshData::buildNodeToGroupName(
-    const std::map<std::string, std::vector<size_t>>& groupToNodesMapNotCompact)
-{
-    nodesToGroupName_.resize(nodes_.size());
-    std::fill(nodesToGroupName_.begin(), nodesToGroupName_.end(),
-              NOTDEFINED_GROUPNAME);
-
-    for (const auto& [groupName, ids] : groupToNodesMapNotCompact)
-    {
-        // TODO: parallel
-        for (const size_t& id : ids)
-        {
-            nodesToGroupName_[id] = groupName;
-        }
-    }
-
-    for (size_t i = 0; i < nodesToGroupName_.size(); i++)
-    {
-        groupNameToNodesMap_[nodesToGroupName_[i]].push_back(i);
     }
 }
 
@@ -128,18 +102,6 @@ const vec3d<double>& MeshData::normalByID(const size_t nodeID) const
     }
 }
 
-const std::string& MeshData::groupNameByID(const size_t nodeID) const
-{
-    if (nodeID < nodesToGroupName_.size())
-    {
-        return nodesToGroupName_[nodeID];
-    }
-    else
-    {
-        ASSERT("node ID out of bound, ID: " << nodeID);
-    }
-}
-
 const std::vector<vec3d<double>>& MeshData::nodes() const
 {
     return nodes_;
@@ -149,3 +111,9 @@ size_t MeshData::numOfNodes() const
 {
     return nodes_.size();
 };
+
+const std::map<std::string, std::vector<size_t>>&
+MeshData::groupNameToNodesMap() const
+{
+    return groupNameToNodesMap_;
+}

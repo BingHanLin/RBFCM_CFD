@@ -35,12 +35,17 @@ class PUConditionPool
     MeshData* meshData_;
     std::unique_ptr<InitialCondition> UIC_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToUBCMap_;
+    std::vector<std::string> nodesToUBCName_;
 
     std::unique_ptr<InitialCondition> PIC_;
     std::map<std::string, std::unique_ptr<BoundaryCondition>> groupToPBCMap_;
+    std::vector<std::string> nodesToPBCName_;
 
     void buildInitialConditions();
     void buildBoundaryConditions();
+    void buildNodesToConditions();
+
+    std::vector<std::string> BCNames() const;
 };
 
 #endif

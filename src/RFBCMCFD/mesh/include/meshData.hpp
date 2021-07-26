@@ -25,18 +25,18 @@ class MeshData
     const vec3d<double>& nodeByID(const size_t nodeID) const;
     const nodesCloud& cloudByID(const size_t nodeID) const;
     const vec3d<double>& normalByID(const size_t nodeID) const;
-    const std::string& groupNameByID(const size_t nodeID) const;
+
+    const std::map<std::string, std::vector<size_t>>& groupNameToNodesMap()
+        const;
 
    private:
     ControlData* controlData_;
     std::vector<vec3d<double>> nodes_;
     std::vector<vec3d<double>> normals_;
     std::vector<nodesCloud> clouds_;
-    std::vector<std::string> nodesToGroupName_;
-    std::map<std::string, std::vector<size_t>> groupNameToNodesMap_;
+    std::map<std::string, std::vector<size_t>>
+        groupNameToNodesMap_;  // may not compact
 
-    void buildNodeToGroupName(const std::map<std::string, std::vector<size_t>>&
-                                  groupToNodesMapNotCompact);
     void buildNodeClouds();
 };
 

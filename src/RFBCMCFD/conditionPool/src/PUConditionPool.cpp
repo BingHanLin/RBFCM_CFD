@@ -14,6 +14,7 @@ PUConditionPool::PUConditionPool(ControlData* controlData, MeshData* meshData)
 {
     buildInitialConditions();
     buildBoundaryConditions();
+    buildNodesToConditions();
 }
 
 void PUConditionPool::buildInitialConditions()
@@ -42,6 +43,27 @@ void PUConditionPool::buildBoundaryConditions()
     }
 }
 
+void PUConditionPool::buildNodesToConditions()
+{
+    const auto numOfNodes = meshData_->numOfNodes();
+    const auto names = this->BCNames();
+
+    nodesToUBCName_.resize(numOfNodes);
+    std::fill(nodesToUBCName_.begin(), nodesToUBCName_.end(),
+              NOTDEFINED_GROUPNAME);
+
+    const auto groupNameToNodesMap = meshData_->groupNameToNodesMap();
+
+    for (const auto& oneBCName : this->BCNames())
+    {
+        if (groupNameToNodesMap.find(oneBCName) == groupNameToNodesMap.end())
+            continue;
+
+        for (const size_t& id : groupNameToNodesMap.at(oneBCName))
+            nodesToUBCName_[id] = oneBCName;
+    }
+}
+
 InitialCondition* PUConditionPool::UIC() const
 {
     return UIC_.get();
@@ -49,10 +71,9 @@ InitialCondition* PUConditionPool::UIC() const
 
 BoundaryCondition* PUConditionPool::UBCByNodeID(const size_t nodeID) const
 {
-    if (groupToUBCMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToUBCMap_.end())
+    if (groupToUBCMap_.find(nodesToUBCName_[nodeID]) != groupToUBCMap_.end())
     {
-        return groupToUBCMap_.at(meshData_->groupNameByID(nodeID)).get();
+        return groupToUBCMap_.at(nodesToUBCName_[nodeID]).get();
     }
     else
     {
@@ -67,13 +88,28 @@ InitialCondition* PUConditionPool::PIC() const
 
 BoundaryCondition* PUConditionPool::PBCByNodeID(const size_t nodeID) const
 {
-    if (groupToPBCMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToPBCMap_.end())
+    if (groupToPBCMap_.find(nodesToPBCName_[nodeID]) != groupToPBCMap_.end())
     {
-        return groupToPBCMap_.at(meshData_->groupNameByID(nodeID)).get();
+        return groupToPBCMap_.at(nodesToPBCName_[nodeID]).get();
     }
     else
     {
         return nullptr;
     }
+}
+
+std::vector<std::string> PUConditionPool::BCNames() const
+{
+    std::vector<std::string> result;
+
+    const auto& constantValueUBCData = controlData_->paramsDataAt(
+        {"boundaryConditions", "U", "constantValue"});
+
+    for (auto& oneBCData : constantValueUBCData)
+    {
+        const std::string groupName = oneBCData.at("groupName");
+        result.push_back(groupName);
+    }
+
+    return result;
 }

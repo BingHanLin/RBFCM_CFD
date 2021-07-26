@@ -53,6 +53,27 @@ void ScalarConditionPool::buildBoundaryConditions()
     }
 }
 
+void ScalarConditionPool::buildNodesToConditions()
+{
+    const auto numOfNodes = meshData_->numOfNodes();
+    const auto names = this->BCNames();
+
+    nodesToBCName_.resize(numOfNodes);
+    std::fill(nodesToBCName_.begin(), nodesToBCName_.end(),
+              NOTDEFINED_GROUPNAME);
+
+    const auto groupNameToNodesMap = meshData_->groupNameToNodesMap();
+
+    for (const auto& oneBCName : this->BCNames())
+    {
+        if (groupNameToNodesMap.find(oneBCName) == groupNameToNodesMap.end())
+            continue;
+
+        for (const size_t& id : groupNameToNodesMap.at(oneBCName))
+            nodesToBCName_[id] = oneBCName;
+    }
+}
+
 InitialCondition* ScalarConditionPool::IC() const
 {
     return IC_.get();
@@ -60,13 +81,37 @@ InitialCondition* ScalarConditionPool::IC() const
 
 BoundaryCondition* ScalarConditionPool::BCByNodeID(const size_t nodeID) const
 {
-    if (groupToBCMap_.find(meshData_->groupNameByID(nodeID)) !=
-        groupToBCMap_.end())
+    if (groupToBCMap_.find(nodesToBCName_[nodeID]) != groupToBCMap_.end())
     {
-        return groupToBCMap_.at(meshData_->groupNameByID(nodeID)).get();
+        return groupToBCMap_.at(nodesToBCName_[nodeID]).get();
     }
     else
     {
         return nullptr;
     }
+}
+
+std::vector<std::string> ScalarConditionPool::BCNames() const
+{
+    std::vector<std::string> result;
+
+    const auto& neumannBCData =
+        controlData_->paramsDataAt({"boundaryConditions", "neumann"});
+
+    for (auto& oneBCData : neumannBCData)
+    {
+        const std::string groupName = oneBCData.at("groupName");
+        result.push_back(groupName);
+    }
+
+    const auto& constantValueBCData =
+        controlData_->paramsDataAt({"boundaryConditions", "constantValue"});
+
+    for (auto& oneBCData : constantValueBCData)
+    {
+        const std::string groupName = oneBCData.at("groupName");
+        result.push_back(groupName);
+    }
+
+    return result;
 }
