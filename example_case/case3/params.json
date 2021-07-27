@@ -6,7 +6,7 @@
     },
     "physicsControl": {
         "viscosity": 1.0,
-        "density": 1.0
+        "density": 1000.0
     },
     "boundaryConditions": {
         "U": {
@@ -72,12 +72,12 @@
     },
     "solverControl": {
         "neighborRadius": 0.11,
-        "shapeParameter": 1,
-        "timeStepSize": 0.001,
+        "shapeParameter": 1.0,
+        "timeStepSize": 0.0005,
         "endTime": 1.0,
         "writeInterval": 0.1,
         "dimension": 2,
-        "crankNicolsonEpsilon": 10e-8,
-        "crankNicolsonMaxIter": 25
+        "crankNicolsonEpsilon": 0.000001,
+        "crankNicolsonMaxIter": 15
     }
 }

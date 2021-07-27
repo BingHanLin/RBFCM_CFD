@@ -98,7 +98,7 @@ void IncompressibleDomain::setupLinearSystem()
     {
         auto cloud = meshData_->cloudByID(nodeID);
 
-        Eigen::VectorXd laplaceVector =
+        const Eigen::VectorXd laplaceVector =
             RBFBasis_->collectOnNodes(nodeID, rbfOperatorType::LAPLACE);
 
         for (size_t i = 0; i < cloud.size_; i++)
@@ -121,8 +121,8 @@ void IncompressibleDomain::setupLinearSystem()
         {
             const auto cloud = meshData_->cloudByID(nodeID);
 
-            Eigen::VectorXd firstDerVector =
-                RBFBasis_->collectOnNodes(nodeID, firstOrderOperatorTypes[d]);
+            const Eigen::VectorXd firstDerVector =
+                RBFBasis_->collectOnNodes(nodeID, firstOrderOperatorTypes_[d]);
 
             for (size_t i = 0; i < cloud.size_; i++)
             {
@@ -315,7 +315,7 @@ Eigen::VectorXd IncompressibleDomain::innerCrankNicolsonU(
 
                 const double pGrad =
                     firstOrderDerMatrix_.row(start + nodeID) * pSol;
-                RHS(start + nodeID) += pGrad * (2.0 / viscosity_);
+                RHS(start + nodeID) += pGrad * (2.0 / viscosity_ / density_);
 
                 const double velLaplacian = laplaceMatrix_.row(nodeID) *
                                             velSol.segment(start, numOfNodes);
@@ -400,6 +400,7 @@ void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
     solver.factorize(phiCoeffMatrix_);
     // Use the factors to solve the linear system
     const Eigen::VectorXd phi = solver.solve(RHS);
+
     pSolNext += phi;
     pSolNext -= (viscosity_ * tStepSize_ / 2.0) * laplaceMatrix_ * phi;
 
@@ -414,7 +415,7 @@ void IncompressibleDomain::solvePU(const Eigen::VectorXd& pSol,
                 const double phiGrad =
                     firstOrderDerMatrix_.row(start + nodeID) * phi;
 
-                velSolNext(start + nodeID) -= phiGrad * tStepSize_;
+                velSolNext(start + nodeID) -= phiGrad * tStepSize_ / density_;
             }
         }
     }

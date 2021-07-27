@@ -49,7 +49,7 @@ class IncompressibleDomain
     size_t dim_;
     double currentTime_;
 
-    const std::array<rbfOperatorType, 3> firstOrderOperatorTypes = {
+    const std::array<rbfOperatorType, 3> firstOrderOperatorTypes_ = {
         rbfOperatorType::PARTIAL_D1, rbfOperatorType::PARTIAL_D2,
         rbfOperatorType::PARTIAL_D3};
 
