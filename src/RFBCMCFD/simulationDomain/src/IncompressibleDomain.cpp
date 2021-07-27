@@ -137,7 +137,7 @@ void IncompressibleDomain::initializeField()
 {
     const auto numOfNodes = meshData_->numOfNodes();
 
-    velSol_.resize(dim_ * numOfNodes);
+    velSol_.resize(3 * numOfNodes);
     pSol_.resize(numOfNodes);
 
     for (size_t nodeID = 0; nodeID < numOfNodes; ++nodeID)
@@ -455,15 +455,17 @@ void IncompressibleDomain::writeDataToVTK() const
 
     pugi::xml_node PointData = Piece.append_child("PointData");
 
+    const std::array<std::string, 3> velocityString = {"u", "v", "w"};
+    for (size_t d = 0; d < dim_; ++d)
+    {
+        const Eigen::VectorXd sol = velSol_.segment(d * numOfNodes, numOfNodes);
+        appendScalarsToVTKNode(sol, velocityString[d], PointData);
+    }
+
     const Eigen::VectorXd uSol = velSol_.segment(0, numOfNodes);
     const Eigen::VectorXd vSol = velSol_.segment(numOfNodes, numOfNodes);
-    // const Eigen::VectorXd wSol =
-    //     velSol_.segment(numOfNodes * 2, numOfNodes * 3);
-
-    appendScalarsToVTKNode(uSol, "u", PointData);
-    appendScalarsToVTKNode(vSol, "v", PointData);
-    // appendScalarsToVTKNode(wSol, "w", PointData);
-    appendScalarsToVTKNode(pSol_, "p", PointData);
+    const Eigen::VectorXd wSol = velSol_.segment(numOfNodes * 2, numOfNodes);
+    appendVelArrayToVTKNode(uSol, vSol, wSol, "Velocity", PointData);
 
     pugi::xml_node Cells = Piece.append_child("Cells");
     addCells(numOfNodes, Cells);

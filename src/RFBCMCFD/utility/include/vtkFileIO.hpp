@@ -5,9 +5,12 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <fstream>
+
+
 template <typename T, int N>
-void appendArrayToVTKNode(const std::vector<Eigen::Matrix<T, N, 1>> &values,
-                          const std::string name, pugi::xml_node &node)
+inline void appendArrayToVTKNode(
+    const std::vector<Eigen::Matrix<T, N, 1>> &values, const std::string name,
+    pugi::xml_node &node)
 {
     pugi::xml_node dataArray = node.append_child("DataArray");
     std::stringstream positions;
@@ -33,6 +36,33 @@ void appendArrayToVTKNode(const std::vector<Eigen::Matrix<T, N, 1>> &values,
 
     dataArray.append_attribute("NumberOfComponents") =
         std::to_string(N).c_str();
+    dataArray.append_attribute("format") = "ascii";
+}
+
+inline void appendVelArrayToVTKNode(const Eigen::VectorXd &uVel,
+                                    const Eigen::VectorXd &vVel,
+                                    const Eigen::VectorXd &wVel,
+                                    const std::string name,
+                                    pugi::xml_node &node)
+{
+    pugi::xml_node dataArray = node.append_child("DataArray");
+    std::stringstream positions;
+
+    for (size_t i = 0; i < uVel.size(); ++i)
+    {
+        positions << uVel(i) << " ";
+        positions << vVel(i) << " ";
+        positions << wVel(i) << " ";
+    }
+
+    dataArray.append_child(pugi::node_pcdata)
+        .set_value(positions.str().c_str());
+    dataArray.append_attribute("Name") = name.c_str();
+
+    dataArray.append_attribute("type") = "Float64";
+
+    dataArray.append_attribute("NumberOfComponents") =
+        std::to_string(3).c_str();
     dataArray.append_attribute("format") = "ascii";
 }
 
