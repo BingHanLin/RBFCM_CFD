@@ -39,7 +39,7 @@ Execute the simulation which includes matrix assemble and solving.
 ## Examples
 
 1. **LAPLACE equation** \
-LAPLACE equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
+Laplace equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
 ![](/asset/laplace.png)
 
 2. **Navier Stokes equation** \
