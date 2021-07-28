@@ -74,8 +74,8 @@
         "neighborRadius": 0.11,
         "shapeParameter": 1.0,
         "timeStepSize": 0.0005,
-        "endTime": 1.0,
-        "writeInterval": 0.1,
+        "endTime": 0.5,
+        "writeInterval": 0.005,
         "dimension": 2,
         "crankNicolsonEpsilon": 0.000001,
         "crankNicolsonMaxIter": 15

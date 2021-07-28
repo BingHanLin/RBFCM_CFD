@@ -13,40 +13,53 @@ solving problems. The meshless numerical method is much simpler compared with th
 ***
 ## Program Structure
 
-* **GMMMQBasis2D.h** \
-A class define the shape parameter when it is initialize. Compute the linear operation of the radial basis function and return it to **Collocation2D.h**.
+* **controlData** \
+Reads the configuration data and offers method to access the data.
 
-* **Collocation2D.h** \
-A fucntion collocate the nodes near the target node and return the local vector of this node cloud.
-note: the first index indicate the target node.
+* **mesh** \
+Reads the mesh file and store the information of nodes.
 
-* **GMMRectangular.h** \
-A class generate a retangular domain with orthogonal node distribution. The nodes on the corner are neglected.
+* **rbfBasis** \
+Defines the shape parameter and searching radius when it is initialize. Compute the linear operation of the radial basis function and return it.
+
+* **conditionPool** \
+    Collects the **initial conditions** and **boundary conditions** from configuration.
+    note: the first index indicate the target node.
+
+    * **boundaryConditions** \
+        Defines the boundary conditions, which fill the coefficient matrix and source vector.
+
+    * **initialConditions** \
+        Defines the initial conditions, which fill solution vector at begining.
+
+* **simulationDomain** \
+Execute the simulation which includes matrix assemble and solving.
 
 ***
 ## Examples
 
 1. **LAPLACE equation** \
 LAPLACE equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
+![](asset\laplace.png)
 
 2. **Navier Stokes equation** \
-The projection method is used to solve the Navier Stokes equation. A lid-driven square cavity flow case is presented here.
+The projection method is used to solve the Navier Stokes equation. A lid-driven square cavity flow case is presented.
 
-![](quiver.png) 
+![](asset\lidCavity.png) 
 ***
 
 ## Dependencies
 The following open source libraries or third party functions are used by this project:
-- [Gmm++](http://getfem.org/gmm.html) library for matrix manipulation.
+- [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) library for linear algebra.
 - [nanoflann](https://github.com/jlblancoc/nanoflann) is a C++ header-only library for building KD-Trees.
 ***
 ## References
-[1] Tsai, C.-C., Lin, Z.-H., & Hsu, T.-W. (2015). [Using a local radial basis function collocation method to approximate radiation boundary conditions](https://doi.org/10.1016/j.oceaneng.2015.06.030). Ocean Engineering, 105, 231–241. 
+[1] [Tsai, C.-C., Lin, Z.-H., & Hsu, T.-W. (2015). Using a local radial basis function collocation method to approximate radiation boundary conditions. Ocean Engineering, 105, 231–241.](https://doi.org/10.1016/j.oceaneng.2015.06.030) 
 
-[2] Chen, W., Zhuo. & Chen, C. (2014). Recent advances on radial basis function collocation methods. Berlin: Springer.
+[2] [Chen, W., Zhuo. & Chen, C. (2014). Recent advances on radial basis function collocation methods. Berlin: Springer](https://www.springer.com/gp/book/9783642395710).
 
 [3] [Catch2](http://blog.guorongfei.com/2016/08/22/cpp-unit-test-catch/) 
 
-https://gist.github.com/gocarlos/c91237b02c120c6319612e42fa196d77
+[4] [Eigen Cheat sheet](https://gist.github.com/gocarlos/c91237b02c120c6319612e42fa196d77) 
 
-https://eigen.tuxfamily.org/dox/TopicPreprocessorDirectives.html
+[5] [Eigen Macros](https://eigen.tuxfamily.org/dox/TopicPreprocessorDirectives.html) 
