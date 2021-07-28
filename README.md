@@ -40,12 +40,12 @@ Execute the simulation which includes matrix assemble and solving.
 
 1. **LAPLACE equation** \
 LAPLACE equation is solved in a rectangular domain with dirichlet boundary conditions on all sides.
-![](asset\laplace.png)
+![](/asset/laplace.png)
 
 2. **Navier Stokes equation** \
 The projection method is used to solve the Navier Stokes equation. A lid-driven square cavity flow case is presented.
 
-![](asset\lidCavity.png) 
+![](/asset/lidCavity.png) 
 ***
 
 ## Dependencies
