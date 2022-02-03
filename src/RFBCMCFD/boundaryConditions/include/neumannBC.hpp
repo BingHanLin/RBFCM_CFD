@@ -5,10 +5,10 @@
 
 class MeshData;
 class MQBasis;
-class neumannBC : public BoundaryCondition
+class NeumannBC : public BoundaryCondition
 {
    public:
-    neumannBC(const double rhsValue, MeshData* meshData);
+    NeumannBC(const double rhsValue, MeshData* meshData);
 
     void fillCoeffMatrix(
         const size_t nodeID, MQBasis* RBFBasis,

@@ -28,14 +28,14 @@ void ScalarConditionPool::buildInitialConditions()
 }
 void ScalarConditionPool::buildBoundaryConditions()
 {
-    const auto& neumannBCData =
+    const auto& NeumannBCData =
         controlData_->paramsDataAt({"boundaryConditions", "neumann"});
 
-    for (auto& oneBCData : neumannBCData)
+    for (auto& oneBCData : NeumannBCData)
     {
         const std::string groupName = oneBCData.at("groupName");
 
-        auto bc = std::make_unique<neumannBC>(oneBCData.at("value"), meshData_);
+        auto bc = std::make_unique<NeumannBC>(oneBCData.at("value"), meshData_);
 
         groupToBCMap_.insert({groupName, std::move(bc)});
     }
@@ -95,10 +95,10 @@ std::vector<std::string> ScalarConditionPool::BCNames() const
 {
     std::vector<std::string> result;
 
-    const auto& neumannBCData =
+    const auto& NeumannBCData =
         controlData_->paramsDataAt({"boundaryConditions", "neumann"});
 
-    for (auto& oneBCData : neumannBCData)
+    for (auto& oneBCData : NeumannBCData)
     {
         const std::string groupName = oneBCData.at("groupName");
         result.push_back(groupName);

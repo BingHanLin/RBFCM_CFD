@@ -4,10 +4,10 @@
 
 #include <iostream>
 
-neumannBC::neumannBC(const double rhsValue, MeshData* meshData)
+NeumannBC::NeumannBC(const double rhsValue, MeshData* meshData)
     : BoundaryCondition(meshData), rhsValue_(rhsValue_){};
 
-void neumannBC::fillCoeffMatrix(
+void NeumannBC::fillCoeffMatrix(
     const size_t nodeID, MQBasis* RBFBasis,
     Eigen::SparseMatrix<double, Eigen::RowMajor>& spMatrix) const
 {
@@ -22,7 +22,7 @@ void neumannBC::fillCoeffMatrix(
     }
 }
 
-void neumannBC::fillRhsVector(const size_t nodeID, MQBasis* RBFBasis,
+void NeumannBC::fillRhsVector(const size_t nodeID, MQBasis* RBFBasis,
                               Eigen::VectorXd& rhsVec) const
 {
     rhsVec(nodeID) = rhsValue_;
