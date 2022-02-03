@@ -1,6 +1,6 @@
 # https://rix0r.nl/blog/2015/08/13/cmake-guide/
 # https://stackoverflow.com/questions/16398937/cmake-and-finding-other-projects-and-their-dependencies
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.12)
 
 project(mainProject)
 

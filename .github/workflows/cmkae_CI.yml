@@ -1,0 +1,23 @@
+name: C/C++ CMake CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Generate project buildsystem
+      run: CMake  -S. -Bbuild \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DCATCH2TEST=ON
+    - name: Build a project
+      run: cmake --build build --parallel 4
+    - name: Install project
+      run: cmake --install build
