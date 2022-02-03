@@ -8,10 +8,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Check CMake version
+      run: cmake --version
     - name: Generate project buildsystem
-      run: cmake  -S. -Bbuild \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCATCH2TEST=ON
+      run: cmake  -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCATCH2TEST=ON
     - name: Build a project
       run: cmake --build build --parallel 4
     - name: Install project
