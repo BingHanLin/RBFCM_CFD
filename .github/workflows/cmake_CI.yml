@@ -1,9 +1,6 @@
 name: C/C++ CMake CI
 
-on:
-  push:
-    branches: 
-      - main
+on: [push]
 jobs:
   build-and-test:
 
