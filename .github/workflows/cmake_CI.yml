@@ -1,6 +1,10 @@
 name: C/C++ CMake CI
 
 on: [push]
+
+env:
+  BUILD_TYPE: Release
+
 jobs:
   build-and-test:
 
@@ -8,11 +12,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Check CMake version
       run: cmake --version
+
     - name: Generate project buildsystem
-      run: cmake  -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCATCH2TEST=ON
+      run: cmake  -S. -Bbuild -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCATCH2TEST=ON
+    
     - name: Build project
-      run: cmake --build build --parallel 4
+      run: cmake --build build --config $BUILD_TYPE --parallel 4
+
     - name: Install project
       run: cmake --install build
+
+    - name: Test project
+      working-directory: ${{runner.workspace}}/build
+      run: ctest --verbose --stop-on-failure -T Test -C $BUILD_TYPE
