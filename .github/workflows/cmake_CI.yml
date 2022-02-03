@@ -26,5 +26,6 @@ jobs:
       run: cmake --install build
 
     - name: Test project
-      working-directory: ${{runner.workspace}}/build/$BUILD_TYPE
+      working-directory: ${{runner.workspace}}/build/Release
+      shell: bash
       run: ctest --verbose --stop-on-failure -T Test -C $BUILD_TYPE
