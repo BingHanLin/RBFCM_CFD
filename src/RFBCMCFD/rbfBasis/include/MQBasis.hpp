@@ -1,8 +1,8 @@
 #ifndef MQBasis_HPP
 #define MQBasis_HPP
 
-#include "ControlData.hpp"
-#include "MeshData.hpp"
+#include "controlData.hpp"
+#include "meshData.hpp"
 
 
 #include "dataStructure.hpp"

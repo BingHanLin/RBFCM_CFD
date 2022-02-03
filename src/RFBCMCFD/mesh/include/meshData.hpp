@@ -1,8 +1,8 @@
 #ifndef MESHDATA_HPP
 #define MESHDATA_HPP
 
-#include "BoundaryCondition.hpp"
-#include "ControlData.hpp"
+#include "boundaryCondition.hpp"
+#include "controlData.hpp"
 #include "dataStructure.hpp"
 #include "enumMap.hpp"
 #include "json.h"

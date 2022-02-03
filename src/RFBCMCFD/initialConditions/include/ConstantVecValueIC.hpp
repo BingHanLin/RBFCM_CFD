@@ -1,7 +1,7 @@
 #ifndef CONSTANTVECVALUEIC_HPP
 #define CONSTANTVECVALUEIC_HPP
 
-#include "InitialCondition.hpp"
+#include "initialCondition.hpp"
 
 class MeshData;
 class ConstantVecValueIC : public InitialCondition

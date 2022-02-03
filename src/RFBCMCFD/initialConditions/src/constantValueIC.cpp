@@ -1,4 +1,4 @@
-#include "ConstantValueIC.hpp"
+#include "constantValueIC.hpp"
 
 ConstantValueIC::ConstantValueIC(const double constValue)
     : InitialCondition(), constValue_(constValue){};

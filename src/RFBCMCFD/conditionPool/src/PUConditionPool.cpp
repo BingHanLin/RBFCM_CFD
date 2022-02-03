@@ -1,11 +1,11 @@
 #include "PUConditionPool.hpp"
-#include "MeshData.hpp"
+#include "meshData.hpp"
 #include "constant.hpp"
 #include "messages.hpp"
 
-#include "ConstantVecValueBC.hpp"
+#include "constantVecValueBC.hpp"
 
-#include "ConstantVecValueIC.hpp"
+#include "constantVecValueIC.hpp"
 
 #include <iostream>
 

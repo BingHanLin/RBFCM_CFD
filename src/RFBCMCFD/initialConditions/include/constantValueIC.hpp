@@ -1,7 +1,7 @@
 #ifndef CONSTANTVALUEIC_HPP
 #define CONSTANTVALUEIC_HPP
 
-#include "InitialCondition.hpp"
+#include "initialCondition.hpp"
 
 class ConstantValueIC : public InitialCondition
 {

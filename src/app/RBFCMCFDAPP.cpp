@@ -1,9 +1,9 @@
-#include "ControlData.hpp"
+#include "controlData.hpp"
 #include "MQBasis.hpp"
-#include "MeshData.hpp"
+#include "meshData.hpp"
 #include "PUConditionPool.hpp"
-#include "ScalarConditionPool.hpp"
-#include "ScalarTransportDomain.hpp"
+#include "scalarConditionPool.hpp"
+#include "scalarTransportDomain.hpp"
 #include "enumMap.hpp"
 #include "incompressibleDomain.hpp"
 

@@ -1,5 +1,5 @@
-#include "ConstantVecValueIC.hpp"
-#include "MeshData.hpp"
+#include "constantVecValueIC.hpp"
+#include "meshData.hpp"
 
 ConstantVecValueIC::ConstantVecValueIC(const std::array<double, 3> constValue,
                                        MeshData* meshData)

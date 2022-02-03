@@ -1,7 +1,7 @@
-#include "MeshData.hpp"
+#include "meshData.hpp"
 #include "KDTreeEigenAdaptor.hpp"
-#include "ReadFromMsh.hpp"
-#include "Rectangle.hpp"
+#include "readFromMsh.hpp"
+#include "rectangle.hpp"
 #include "constant.hpp"
 #include "messages.hpp"
 

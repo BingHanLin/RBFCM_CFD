@@ -1,6 +1,6 @@
-#include "ConstantValueBC.hpp"
+#include "constantValueBC.hpp"
 #include "MQBasis.hpp"
-#include "MeshData.hpp"
+#include "meshData.hpp"
 
 #include <iostream>
 

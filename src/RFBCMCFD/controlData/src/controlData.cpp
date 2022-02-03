@@ -1,4 +1,4 @@
-#include "ControlData.hpp"
+#include "controlData.hpp"
 #include <fstream>
 #include <iostream>
 
