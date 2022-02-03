@@ -21,6 +21,6 @@ TEST_CASE("KDTreeEigenAdaptor Test", "[RBF]")
         std::vector<size_t> neighboursID;
         kdTree.query(0, neighborRadius, neighboursID);
 
-        REQUIRE(neighboursID.size() == 5);
+        REQUIRE(neighboursID.size() == 50);
     }
 }
