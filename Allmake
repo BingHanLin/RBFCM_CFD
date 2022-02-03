@@ -15,7 +15,11 @@ cmake --build build --parallel 4
 cmake --install build
 
 # Run test
-bin/Release/test.exe
+cd build/src/test
+ctest --verbose --stop-on-failure -T Test -C Release
+cd ..
+
+# bin/Release/test.exe
 
 
 
