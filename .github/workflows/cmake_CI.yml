@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Generate project buildsystem
-      run: CMake  -S. -Bbuild \
+      run: cmake  -S. -Bbuild \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DCATCH2TEST=ON
     - name: Build a project
