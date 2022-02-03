@@ -26,11 +26,11 @@ set(CMAKE_CXX_STANDARD 17)
 ## TARGET
 ## create target and add include path
 ##
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/thirdParty)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/RFBCMCFD)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/app)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/thirdParty)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/RFBCMCFD)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/app)
 
 if(CATCH2TEST)
     # catch2 test
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/test)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/test)
 endif()
