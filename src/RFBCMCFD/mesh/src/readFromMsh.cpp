@@ -10,11 +10,13 @@ bool readFromMsh(const std::string& filePath, std::vector<vec3d<double>>& nodes,
                  std::vector<vec3d<double>>& normals,
                  std::map<std::string, std::vector<size_t>>& groupToNodesMap)
 {
-    const auto invalidFormat = [](std::string messages) -> bool {
+    const auto invalidFormat = [](std::string messages) -> bool
+    {
         ASSERT("Invalid format: " << messages);
         return false;
     };
-    const auto notImplemented = [](std::string messages) -> bool {
+    const auto notImplemented = [](std::string messages) -> bool
+    {
         ASSERT("Not implemented:" << messages);
         return false;
     };

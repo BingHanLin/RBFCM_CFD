@@ -13,17 +13,13 @@
 // copy( NNormVec, NormVec );
 // };
 
-MQBasis::MQBasis(ControlData* controlData, MeshData* meshData)
-    : controlData_(controlData), meshData_(meshData)
+MQBasis::MQBasis(const double& shapeParameter, const size_t& dimension,
+                 MeshData* meshData)
+    : shapeParameter_(shapeParameter),
+      dimension_(dimension),
+      meshData_(meshData)
 {
-    shapeParameter_ =
-        controlData_->paramsDataAt({"solverControl", "shapeParameter"});
-
-    dim_ = controlData_->paramsDataAt({"solverControl", "dimension"});
 }
-
-MQBasis::MQBasis(const double shapeParameter, const size_t dim)
-    : shapeParameter_(shapeParameter), dim_(dim){};
 
 double MQBasis::getBasisValue(const size_t& i, const size_t& j,
                               const rbfOperatorType& operatorType) const
@@ -44,7 +40,8 @@ double MQBasis::getBasisValue(const size_t& i, const size_t& j,
         double temp1;
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_) *
                 (rs + shapeParameter_ * shapeParameter_);
-        temp = ((dim_ - 1) * rs + dim_ * shapeParameter_ * shapeParameter_) /
+        temp = ((dimension_ - 1) * rs +
+                dimension_ * shapeParameter_ * shapeParameter_) /
                temp1;
     }
     else if (operatorType == rbfOperatorType::DIVERGENCE)
@@ -79,7 +76,7 @@ double MQBasis::getBasisValue(const size_t& i, const size_t& j,
         temp1 = std::sqrt(rs + shapeParameter_ * shapeParameter_);
         temp = 0.0;
 
-        for (size_t d = 0; d < dim_; d++)
+        for (size_t d = 0; d < dimension_; d++)
         {
             temp += norm[d] * rr[d] / temp1;
         }

@@ -112,7 +112,9 @@
 		"openglsupport": "cpp",
 		"specialfunctions": "cpp",
 		"splines": "cpp",
-		"sparsecore": "cpp"
-	},
-	"clang-format.executable": "D:\\LLVM\\bin\\clang-format.exe"
+		"sparsecore": "cpp",
+		"charconv": "cpp",
+		"coroutine": "cpp",
+		"format": "cpp"
+	}
 }

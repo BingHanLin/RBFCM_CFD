@@ -1,18 +1,14 @@
 #include "meshData.hpp"
 #include "KDTreeEigenAdaptor.hpp"
-#include "readFromMsh.hpp"
-#include "rectangle.hpp"
 #include "constant.hpp"
 #include "messages.hpp"
+#include "readFromMsh.hpp"
+#include "rectangle.hpp"
 
 #include <iostream>
 
 MeshData::MeshData(ControlData* controlData)
-    : controlData_(controlData),
-
-      nodes_(),
-      normals_(),
-      groupNameToNodesMap_()
+    : controlData_(controlData), nodes_(), normals_(), groupNameToNodesMap_()
 {
     std::cout << "MeshData" << std::endl;
 

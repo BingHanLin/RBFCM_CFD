@@ -14,6 +14,9 @@ target_link_libraries(${PROJECT_NAME}
 install(TARGETS ${PROJECT_NAME}
     DESTINATION . )
 
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/data
+    DESTINATION ${PROJECT_BINARY_DIR} )
+
 add_test(
         NAME
         ${PROJECT_NAME}

@@ -4,7 +4,6 @@
 #include "controlData.hpp"
 #include "meshData.hpp"
 
-
 #include "dataStructure.hpp"
 #include "enumMap.hpp"
 
@@ -18,8 +17,8 @@
 class MQBasis
 {
    public:
-    MQBasis(ControlData* controlData, MeshData* meshData);
-    MQBasis(const double shapeParameter, const size_t dim);
+    MQBasis(const double& shapeParameter, const size_t& didimension,
+            MeshData* meshData);
     ~MQBasis(){};
 
     Eigen::VectorXd collectOnNodes(const size_t& nodeID,
@@ -29,7 +28,7 @@ class MQBasis
     ControlData* controlData_;
     MeshData* meshData_;
     double shapeParameter_;
-    size_t dim_;
+    size_t dimension_;
 
     double getBasisValue(const size_t& i, const size_t& j,
                          const rbfOperatorType& operatorType) const;

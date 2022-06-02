@@ -1,11 +1,11 @@
-#include "controlData.hpp"
 #include "MQBasis.hpp"
-#include "meshData.hpp"
 #include "PUConditionPool.hpp"
-#include "scalarConditionPool.hpp"
-#include "scalarTransportDomain.hpp"
+#include "controlData.hpp"
 #include "enumMap.hpp"
 #include "incompressibleDomain.hpp"
+#include "meshData.hpp"
+#include "scalarConditionPool.hpp"
+#include "scalarTransportDomain.hpp"
 
 #include <cxxopts.hpp>
 #include <fstream>
@@ -49,8 +49,14 @@ int main(int argc, char** argv)
     // ****************************************************************************
     // Define RBF type
     // ****************************************************************************
+    const double shapeParameter =
+        myControlData->paramsDataAt({"solverControl", "shapeParameter"});
+
+    const size_t dimension =
+        myControlData->paramsDataAt({"solverControl", "dimension"});
+
     auto myRBFBasis =
-        std::make_shared<MQBasis>(myControlData.get(), myMeshData.get());
+        std::make_shared<MQBasis>(shapeParameter, dimension, myMeshData.get());
 
     const auto mySolverType =
         myControlData->paramsDataAt({"solverType"}).get<solverType>();
